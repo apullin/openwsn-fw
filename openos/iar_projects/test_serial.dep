@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>2423705240</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+      <file>$PROJ_DIR$\..\drivers\gina.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\leds.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\leds.c</file>
+      <file>$PROJ_DIR$\..\drivers\gina.c</file>
+      <file>$PROJ_DIR$\test_serial.c</file>
+      <file>$PROJ_DIR$\..\openwsn\openwsn.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_serial.pbd</file>
+      <file>$PROJ_DIR$\Debug\Obj\gina.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\leds.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdint.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_serial.pbi</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\gina.r43</file>
+      <file>$TOOLKIT_DIR$\config\lnk430F2618.xcl</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_serial.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\test_serial.d43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\inc\in430.h</file>
+      <file>$TOOLKIT_DIR$\inc\msp430x26x.h</file>
+      <file>$TOOLKIT_DIR$\config\multiplier.xcl</file>
+      <file>$PROJ_DIR$\..\drivers\leds.h</file>
+      <file>$PROJ_DIR$\main.c</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 26</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\leds.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 2</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 10</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 31</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 31 29 28 12 11 0 20 23 15 19 27 22</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\gina.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 17</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 6 31</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 1 6 29 28 12 11 0 20 23 15 19 27 22 25 7 31</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\test_serial.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 14</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 21</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 6 31</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 29 28 12 11 0 20 23 15 19 27 22 1 6 25 7 31</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\test_serial.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 9 2 14</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\test_serial.d43</name>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 18 30 17 10 21 13</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\main.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 24</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 16</file>
+        </tool>
+      </outputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs/>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>1645408951</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$PROJ_DIR$\..\drivers\gina.h</file>
+      <file>$PROJ_DIR$\..\drivers\button.h</file>
+      <file>$PROJ_DIR$\Debug\List\test_button.html</file>
+      <file>$PROJ_DIR$\..\drivers\atmel.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\gina.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\gina.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+      <file>$PROJ_DIR$\..\drivers\i2c.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\leds.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_button.r43</file>
+      <file>$PROJ_DIR$\..\drivers\leds.h</file>
+      <file>$PROJ_DIR$\test_button.c</file>
+      <file>$PROJ_DIR$\..\drivers\gina.c</file>
+      <file>$PROJ_DIR$\..\drivers\button.c</file>
+      <file>$PROJ_DIR$\..\drivers\leds.c</file>
+      <file>$PROJ_DIR$\..\drivers\scheduler.c</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
+      <file>$PROJ_DIR$\test_button.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\leds.r43</file>
+      <file>$PROJ_DIR$\Debug\Exe\test_button.d43</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_button.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\radio.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$TOOLKIT_DIR$\config\multiplier.xcl</file>
+      <file>$PROJ_DIR$\Debug\Obj\button.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\..\openwsn\openwsn.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\scheduler.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\timers.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdint.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.r43</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\openserial.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.h</file>
+      <file>$TOOLKIT_DIR$\inc\in430.h</file>
+      <file>$PROJ_DIR$\..\drivers\scheduler.h</file>
+      <file>$PROJ_DIR$\..\drivers\spi.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_button.pbd</file>
+      <file>$TOOLKIT_DIR$\config\lnk430F2618.xcl</file>
+      <file>$TOOLKIT_DIR$\inc\msp430x26x.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\button.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\scheduler.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 2 22</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\test_button.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 23</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 12</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 0 29 20 13 1 38 24 3 39</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 0 29 42 37 25 33 7 45 28 36 10 9 30 6 19 20 13 1 38 24 3 39</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\gina.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 4</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 5</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 0 29 13</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 0 29 42 37 25 33 7 45 28 36 10 9 30 6 19 13</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\button.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 43</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 27</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 1 42 37 25</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\leds.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 11</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 21</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 13</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 13 42 37 25 33 7 45 28 36 10 9 30</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\scheduler.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 31</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 44</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 38 24 3 39 29 32 8 35</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 38 42 37 25 33 7 45 28 36 10 9 30 24 3 39 29 6 19 32 8 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\test_button.d43</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 2</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 41 26 27 5 21 44 12 34</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\test_button.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 43 4 11 31 23</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs/>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+

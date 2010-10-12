@@ -1,0 +1,34 @@
+/*
+ * OpenWSN IPManager
+ *
+ * Authors:
+ * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+ */
+
+#ifndef IDMANAGER_H
+#define IDMANAGER_H
+
+#include "openwsn.h"
+
+typedef struct debugIDManagerEntry_t {
+   bool          isDAGroot;
+   bool          isBridge;
+   open_addr_t   my16bID;
+   open_addr_t   my64bID;
+   open_addr_t   myPANID;
+   open_addr_t   myPrefix;
+} debugIDManagerEntry_t;
+
+void         idmanager_init();
+bool         idmanager_getIsDAGroot();
+void         idmanager_setIsDAGroot(bool newRole);
+bool         idmanager_getIsBridge();
+void         idmanager_setIsBridge(bool newRole);
+open_addr_t* idmanager_getMyID(uint8_t type);
+error_t      idmanager_setMyID(open_addr_t* newID);
+bool         idmanager_isMyAddress(open_addr_t* addr);
+void         idmanager_triggerAboutBridge();
+void         idmanager_triggerAboutRoot();
+bool         idmanager_debugPrint();
+
+#endif

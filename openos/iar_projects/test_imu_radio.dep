@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>2598413264</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.h</file>
+      <file>$PROJ_DIR$\..\drivers\radio.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\gyro.r43</file>
+      <file>$PROJ_DIR$\..\drivers\gina_config.h</file>
+      <file>$PROJ_DIR$\..\drivers\gyro.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\openwsn.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\packetfunctions.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\packetfunctions.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
+      <file>$PROJ_DIR$\..\openwsn\openwsn.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_imu_radio.pbi</file>
+      <file>$PROJ_DIR$\..\openwsn\02a-MAC\stupidmac.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\large_range_accel.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\idmanager.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\spi.r43</file>
+      <file>$PROJ_DIR$\..\openwsn\07-App\appudpsensor.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\leds.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\in430.h</file>
+      <file>$PROJ_DIR$\..\drivers\atmel.h</file>
+      <file>$PROJ_DIR$\..\openwsn\03b-IPv6\icmpv6echo.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\openqueue.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\large_range_accel.r43</file>
+      <file>$PROJ_DIR$\..\openwsn\07-App\apptcpinject.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\stdint.h</file>
+      <file>$PROJ_DIR$\..\openwsn\07-App\appudpchannel.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$PROJ_DIR$\..\drivers\scheduler.h</file>
+      <file>$TOOLKIT_DIR$\lib\dlib\dl430xsfn.r43</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
+      <file>$PROJ_DIR$\..\openwsn\07-App\appudpinject.h</file>
+      <file>$PROJ_DIR$\..\openwsn\03a-IPHC\openbridge.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_imu_radio.pbd</file>
+      <file>$PROJ_DIR$\..\openwsn\03b-IPv6\icmpv6router.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\scheduler.pbi</file>
+      <file>$TOOLKIT_DIR$\config\lnk430F2618.xcl</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\openserial.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\spi.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\i2c.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\scheduler.r43</file>
+      <file>$PROJ_DIR$\..\drivers\magnetometer.h</file>
+      <file>$PROJ_DIR$\..\drivers\timers.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\openqueue.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\gina.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\magnetometer.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\openserial.r43</file>
+      <file>$PROJ_DIR$\..\drivers\i2c.h</file>
+      <file>$PROJ_DIR$\..\openwsn\02b-RES\nores.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sensitive_accel_temperature.r43</file>
+      <file>$PROJ_DIR$\Debug\List\test_imu_radio.html</file>
+      <file>$PROJ_DIR$\..\openwsn\03b-IPv6\icmpv6rpl.h</file>
+      <file>$PROJ_DIR$\..\drivers\gyro.c</file>
+      <file>$PROJ_DIR$\..\drivers\gina.c</file>
+      <file>$PROJ_DIR$\test_imu_radio.c</file>
+      <file>$PROJ_DIR$\..\drivers\i2c.c</file>
+      <file>$PROJ_DIR$\..\drivers\large_range_accel.c</file>
+      <file>$PROJ_DIR$\..\drivers\leds.c</file>
+      <file>$PROJ_DIR$\..\drivers\magnetometer.c</file>
+      <file>$PROJ_DIR$\..\drivers\radio.c</file>
+      <file>$PROJ_DIR$\..\drivers\scheduler.c</file>
+      <file>$PROJ_DIR$\..\drivers\sensitive_accel_temperature.c</file>
+      <file>$PROJ_DIR$\..\drivers\spi.c</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\idmanager.c</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\openqueue.c</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\openserial.c</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\packetfunctions.c</file>
+      <file>$PROJ_DIR$\..\openwsn\openwsn.c</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\openserial.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\test_imu_radio.r43</file>
+      <file>$PROJ_DIR$\..\openwsn\03b-IPv6\forwarding.h</file>
+      <file>$TOOLKIT_DIR$\config\multiplier.xcl</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\idmanager.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\i2c.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\leds.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\openwsn.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\large_range_accel.h</file>
+      <file>$TOOLKIT_DIR$\inc\msp430x26x.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\radio.pbi</file>
+      <file>$PROJ_DIR$\Debug\Exe\test_imu_radio.d43</file>
+      <file>$PROJ_DIR$\Debug\Obj\gyro.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\sensitive_accel_temperature.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\leds.r43</file>
+      <file>$PROJ_DIR$\Debug\Obj\gina.r43</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\openqueue.h</file>
+      <file>$PROJ_DIR$\..\openwsn\03b-IPv6\icmpv6.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\radio.r43</file>
+      <file>$PROJ_DIR$\..\openwsn\02b-RES\neighbors.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+      <file>$PROJ_DIR$\..\openwsn\03a-IPHC\iphc.h</file>
+      <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
+      <file>$PROJ_DIR$\..\openwsn\02a-MAC\IEEE802154.h</file>
+      <file>$PROJ_DIR$\..\drivers\spi.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\gina.pbi</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\packetfunctions.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\magnetometer.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sensitive_accel_temperature.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\idmanager.r43</file>
+      <file>$PROJ_DIR$\test_openwsn.c</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 81 51</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\test_imu_radio.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 95 82 75 14 13 17 97 43 37 77 6 80 34 98 38 10</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\gyro.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 82</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 2</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 4 48</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 4 48</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\gina.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 95</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 85</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 44 9 76</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 44 9 79 18 26 24 12 36 8 0 73 45 90 29 92 76</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\test_imu_radio.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 10</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 70</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 44 9 76 4 48 78 41 83 27 1 19 94 96 86 93</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 44 9 79 18 26 24 12 36 8 0 73 45 90 29 92 76 4 48 78 41 83 27 1 19 94 96 86 93</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\i2c.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 75</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 39</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 48</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 79 18 26 48 24 12 36 8 0 73 45 90</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\large_range_accel.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 13</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 22</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 78 48</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 78 48</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\leds.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 17</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 84</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 76</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 76 79 18 26 24 12 36 8 0 73 45 90</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\magnetometer.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 97</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 46</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 41 48</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 41 48</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\radio.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 80</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 88</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 3 1 19 94 9 96 86 93 11</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 3 1 79 18 26 19 94 9 24 12 36 8 0 73 45 90 29 92 96 86 93 11</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\scheduler.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 34</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 40</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 27 1 19 94 9 42 48 69</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 27 79 18 26 24 12 36 8 0 73 45 90 1 19 94 9 29 92 42 48 69</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\sensitive_accel_temperature.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 98</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 50</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 83</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 83</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\spi.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 38</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 15</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 94 9 1 19 96</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 79 18 26 94 9 24 12 36 8 0 73 45 90 29 92 1 19 96</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\cross-layers\idmanager.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 14</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 99</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 74 96 69 89</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 74 96 69 89</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\cross-layers\openqueue.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 43</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 21</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 86 93 69</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 86 93 69</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\cross-layers\openserial.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 37</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 47</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 69 11 89 49 91 71 87 20 33 52 74 86 93 23 30 16 31 25</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 69 11 89 49 91 71 87 20 33 52 74 86 93 23 30 16 31 25</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\cross-layers\packetfunctions.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 6</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 96 9 69 74</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 96 9 79 18 26 24 12 36 8 0 73 45 90 29 92 69 74</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\openwsn.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 77</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 5</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 9 27 1 19 94</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 9 79 18 26 24 12 36 8 0 73 45 90 29 92 27 1 19 94</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\test_imu_radio.d43</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 51</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 35 72 85 2 39 99 22 84 46 21 47 5 7 88 40 50 15 70 28</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs>
+      <file>$PROJ_DIR$\..\drivers\radio.h</file>
+      <file>$PROJ_DIR$\..\drivers\gina_config.h</file>
+      <file>$PROJ_DIR$\..\drivers\gyro.h</file>
+      <file>$PROJ_DIR$\..\openwsn\openwsn.h</file>
+      <file>$TOOLKIT_DIR$\inc\in430.h</file>
+      <file>$PROJ_DIR$\..\drivers\atmel.h</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$PROJ_DIR$\..\drivers\scheduler.h</file>
+      <file>$PROJ_DIR$\..\drivers\magnetometer.h</file>
+      <file>$PROJ_DIR$\..\drivers\timers.h</file>
+      <file>$PROJ_DIR$\..\drivers\gina.h</file>
+      <file>$PROJ_DIR$\Release\Obj\radio.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\i2c.h</file>
+      <file>$PROJ_DIR$\Release\Obj\gina.pbi</file>
+      <file>$PROJ_DIR$\Release\Exe\test_imu_radio.txt</file>
+      <file>$PROJ_DIR$\Release\Obj\openqueue.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\leds.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\spi.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\scheduler.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\magnetometer.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\sensitive_accel_temperature.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\test_imu_radio.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\gyro.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\packetfunctions.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\test_imu_radio.pbd</file>
+      <file>$PROJ_DIR$\Release\Obj\large_range_accel.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\openwsn.pbi</file>
+      <file>$PROJ_DIR$\Release\Obj\i2c.pbi</file>
+      <file>$PROJ_DIR$\..\drivers\gyro.c</file>
+      <file>$PROJ_DIR$\..\drivers\gina.c</file>
+      <file>$PROJ_DIR$\test_imu_radio.c</file>
+      <file>$PROJ_DIR$\..\drivers\i2c.c</file>
+      <file>$PROJ_DIR$\..\drivers\large_range_accel.c</file>
+      <file>$PROJ_DIR$\..\drivers\leds.c</file>
+      <file>$PROJ_DIR$\..\drivers\magnetometer.c</file>
+      <file>$PROJ_DIR$\..\drivers\radio.c</file>
+      <file>$PROJ_DIR$\..\drivers\scheduler.c</file>
+      <file>$PROJ_DIR$\..\drivers\sensitive_accel_temperature.c</file>
+      <file>$PROJ_DIR$\..\drivers\spi.c</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\openqueue.c</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\packetfunctions.c</file>
+      <file>$PROJ_DIR$\..\openwsn\openwsn.c</file>
+      <file>$PROJ_DIR$\..\drivers\leds.h</file>
+      <file>$PROJ_DIR$\..\drivers\large_range_accel.h</file>
+      <file>$TOOLKIT_DIR$\inc\msp430x26x.h</file>
+      <file>$PROJ_DIR$\..\drivers\sensitive_accel_temperature.h</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\openqueue.h</file>
+      <file>$PROJ_DIR$\..\drivers\spi.h</file>
+      <file>$PROJ_DIR$\..\openwsn\cross-layers\packetfunctions.h</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 14</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Release\Obj\test_imu_radio.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 13 22 27 25 16 19 15 26 23 11 18 20 17 21</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\gyro.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 22</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 2 12</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 2 44 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\gina.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 13</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 10</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 10</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\test_imu_radio.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 21</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\i2c.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 27</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 44 4 6 12</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\large_range_accel.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 25</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 43 12</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 43 44 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\leds.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 16</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 42</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 42 44 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\magnetometer.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 19</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 8 12</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 8 44 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\radio.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 11</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 1 0 5 47</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 1 0 44 4 6 5 47</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\scheduler.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 18</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 7 0 5 47 9</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 7 44 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\sensitive_accel_temperature.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 20</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 45</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 45 44 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\spi.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 17</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 47 0 5</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 44 4 6 47</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\cross-layers\openqueue.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 15</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 46</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 46</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\cross-layers\packetfunctions.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 23</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 48</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 48</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\openwsn\openwsn.c</name>
+      <outputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 26</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>BICOMP</name>
+          <file> 3</file>
+        </tool>
+        <tool>
+          <name>ICC430</name>
+          <file> 3 44 4 6</file>
+        </tool>
+      </inputs>
+    </file>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+
