@@ -28,7 +28,7 @@ enum {
    HOPPING_ENABLED = FALSE,
    LENGTHCELLFRAME = 10,
    MAXNUMNEIGHBORS = 10,
-   DEFAULTCHANNEL  = 26,
+   DEFAULTCHANNEL  = 15,
    //delays
    DELAY_LOSING_NEIGHBOR_32KHZ     = 327680,  //32kHz ticks = 10s (32768 ticks = 1s)
    DELAY_LOSING_NEIGHBOR_1KHZ      =  10240,  // 1kHz ticks = 10s ( 1024 ticks = 1s)

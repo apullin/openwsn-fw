@@ -33,6 +33,7 @@
 //drivers
 #include "leds.h"
 #include "gyro.h"
+#include "timers.h"
 #include "large_range_accel.h"
 #include "magnetometer.h"
 #include "sensitive_accel_temperature.h"
@@ -45,6 +46,7 @@
 
 OpenQueueEntry_t* testImuRadiopacketToSend;
 uint8_t counter;
+void task_application_imu_radio(uint16_t input);
 
 void main(void) {
    //configuring
@@ -63,6 +65,7 @@ void main(void) {
    }
    
    radio_init();
+   timer_init();
    
    P1OUT &= ~0x04;                               // clear P1.2 for debug
    
@@ -72,12 +75,14 @@ void main(void) {
    magnetometer_get_config();
    sensitive_accel_temperature_get_config();
 
-   scheduler_push_task(ID_TASK_APPLICATION);
+   //scheduler_push_task(ID_TASK_APPLICATION);
+   
+   scheduler_register_application_task(&task_application_imu_radio, 0, FALSE);
 
    scheduler_start();
 }
 
-void task_application() {
+void task_application_imu_radio(uint16_t input) {
    counter++;
    P1OUT ^= 0x02;                                // toggle P1.1 for debug
    P4OUT ^= 0x20;                                // toggle P4.5 for debug
