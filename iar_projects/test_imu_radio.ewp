@@ -163,6 +163,7 @@
           <state>ISR_ADC</state>
           <state>ISR_I2C</state>
           <state>ISR_RADIO</state>
+          <state>ISR_TIMERS</state>
           <state>TASK_APPLICATION</state>
         </option>
         <option>
@@ -1813,6 +1814,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\drivers\spi.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\timers.c</name>
     </file>
   </group>
   <group>
