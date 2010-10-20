@@ -100,7 +100,6 @@ void timer_stop(uint8_t timer_id) {
          TBCCR6   = 0;
          TBCCTL6 &= ~CCIE;
          break;
-         
 #ifdef TIMER_A_ENABLED
       case 10:
          TACCR0   = 0;
