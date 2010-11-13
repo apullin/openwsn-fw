@@ -23,10 +23,10 @@ bool magnetometer_configured = FALSE;
 //===================================== public ================================
 
 void magnetometer_init() {
-   i2c_write_register(MAGNETOMETER_I2C_ADDR,
+   i2c_write_register(1,MAGNETOMETER_I2C_ADDR,
          MAGNETOMETER_REG_CONF_A_ADDR,
          MAGNETOMETER_REG_CONF_A_SETTING);
-   i2c_write_register(MAGNETOMETER_I2C_ADDR,
+   i2c_write_register(1,MAGNETOMETER_I2C_ADDR,
          MAGNETOMETER_REG_CONF_B_ADDR,
          MAGNETOMETER_REG_CONF_B_SETTING);
    magnetometer_enable();
@@ -34,33 +34,33 @@ void magnetometer_init() {
 }
 
 void magnetometer_enable() {
-   i2c_write_register(MAGNETOMETER_I2C_ADDR,
+   i2c_write_register(1,MAGNETOMETER_I2C_ADDR,
          MAGNETOMETER_REG_MODE_ADDR,
          MAGNETOMETER_REG_MODE_WAKEUP);
 }
 
 void magnetometer_disable() {
-   i2c_write_register(MAGNETOMETER_I2C_ADDR,
+   i2c_write_register(1,MAGNETOMETER_I2C_ADDR,
                       MAGNETOMETER_REG_MODE_ADDR,
                       MAGNETOMETER_REG_MODE_SLEEP);
 }
 
 void magnetometer_get_config() {
    if (magnetometer_configured==TRUE) {
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_CONF_A_ADDR  ,1,&reg_CONF_A);
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_CONF_B_ADDR  ,1,&reg_CONF_B);
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_MODE_ADDR    ,1,&reg_MODE);
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_STATUS_ADDR  ,1,&reg_STATUS);
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_ID_A_ADDR    ,1,&reg_ID_A);
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_ID_B_ADDR    ,1,&reg_ID_B);
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_ID_C_ADDR    ,1,&reg_ID_C);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_CONF_A_ADDR  ,1,&reg_CONF_A);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_CONF_B_ADDR  ,1,&reg_CONF_B);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_MODE_ADDR    ,1,&reg_MODE);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_STATUS_ADDR  ,1,&reg_STATUS);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_ID_A_ADDR    ,1,&reg_ID_A);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_ID_B_ADDR    ,1,&reg_ID_B);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_ID_C_ADDR    ,1,&reg_ID_C);
    }
 }
 
 void magnetometer_get_measurement(uint8_t* spaceToWrite) {
    uint8_t i;
    if (magnetometer_configured==TRUE) {
-      i2c_read_registers(MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_DATA_X_H_ADDR,6,spaceToWrite);
+      i2c_read_registers(1,MAGNETOMETER_I2C_ADDR,MAGNETOMETER_REG_DATA_X_H_ADDR,6,spaceToWrite);
    } else {
       for (i=0;i<6;i++) {
          spaceToWrite[i] = 0;

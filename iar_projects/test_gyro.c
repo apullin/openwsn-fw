@@ -50,6 +50,7 @@ void main(void)
 
    //configuring the gyro
    if (*(&eui64+3)==0x09) {                      // this is a GINA board (not a basestation)
+      i2c_init():
       gyro_init();
    }
 

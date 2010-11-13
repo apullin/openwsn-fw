@@ -53,6 +53,7 @@ void main(void)
    //configuring the large scale accelerometer
    //configuring the gyro
    if (*(&eui64+3)==0x09) {                      // this is a GINA board (not a basestation)
+      i2c_init();
       large_range_accel_init();
    }
 

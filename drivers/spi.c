@@ -17,6 +17,26 @@ uint8_t* spi_rx_buffer;
 uint8_t  num_bytes;
 uint8_t  spi_busy;
 
+struct {
+   volatile unsigned char* ctl0[2];
+   volatile unsigned char* ctl1[2];
+   volatile unsigned char* br0[2];
+   volatile unsigned char* br1[2];
+   volatile unsigned char* ie[2];
+   volatile unsigned char* txbuf[2];
+   volatile unsigned char* rxbuf[2];
+} spi_control;
+
+/*
+ * CTL0
+ * CTL1
+ * BR0
+ * BR1
+ * P4PINS
+ * IE2
+ * TXBUF
+ * RXBUF
+ */
 //=========================== prototypes ==========================================
 
 void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive);

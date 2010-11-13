@@ -288,7 +288,7 @@ __interrupt void USCIAB1TX_ISR(void) {
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1TXIFG) && (UC1IE & UCB1TXIE)) ||
         ((UC1IFG & UCB1RXIFG) && (UC1IE & UCB1RXIE)) ) {
-      i2c_txInterrupt();                         // implemented in I2C driver
+      i2c_txInterrupt(1);                         // implemented in I2C driver
    }
 #endif
 #ifdef ISR_SERIAL
@@ -303,7 +303,7 @@ __interrupt void USCIAB1RX_ISR(void) {
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1RXIFG) && (UC1IE & UCB1RXIE)) ||
          (UCB1STAT & UCNACKIFG) ) {
-      i2c_rxInterrupt();                         // implemented in I2C driver
+      i2c_rxInterrupt(1);                         // implemented in I2C driver
    }
 #endif
 #ifdef ISR_SERIAL
@@ -318,6 +318,12 @@ __interrupt void USCIAB0RX_ISR (void) {
 #ifdef ISR_RADIO
    if ( (IFG2 & UCA0RXIFG) && (IE2 & UCA0RXIE) ){
       spi_rxInterrupt();                         // implemented in SPI driver
+   }
+#endif
+#ifdef ISR_I2C
+   if ( ((IFG2 & UCB0RXIFG) && (IE2 & UCB0RXIE)) ||
+         (UCB0STAT & UCNACKIFG) ) {
+      i2c_rxInterrupt(0);                         // implemented in I2C driver
    }
 #endif
 }
