@@ -53,6 +53,7 @@ void main(void)
 
    //configuring the sensors
    if (*(&eui64+3)==0x09) {                      // this is a GINA board (not a basestation)
+      i2c_init();
       gyro_init();
       large_range_accel_init();
       magnetometer_init();

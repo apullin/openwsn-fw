@@ -19,16 +19,16 @@
 #define SDA_PIN             0x02                 // msp430x261x UCB1SDA pin
 #define SCL_PIN             0x04                 // msp430x261x UCB1SCL pin
 
-void i2c_read_registers(uint8_t slave_addr,
+void i2c_read_registers(uint8_t bus_num,uint8_t slave_addr,
                              uint8_t reg_addr,
                              uint8_t numBytes,
                              uint8_t* spaceToWrite);
-void i2c_write_register(uint8_t slave_addr,
+void i2c_write_register(uint8_t bus_num,uint8_t slave_addr,
                              uint8_t reg_addr,
                              uint8_t reg_setting);
-unsigned char i2c_slave_present(unsigned char slave_address);
+unsigned char i2c_slave_present(int bus_num,unsigned char slave_address);
 // interrupt ISR handlers
-void i2c_txInterrupt();
-void i2c_rxInterrupt();
-
+void i2c_txInterrupt(int bus_num);
+void i2c_rxInterrupt(int bus_num);
+void i2c_init();
 #endif

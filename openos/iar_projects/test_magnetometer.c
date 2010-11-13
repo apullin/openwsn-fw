@@ -50,7 +50,8 @@ void main(void)
 
    //configuring the magnetometer
    if (*(&eui64+3)==0x09) {                      // this is a GINA board (not a basestation)
-      magnetometer_init();
+     i2c_init(): 
+     magnetometer_init();
    }
 
    //check configuration is right (break and use Watch window)
