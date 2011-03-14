@@ -183,7 +183,7 @@ implementation {
 
    task void taskReceiveDone() {
       uint8_t* buf = (uint8_t*)receptionBuffer->payload;
-      uint8_t length = buf[0]+1;
+      uint8_t length = buf[0];
       OpenQueueEntry_t* new_receptionBuffer;
       //copy in Rx details from packet body
       receptionBuffer->l1_crc  = buf[length-1] >> 7;
