@@ -1,0 +1,55 @@
+Changlog OpenOS TSCH
+
+radio.c 
+	-Added functions
+		- error_t radio_prepare_send(OpenQueueEntry_t* packet)
+		- error_t radio_send_now()
+
+supidmac.c
+	-removed file
+	-also replaced all occurences of "stupidmac.h" with "IEEE802154E.h"
+
+openserial.c
+	-replaced call to supidmac_debugPrint() with mac_debugPrint()
+
+openwsn.c
+	-replaced call to stupidmac_init() with mac_init()
+
+radio.c
+	-replaced call to stupidmac_sendDone() with mac_sendDone()
+
+
+nores.c
+	-replaced call to stupidmac_send() with mac_send()
+
+scheduler.c
+	-retianed all timers
+		- ID_ISR_MAC_BACKOFF - calls timer_mac_backoff_fired(); for fast timer
+                - ID_ISR_MAC_WATCHDOG calls timer_mac_watchdog_fired(); for watchdog timer portion
+                - ID_ISR_MAC_PERIODIC calls timer_mac_periodic_fired();for slot timer
+
+
+IEEE802154E.c
+	-brand new file, with a lot of stuff ported from tinyOS
+	-radio_prepare_send_done() implemented, but not called in phy later, need to schedule?	
+		-same with radioControl_receivedNothing(), and radio_send_now_done(), and postTaskSendDone()
+
+	-mac_sendDone calls postTaskSendDone(), which calls sendDone()? why is thi structured in this way?
+	-taskReceive() for what?
+	-taskResetLosingLostTimers(), how to implement?
+	-softwareInit_init() implemented, but not called...necessary?
+	-losingSyncTimer_fired() implemented, but calls globalSync()...needed?
+		-same for losingSyncTimer_fired(), LostSyncTimer_fired(), globalSync_getIsSync(), 
+	-fastAlarm_getNow(), what do we return?
+		-same for slotAlarm_getNow()
+	-timer_mac_watchdog_fired() does nothing...but probably should
+	0implemented cellUsage stuff, but super-hardcoded
+
+        -need to add radio_packet_recieved()
+        -timer_mac_backoff_fired();
+        -timer_mac_backoff_fired();
+	-dmac_debugPrint(), huh?
+
+IEEE802154E.h
+	-appended TSCH defs to bottom of old IEEE802154E.h file
+

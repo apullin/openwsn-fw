@@ -31,4 +31,8 @@ void    isr_radio();
 void    radio_packet_received(OpenQueueEntry_t* packetReceived); // called when a packet is completely received
 void    radio_rfOff();                           // switch radio off
 
+//bk april 2011
+error_t radio_prepare_send(OpenQueueEntry_t* packet);
+error_t radio_send_now();
+
 #endif

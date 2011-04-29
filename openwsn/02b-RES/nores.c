@@ -13,7 +13,7 @@
 #include "IEEE802154E.h"
 #include "openqueue.h"
 #include "neighbors.h"
-#include "stupidmac.h"
+#include "IEEE802154E.h"
 #include "iphc.h"
 #include "packetfunctions.h"
 
@@ -31,7 +31,7 @@ void nores_init() {
 error_t nores_send(OpenQueueEntry_t *msg) {
    msg->owner = COMPONENT_RES;
    msg->l2_frameType = IEEE154_TYPE_DATA;
-   return stupidmac_send(msg);
+   return mac_send(msg);
 }
 
 //===================================== public with lower =====================

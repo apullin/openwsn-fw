@@ -15,7 +15,7 @@
 #include "scheduler.h"
 #include "packetfunctions.h"
 #include "openqueue.h"
-#include "stupidmac.h"
+#include "IEEE802154E.h"
 #include "idmanager.h"
 #include "openserial.h"
 
