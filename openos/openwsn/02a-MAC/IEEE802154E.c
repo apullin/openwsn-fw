@@ -55,6 +55,7 @@
    void taskReceive(); //task
    void postTaskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDoneError);
    void taskSendDone(); //task
+
    
    //the following are prototypes for cellUsage -- which needs to be moved to a separate library
    uint8_t cellUsageGet_getType(uint16_t slotNum);
@@ -118,8 +119,17 @@ void slot_alarm_fired(){
       ieee802154_header_iht   transmitted_ieee154_header;
       uint8_t                 temp_channelOffset;
 
-      fastAlarmStartSlotTimestamp     = fastAlarm_getNow();
-      slotAlarmStartSlotTimestamp     = slotAlarm_getNow();
+      
+      /*This is an exmaple for a 10ms timeslot
+      After the slot fires, we also start a backoff timer
+      if we are a transmitter, we haev already loaded a packet into the radio buffer, and we simply tranmitt when the timer fires (say 2ms)
+      as a receiver, we want to extend the timer (by 1ms, for exmaple) so we can listen to an incoming packet,
+      which will hopefully have been sent at 2ms
+      */
+      timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);
+      //fastAlarmStartSlotTimestamp     = fastAlarm_getNow();
+      //slotAlarmStartSlotTimestamp     = slotAlarm_getNow();
+      
       asn++;
 
       openserial_stop();
@@ -200,7 +210,7 @@ void slot_alarm_fired(){
                         (errorparameter_t)temp_asn%LENGTHCELLFRAME,(errorparameter_t)0);
                   endSlot();
                };
-               fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsTxOffset);//watchdog timer
+               //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsTxOffset);//watchdog timer
             } else {
                if (cellUsageGet_isRX(temp_asn%LENGTHCELLFRAME)) {        //start the RX sequence
                   change_state(S_RX_RXDATAPREPARE);
@@ -211,7 +221,12 @@ void slot_alarm_fired(){
                            (errorparameter_t)temp_asn%LENGTHCELLFRAME,(errorparameter_t)0);
                      endSlot();
                   };*/
-                  fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
+                  
+                  //add one milisecond to extend wait period for incoming packet
+                  TBCCR1   = TBCCR1+21;   //add one extra ms to wait for incominf packet
+                  TBCCTL1  = CCIE;        //enable interup
+                  
+                  //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
                } else {                                                        //nothing to do, abort
                   openserial_startOutput();
                   endSlot();
@@ -239,7 +254,7 @@ void slot_alarm_fired(){
   
 }
 
-void radio_prepare_send_done(error_t error){//poipoi implememnt in phys layer
+void radio_prepare_send_done(){//poipoi implememnt in phys layer
       asn_t   temp_asn;
       uint8_t temp_state;
       
@@ -248,30 +263,12 @@ void radio_prepare_send_done(error_t error){//poipoi implememnt in phys layer
       
       switch (temp_state) {
          case S_TX_TXDATAPREPARE:
-            if (error==E_SUCCESS) {
-               change_state(S_TX_TXDATAREADY);
-            } else {
-               
-               dataFrameToSend->l2_retriesLeft--;
-               if (dataFrameToSend->l2_retriesLeft==0) {
-                   postTaskSendDone(dataFrameToSend,FAIL);
-               }
-               
-               openserial_printError(COMPONENT_MAC,ERR_PREPARESENDDONE_FAILED,
-                     (errorparameter_t)error,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
-               endSlot();
-            }
-            
+ 
             break;
          case S_RX_TXACKPREPARE:
-            if (error==E_SUCCESS) {
+
                change_state(S_RX_TXACKREADY);
-            } else {
-               //abort
-              openserial_printError(COMPONENT_MAC,ERR_PREPARESENDDONE_FAILED,
-                     (errorparameter_t)error,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
-               endSlot();
-            }
+
             break;
          default:
             openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_PREPARESENDDONE,
@@ -728,26 +725,19 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
 
  void taskReceive() {
       //asn_t              temp_asn;
-      //OpenQueueEntry_t*  temp_frameReceived;
+      OpenQueueEntry_t*  temp_frameReceived;
       //temp_asn = asn;
-      //temp_frameReceived = frameReceived;
+      temp_frameReceived = frameReceived;
 
-      //zhen I receive in first slot, I retransmit in second (for video transmission only)
-      /* switch (temp_asn%LENGTHCELLFRAME){
-         case 1:
-            temp_frameReceived->l2_transmitInFirstSlot = FALSE;
-            break;
-         case 2:
-            temp_frameReceived->l2_transmitInFirstSlot = TRUE;
-            break;
-         default:
-            break;
-      }*/
+      
+      if (temp_frameReceived->length>0) {
+      //packet contains payload destined to an upper layer
+          nores_receive(temp_frameReceived);
+      } else {
+        openqueue_freePacketBuffer(temp_frameReceived);
+      }
+      temp_frameReceived = NULL;
      
-      //implement this ..... poipoi
-      //cellStats_indicateUse(temp_asn%LENGTHCELLFRAME,FALSE);
-      //neighborStats_indicateRx(&(temp_frameReceived->l2_nextORpreviousHop),temp_frameReceived->l1_rssi);
-      openReceiveToUpper_receive(temp_frameReceived);
  }
 
    /*------------------------------ resynchronization ---------------------------------*/
