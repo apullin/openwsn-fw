@@ -148,7 +148,9 @@ error_t radio_prepare_send(OpenQueueEntry_t* packet) {
    radio_state = RADIO_STATE_TRANSMITTING;
    spi_write_register(RG_TRX_STATE, CMD_PLL_ON);
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON); //busy wait until radio status is PLL_ON
-   //radio_prepare_send_done();
+   
+   radio_prepare_send_done();//calls mac
+   
    return E_SUCCESS;
 }
 

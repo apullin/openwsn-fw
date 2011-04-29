@@ -90,9 +90,9 @@ enum {
 
 //timer wait times (in 1/32768 seconds)
 enum {
-   PERIODICTIMERPERIOD   =    982, // 30ms
-   MINBACKOFF            =    130, // 6 ms
-   ACK_WAIT_TIME         =    327, // 10ms
+   PERIODICTIMERPERIOD   =    326,// 982/3, // 30ms/3
+   MINBACKOFF            =    43,// 130/3, // 6 ms/3
+   ACK_WAIT_TIME         =    109,// 327/3, // 10ms/3
 };
 
 
@@ -101,6 +101,7 @@ error_t mac_send(OpenQueueEntry_t* msg);
 void    mac_sendDone(OpenQueueEntry_t* pkt, error_t error);
 void radio_packet_received(OpenQueueEntry_t* msg);
 bool    mac_debugPrint();
+void radio_prepare_send_done();
 
 
 #endif
