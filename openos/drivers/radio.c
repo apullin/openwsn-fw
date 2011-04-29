@@ -2,7 +2,7 @@
 #include "radio.h"
 #include "packetfunctions.h"
 #include "openqueue.h"
-#include "stupidmac.h"
+#include "IEEE802154E.h"
 
 //===================================== variables =============================
 
@@ -112,6 +112,54 @@ error_t radio_send(OpenQueueEntry_t* packet) {
    return E_SUCCESS;
 }
 
+//============================branko kerkez march 30 2011===========
+//============separate send function to load buffer and send later
+error_t radio_prepare_send(OpenQueueEntry_t* packet) {
+   if (radioPacketToSend!=NULL) {
+      return E_FAIL;
+   }
+   radioPacketToSend = packet;
+   //radioPacketToSend->owner = COMPONENT_RADIODRIVER; don't do for resend
+   //set channel
+   radio_state = RADIO_STATE_SETTING_CHANNEL;
+   if (packet->l1_channel < 11 || packet->l1_channel > 26){
+      packet->l1_channel = 26;
+   }
+   spi_write_register(RG_PHY_CC_CCA,0x20+packet->l1_channel);
+   //add 1B length
+   packetfunctions_reserveHeaderSize(packet,1);
+   packet->payload[0] = packet->length-1;   // length (not counting length field)
+#ifdef HYBRID_ARQ
+   //calculate CRC
+   packetfunctions_calculateCRC(packet);
+   temp_byte_corruption_index = (temp_byte_corruption_index+1)%5;
+   if (temp_byte_corruption_index==1 || temp_byte_corruption_index==3){
+      *(packet->payload+temp_byte_corruption_index)=0xff;
+   }
+#endif
+   //add 1B SPI address
+   packetfunctions_reserveHeaderSize(packet,1);
+   packet->payload[0] = 0x60;
+   //load packet in TXFIFO
+   radio_state = RADIO_STATE_LOADING_PACKET;
+   spi_write_buffer(radioPacketToSend);
+   radio_state = RADIO_STATE_READY_TX;
+   //turn on radio's PLL
+   radio_state = RADIO_STATE_TRANSMITTING;
+   spi_write_register(RG_TRX_STATE, CMD_PLL_ON);
+   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON); //busy wait until radio status is PLL_ON
+   //radio_prepare_send_done();
+   return E_SUCCESS;
+}
+
+error_t radio_send_now(){
+   //send packet
+   P4OUT |=  0x80;
+   P4OUT &= ~0x80;
+   //radio_send_now_done();
+   return E_SUCCESS;
+}
+
 //=========================== receiving a packet ==============================
 
 void radio_rxOn(uint8_t channel) {
@@ -130,11 +178,6 @@ void radio_rxOn(uint8_t channel) {
 }
 
 void isr_radio() {
-#ifdef HYBRID_ARQ
-   uint8_t i,j,k,distance;
-   uint8_t diff_positions[2];  // indicates the location of the two flipped bytes
-   uint8_t options[2][2];      // [position][options]
-#endif
    uint8_t temp_reg_value;
    OpenQueueEntry_t* radioPacketReceived_new;
    spi_read_register(RG_IRQ_STATUS);          // reading IRQ_STATUS causes IRQ_RF (P1.6) to go low
@@ -156,51 +199,7 @@ void isr_radio() {
             radioPacketReceived->payload += 2;
             // read 1B "footer" (LQI) and store that information
             radioPacketReceived->l1_lqi = radioPacketReceived->payload[radioPacketReceived->length];
-#ifdef HYBRID_ARQ
-            if (radioPacketReceived->l1_crc==0) {
-               //compare received packet with each packet in radio_corrupted_packet_buffer
-               //until find one with exactly 2 differences
-               i=0;
-               j=0;
-               while (i<RADIO_CORRUPTED_PACKET_BUFFER_LENGTH) {
-                  distance = 0;
-                  if (radio_corrupted_packet_buffer[i][0]==radioPacketReceived->length){
-                     for (j=0;j<radioPacketReceived->length;j++) {
-                        if (radio_corrupted_packet_buffer[i][j+1]!=*(radioPacketReceived->payload+j)){
-                           diff_positions[distance]=j;
-                           options[distance][0]=radio_corrupted_packet_buffer[i][j+1];
-                           options[distance][1]=*(radioPacketReceived->payload+j);
-                           distance++;
-                        }
-                     }
-                     if (distance==2){
-                        break;
-                     }
-                  }
-                  i++;
-               }
-               if (i<RADIO_CORRUPTED_PACKET_BUFFER_LENGTH) {
-                  //for all four combinations, create a new packet, check CRC
-                  for (j=0;j<2;j++) {
-                     *(radioPacketReceived->payload+diff_positions[0])=options[0][j];
-                     for (k=0;k<2;k++) {
-                        *(radioPacketReceived->payload+diff_positions[1])=options[1][k];
-                        if (packetfunctions_checkCRC(radioPacketReceived)==TRUE) {
-                           radioPacketReceived->l1_crc=1;
-                        }
-                     }
-                  }
-               }
-               if (radioPacketReceived->l1_crc==0) {
-                  //store corrupted packet in radio_corrupted_packet_buffer
-                  radio_corrupted_packet_buffer[radio_corrupted_packet_counter][0] = radioPacketReceived->length;
-                  memcpy(&radio_corrupted_packet_buffer[radio_corrupted_packet_counter][1],
-                        radioPacketReceived->payload,
-                        radioPacketReceived->length);
-                  radio_corrupted_packet_counter = (radio_corrupted_packet_counter+1)%RADIO_CORRUPTED_PACKET_BUFFER_LENGTH;
-               }
-            }
-#endif
+
             if (radioPacketReceived->l1_crc==1) {
                // get a new space for receiving packet
                radioPacketReceived_new =  openqueue_getFreePacketBuffer();
@@ -230,7 +229,7 @@ void isr_radio() {
          //remove 1B length field
          packetfunctions_tossHeader(radioPacketToSend,1);
          //signal sendDone to upper layer
-         stupidmac_sendDone(radioPacketToSend,E_SUCCESS);
+         mac_sendDone(radioPacketToSend,E_SUCCESS);
          radioPacketToSend = NULL;
          //return to default state
          if (default_radio_state==RADIO_STATE_READY_RX) {

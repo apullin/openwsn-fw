@@ -40,7 +40,7 @@
 #include "nores.h"
 #include "neighbors.h"
 //l2a
-#include "stupidmac.h"
+#include "IEEE802154E.h"
 //l1
 #include "radio.h"
 //cross-layer
@@ -70,7 +70,7 @@ void openwsn_init() {
    openqueue_init();
    radio_init();
    openserial_init();
-   stupidmac_init();
+   mac_init();
    neighbors_init();
    nores_init();
    forwarding_init();
