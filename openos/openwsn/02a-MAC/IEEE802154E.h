@@ -92,6 +92,7 @@ enum {
 enum {
    PERIODICTIMERPERIOD   =    326,// 982/3, // 30ms/3
    MINBACKOFF            =    43,// 130/3, // 6 ms/3
+   GUARDTIME             =    21,//1 ms
    ACK_WAIT_TIME         =    109,// 327/3, // 10ms/3
 };
 
