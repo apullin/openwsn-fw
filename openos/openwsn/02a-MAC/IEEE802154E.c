@@ -155,7 +155,9 @@ void slot_alarm_fired(){
          P4OUT ^= DEBUG_PIN_2;
 
       openserial_stop();
-   
+      
+      timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot 
+      
       //reset WDT
       //atomic WDTCTL = WDTPW + WDTCNTCL + WDTSSEL; poipoi
 
@@ -976,7 +978,7 @@ uint8_t cellUsageGet_isTX(uint16_t slotNum){
 }
 
 
-
+///*(&eui64+7) gives you the last byte of the address of a gina
 uint8_t cellUsageGet_isRX(uint16_t slotNum){
   if(slotNum == 0){
     return 0;
