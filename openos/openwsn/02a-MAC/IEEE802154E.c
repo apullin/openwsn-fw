@@ -18,7 +18,9 @@
 #include "neighbors.h"
 #include "nores.h"
 
-
+#define DEBUG_PIN_1 0x02
+#define DEBUG_PIN_2 0x04
+#define DEBUG_PIN_3 0x08
 
 //===================================== variables =============================
 
@@ -69,6 +71,17 @@
 
 
 void mac_init(){
+    
+    //set debug pins as outputs
+    P1DIR |= DEBUG_PIN_1; //P1.1 0x02
+    P1DIR |= DEBUG_PIN_2; //P1.2 0x04
+    P1DIR |= DEBUG_PIN_3; //P1.3 0x08
+    
+    //initilize debug pins to 0
+    P1OUT &= ~DEBUG_PIN_1;
+    P1OUT &= ~DEBUG_PIN_2;
+    P1OUT &= ~DEBUG_PIN_3;
+
     isSync = 0; 
     change_state(S_SYNCHRONIZING);
     dataFrameToSend = NULL;
@@ -109,6 +122,10 @@ void timer_mac_periodic_fired() {
 
 void slot_alarm_fired(){
   
+  
+
+      
+  
       asn_t                   temp_asn;
       uint8_t                 temp_state;
       bool                    temp_isSync;
@@ -131,6 +148,13 @@ void slot_alarm_fired(){
       //slotAlarmStartSlotTimestamp     = slotAlarm_getNow();
       
       asn++;
+      
+      //flip slot debug pin
+      P1OUT ^= DEBUG_PIN_1;
+      
+      //flip frame debug pin
+      if(asn%LENGTHCELLFRAME)
+         P1OUT ^= DEBUG_PIN_2;
 
       openserial_stop();
    
@@ -330,6 +354,9 @@ void fast_alarm_fired() {
       temp_state           = state;
       temp_dataFrameToSend = dataFrameToSend;
 
+      //flip timer debug pin
+      P1OUT ^= DEBUG_PIN_3;
+      
       switch (temp_state) {
          /*------------------- TX sequence ------------------------*/
          case S_TX_TXDATAPREPARE:                                    //[timer fired] transmitter (ERROR state)
