@@ -122,10 +122,7 @@ void timer_mac_periodic_fired() {
 
 void slot_alarm_fired(){
   
-  
 
-      
-  
       asn_t                   temp_asn;
       uint8_t                 temp_state;
       bool                    temp_isSync;
@@ -143,7 +140,7 @@ void slot_alarm_fired(){
       as a receiver, we want to extend the timer (by 1ms, for exmaple) so we can listen to an incoming packet,
       which will hopefully have been sent at 2ms
       */
-      timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);
+      //timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);
       //fastAlarmStartSlotTimestamp     = fastAlarm_getNow();
       //slotAlarmStartSlotTimestamp     = slotAlarm_getNow();
       
@@ -151,7 +148,7 @@ void slot_alarm_fired(){
       
       //flip slot debug pin
       P1OUT ^= DEBUG_PIN_1;
-
+      P4OUT ^= DEBUG_PIN_3; //txrx debug
       
       //flip frame debug pin
       if(asn%LENGTHCELLFRAME == 0)
@@ -248,7 +245,7 @@ void slot_alarm_fired(){
                   };*/
                   
                   //add one milisecond to extend wait period for incoming packet
-                  TBCCR1   = TBCCR1+21;   //add one extra ms to wait for incominf packet
+                  TBCCR1   = TBCCR1+GUARDTIME;   //add one extra guardtime to wait for incominf packet
                   TBCCTL1  = CCIE;        //enable interup
                   
                   //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
@@ -355,8 +352,8 @@ void fast_alarm_fired() {
       temp_state           = state;
       temp_dataFrameToSend = dataFrameToSend;
 
-      //flip timer debug pin
-      P4OUT ^= DEBUG_PIN_3;
+       //flip timer debug pin
+       P4OUT ^= DEBUG_PIN_3;
       
       switch (temp_state) {
          /*------------------- TX sequence ------------------------*/
