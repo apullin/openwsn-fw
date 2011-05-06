@@ -26,7 +26,7 @@ enum {
 enum {
    MYID = 1,
    HOPPING_ENABLED = FALSE,
-   LENGTHCELLFRAME = 10,
+   LENGTHCELLFRAME = 5,
    MAXNUMNEIGHBORS = 10,
    DEFAULTCHANNEL  = 15,
    //delays

@@ -18,9 +18,9 @@
 #include "neighbors.h"
 #include "nores.h"
 
-#define DEBUG_PIN_1 0x02
-#define DEBUG_PIN_2 0x04
-#define DEBUG_PIN_3 0x08
+#define DEBUG_PIN_1 0x02 //p1.1
+#define DEBUG_PIN_2 0x10 //p4.4
+#define DEBUG_PIN_3 0x08 //p4.3
 
 //===================================== variables =============================
 
@@ -74,13 +74,13 @@ void mac_init(){
     
     //set debug pins as outputs
     P1DIR |= DEBUG_PIN_1; //P1.1 0x02
-    P1DIR |= DEBUG_PIN_2; //P1.2 0x04
-    P1DIR |= DEBUG_PIN_3; //P1.3 0x08
+    P4DIR |= DEBUG_PIN_2; //P1.2 0x04
+    P4DIR |= DEBUG_PIN_3; //P1.3 0x08
     
     //initilize debug pins to 0
-    P1OUT &= ~DEBUG_PIN_1;
-    P1OUT &= ~DEBUG_PIN_2;
-    P1OUT &= ~DEBUG_PIN_3;
+    //P1OUT &= ~DEBUG_PIN_1;
+    //P1OUT &= ~DEBUG_PIN_2;
+    //P1OUT &= ~DEBUG_PIN_3;
 
     isSync = 0; 
     change_state(S_SYNCHRONIZING);
@@ -151,10 +151,11 @@ void slot_alarm_fired(){
       
       //flip slot debug pin
       P1OUT ^= DEBUG_PIN_1;
+
       
       //flip frame debug pin
-      if(asn%LENGTHCELLFRAME)
-         P1OUT ^= DEBUG_PIN_2;
+      if(asn%LENGTHCELLFRAME == 0)
+         P4OUT ^= DEBUG_PIN_2;
 
       openserial_stop();
    
@@ -355,7 +356,7 @@ void fast_alarm_fired() {
       temp_dataFrameToSend = dataFrameToSend;
 
       //flip timer debug pin
-      P1OUT ^= DEBUG_PIN_3;
+      P4OUT ^= DEBUG_PIN_3;
       
       switch (temp_state) {
          /*------------------- TX sequence ------------------------*/
