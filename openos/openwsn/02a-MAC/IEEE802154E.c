@@ -18,9 +18,14 @@
 #include "neighbors.h"
 #include "nores.h"
 
+
 #define DEBUG_PIN_1 0x02 //p1.1
 #define DEBUG_PIN_2 0x10 //p4.4
 #define DEBUG_PIN_3 0x08 //p4.3
+
+//for debugging and hardocing to test synchronization
+#define MOTE1_ADDRESS 0x3a
+#define MOTE2_ADDRESS 0xff
 
 //===================================== variables =============================
 
@@ -50,9 +55,9 @@
    void       taskResetLosingLostTimers();  //task
    uint16_t   fastAlarm_getNow();
    uint16_t   slotAlarm_getNow();
-   void fastAlarm_start(uint16_t duration);
-   void slotAlarm_startAt(uint16_t startingPoint,uint16_t duration); 
-   void fastAlarm_startAt(uint16_t startingPoint,uint16_t duration);
+  // void fastAlarm_start(uint16_t duration);
+  // void slotAlarm_startAt(uint16_t startingPoint,uint16_t duration); 
+  // void fastAlarm_startAt(uint16_t startingPoint,uint16_t duration);
    //the two following tasks are used to break the asynchronicity: everything in MAC and below is async, all the above not
    void taskReceive(); //task
    void postTaskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDoneError);
@@ -65,8 +70,6 @@
    uint8_t cellUsageGet_isRX(uint16_t slotNum);
    uint8_t cellUsageGet_isADV(uint16_t slotNum);
    uint8_t cellUsageGet_getChannelOffset(uint16_t slotNum);
-   bool iDManager_isMyAddress(open_addr_t* addr);
-   bool iDManager_getIsDAGroot();
 //===================================== public from upper layer ===============
 
 
@@ -86,6 +89,14 @@ void mac_init(){
     change_state(S_SYNCHRONIZING);
     dataFrameToSend = NULL;
     asn = 0;
+    
+    /*hardcoded poipoi
+    we need to make one mote the DAG root for synchronization purposes
+    make mote1 the DAG root*/
+    if(*(&eui64+7) == MOTE1_ADDRESS)
+      idmanager_setIsDAGroot(TRUE);
+    
+    
     timer_startPeriodic(TIMER_MAC_PERIODIC,PERIODICTIMERPERIOD);
 }
 
@@ -147,16 +158,13 @@ void slot_alarm_fired(){
       asn++;
       
       //flip slot debug pin
-      P1OUT ^= DEBUG_PIN_1;
-      P4OUT ^= DEBUG_PIN_3; //txrx debug
+      P4OUT ^= DEBUG_PIN_3;
       
       //flip frame debug pin
       if(asn%LENGTHCELLFRAME == 0)
          P4OUT ^= DEBUG_PIN_2;
 
       openserial_stop();
-      
-      timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot 
       
       //reset WDT
       //atomic WDTCTL = WDTPW + WDTCNTCL + WDTSSEL; poipoi
@@ -169,7 +177,7 @@ void slot_alarm_fired(){
       temp_dataFrameToSend = dataFrameToSend;
 
       //----- switch to/from S_SYNCHRONIZING
-      if ((idmanager_getIsDAGroot())==TRUE) {
+      if (idmanager_getIsDAGroot()==TRUE) {
          //if I'm DAGroot, I'm synchronized
          taskResetLosingLostTimers();
          isSync=TRUE;
@@ -202,6 +210,8 @@ void slot_alarm_fired(){
 
       switch (cellUsageGet_getType(temp_asn%LENGTHCELLFRAME)) {
          case CELLTYPE_TXRX:
+           P1OUT ^= DEBUG_PIN_1; //txrx debug
+           timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot 
             //get a packet out of the buffer (if any)
            if (cellUsageGet_isTX(temp_asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(temp_asn%LENGTHCELLFRAME)) {
                   dataFrameToSend = openqueue_inQueue(cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME));
@@ -355,7 +365,7 @@ void fast_alarm_fired() {
       temp_dataFrameToSend = dataFrameToSend;
 
        //flip timer debug pin
-       P4OUT ^= DEBUG_PIN_3;
+      P1OUT ^= DEBUG_PIN_1; //txrx debug
       
       switch (temp_state) {
          /*------------------- TX sequence ------------------------*/
@@ -517,8 +527,9 @@ void radio_send_now_done(error_t error){//poipoi call from phy layer
                
               endSlot();
             } else {
-               fastAlarm_start(TsRxAckDelay);
-               change_state(S_TX_RXACKREADY);
+              //poipoi removed for debugging 
+              //fastAlarm_start(TsRxAckDelay);
+               //change_state(S_TX_RXACKREADY);
             }
             break;
          case S_RX_TXACK:                                            //[sendNowDone] receiver
@@ -628,7 +639,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
 
 
       if (received_ieee154_header.frameType==IEEE154_TYPE_DATA &&
-            !(iDManager_isMyAddress(&received_ieee154_header.panid))) {
+            !(idmanager_isMyAddress(&received_ieee154_header.panid))) {
           openserial_printError(COMPONENT_MAC,ERR_WRONG_PANID,
                (errorparameter_t)received_ieee154_header.panid.panid[0]*256+received_ieee154_header.panid.panid[1],
                (errorparameter_t)0);
@@ -672,7 +683,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
          case S_SYNCHRONIZING:
          case S_RX_RXDATA:                                           //[receive] receiver
             //I'm a receiver, just received data
-            if (iDManager_isMyAddress(&(received_ieee154_header.dest)) && received_ieee154_header.ackRequested) {
+            if (idmanager_isMyAddress(&(received_ieee154_header.dest)) && received_ieee154_header.ackRequested) {
                //ACK requested
               radio_rfOff();
               /*if (radio_rfOff()!=E_SUCCESS) {
@@ -680,8 +691,10 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
                   openserial_printError(COMPONENT_MAC,ERR_RFOFF_FAILED,
                         (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
                }*/
-               fastAlarm_start(TsTxAckDelay);
-               change_state(S_RX_TXACKPREPARE);
+               
+              //poipoi add for ack
+              //fastAlarm_start(TsTxAckDelay);
+               //change_state(S_RX_TXACKPREPARE);
                
                packetACK = openqueue_getFreePacketBuffer();
                temp_packetACK = packetACK;
@@ -778,7 +791,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
       temp_isSync = isSync;
      
 
-      if ((iDManager_getIsDAGroot())==FALSE) {        //I resync only if I'm not a DAGroot
+      if ((idmanager_getIsDAGroot())==FALSE) {        //I resync only if I'm not a DAGroot
          //---checking whether I should synchronize
          iShouldSynchronize=FALSE;
          if (temp_isSync==FALSE) {                    //I'm not synchronized, I sync off of all ADV packets
@@ -806,19 +819,19 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
                if (resyncType==FRAME_BASED_RESYNC) {
                   if (dataGlobalSlotOffset!=INVALID_TIMESTAMP){
                      if (slotAlarmStartSlotTimestamp+dataGlobalSlotOffset<slotAlarm_getNow()) {
-                        slotAlarm_startAt((uint32_t)((int32_t)slotAlarmStartSlotTimestamp+(int32_t)timeCorrection),SLOT_TIME);
+                        //slotAlarm_startAt((uint32_t)((int32_t)slotAlarmStartSlotTimestamp+(int32_t)timeCorrection),SLOT_TIME);
                      } else {
                          isSync=FALSE;
                          openserial_printError(COMPONENT_MAC,ERR_SYNC_RACE_CONDITION,
                               (errorparameter_t)asn%LENGTHCELLFRAME,
                               (errorparameter_t)dataGlobalSlotOffset);
                         //call Leds.led2Off(); poipoi
-                        slotAlarm_startAt((slotAlarm_getNow())-(SLOT_TIME/2),SLOT_TIME);
+                       // slotAlarm_startAt((slotAlarm_getNow())-(SLOT_TIME/2),SLOT_TIME);
                         endSlot();
                      }
                   }
                } else {
-                  slotAlarm_startAt((uint32_t)((int32_t)slotAlarmStartSlotTimestamp+(int32_t)timeCorrection),SLOT_TIME);
+                  //slotAlarm_startAt((uint32_t)((int32_t)slotAlarmStartSlotTimestamp+(int32_t)timeCorrection),SLOT_TIME);
                }
             
             taskResetLosingLostTimers();
@@ -921,7 +934,7 @@ uint16_t slotAlarm_getNow(){
   return 0;//poipoi use this to return the timer value
 }
 
-void fastAlarm_start(uint16_t duration) {
+/*void fastAlarm_start(uint16_t duration) {
    timer_startOneShot(TIMER_MAC_BACKOFF,duration);
 }
 
@@ -934,7 +947,7 @@ void fastAlarm_startAt(uint16_t startingPoint,uint16_t duration) {
 void slotAlarm_startAt(uint16_t startingPoint,uint16_t duration){
   for(int i =0; i< startingPoint; i++);//poipoi super hack fix this asap
   timer_startPeriodic(TIMER_MAC_PERIODIC,duration);
-}
+}*/
 
 
 bool mac_debugPrint() {
@@ -960,42 +973,25 @@ uint8_t cellUsageGet_getType(uint16_t slotNum){
 
 
 uint8_t cellUsageGet_isTX(uint16_t slotNum){
-  if(slotNum == 0)
-    return 0;
-  else if(slotNum == 1){
-    if (*(&eui64+3)==0x09)  // this is a GINA board (not a basestation)
-      return 0;
-    else 
-      return 1;
-  }else if(slotNum == 2){
-    if (*(&eui64+3)==0x09)  // this is a GINA board (not a basestation)
-      return 1;
-    else 
-      return 0;
-  }
-  else
-    return 0; 
+  //hardcoded
+  if((slotNum == 0 && *(&eui64+7) == MOTE1_ADDRESS)||
+    (slotNum == 1 && *(&eui64+7) == MOTE1_ADDRESS)||
+    (slotNum == 2 && *(&eui64+7) == MOTE2_ADDRESS))
+          return 1;
+   else
+          return 0;
 }
 
-
+//b003a
 ///*(&eui64+7) gives you the last byte of the address of a gina
 uint8_t cellUsageGet_isRX(uint16_t slotNum){
-  if(slotNum == 0){
-    return 0;
-  }
-  else if(slotNum == 1){
-    if (*(&eui64+3)==0x09)  // this is a GINA board (not a basestation)
-      return 1;
-    else 
-      return 0;
-  }else if(slotNum == 2){
-    if (*(&eui64+3)==0x09)  // this is a GINA board (not a basestation)
-      return 0;
-    else 
-      return 1;
-  }
-  else
-    return 0; 
+  //hardcoded
+  if((slotNum == 0 && *(&eui64+7) == MOTE2_ADDRESS)||
+    (slotNum == 1 && *(&eui64+7) == MOTE2_ADDRESS)||
+    (slotNum == 2 && *(&eui64+7) == MOTE1_ADDRESS))
+          return 1;
+   else
+          return 0; 
 }
 
 uint8_t cellUsageGet_isADV(uint16_t slotNum){
@@ -1009,15 +1005,15 @@ uint8_t cellUsageGet_getChannelOffset(uint16_t slotNum){
   return 0;
 }
 
-bool iDManager_isMyAddress(open_addr_t* addr){
+/*bool iDManager_isMyAddress(open_addr_t* addr){
   return TRUE; //hack, hardcode addresses here if we want to use more than two motes
-}
+}*/
 
-bool iDManager_getIsDAGroot(){
+/*bool iDManager_getIsDAGroot(){
       if (*(&eui64+3)==0x09)  // this is a GINA board (not a basestation)
         return 0;
       else
         return 1;
-}
+}*/
 
                                
