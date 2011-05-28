@@ -90,10 +90,13 @@ enum {
 
 //timer wait times (in 1/32768 seconds)
 enum {
-   PERIODICTIMERPERIOD   =    326,// 982/3, // 30ms/3
-   MINBACKOFF            =    43,// 130/3, // 6 ms/3
-   GUARDTIME             =    21,//1 ms
-   ACK_WAIT_TIME         =    109,// 327/3, // 10ms/3
+   PERIODICTIMERPERIOD   =    326,// 10 ms  //uses TIMER_MAC_PERIODIC
+   MINBACKOFF            =    65,// 2ms     //uses TIMER_MAC_BACKOFF 
+                                            //will add EXTRA_WAIT_TIME later if receiving 
+   GUARDTIME             =    130,//4 ms    //uses TIMER_MAC_WATCHDOG
+   ACK_WAIT_TIME         =    195,// 6ms    //uses TIMER_MAC_BACKOFF 
+                                            //will add EXTRA_WAIT_TIME later if receiving
+   EXTRA_WAIT_TIME       =    32, //1 ms    //this is used to add 1ms to the receiver for overlap
 };
 
 

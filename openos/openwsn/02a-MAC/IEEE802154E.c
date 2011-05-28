@@ -131,6 +131,9 @@ void timer_mac_periodic_fired() {
 }
 
 
+
+
+
 void slot_alarm_fired(){
   
 
@@ -211,7 +214,17 @@ void slot_alarm_fired(){
       switch (cellUsageGet_getType(temp_asn%LENGTHCELLFRAME)) {
          case CELLTYPE_TXRX:
            P1OUT ^= DEBUG_PIN_1; //txrx debug
+           
+           //start timer to deal with transmitting or receiving when backofftimer fires
            timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot 
+           
+           //also, if we are not an ADV slot, we want to start the timers to deal with ACK packets
+           if(!cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME)){
+             timer_startOneShot(TIMER_MAC_WATCHDOG,GUARDTIME);//set timer to deal with TXRX in this slot 
+           }
+           
+           
+           
             //get a packet out of the buffer (if any)
            if (cellUsageGet_isTX(temp_asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(temp_asn%LENGTHCELLFRAME)) {
                   dataFrameToSend = openqueue_inQueue(cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME));
@@ -256,9 +269,10 @@ void slot_alarm_fired(){
                      endSlot();
                   };*/
                   
-                  //add one milisecond to extend wait period for incoming packet
-                  TBCCR1   = TBCCR1+GUARDTIME;   //add one extra guardtime to wait for incominf packet
-                  TBCCTL1  = CCIE;        //enable interup
+                  //add some time to extend wait period for incoming packet to allow for a little overlap
+                  //TBCCR1 is used by TIMER_MAC_BACKOFF
+                  TBCCR1   = TBCCR1+EXTRA_WAIT_TIME;   //add one extra guardtime to wait for incoming packet
+                  TBCCTL1  = CCIE;                     //enable interupt
                   
                   //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
                } else {                                                        //nothing to do, abort
@@ -350,10 +364,17 @@ void radioControl_prepareReceiveDone(error_t error){
       }
 }
 
-//wrapper
+//wrappers - -this is a bit janky, but this way we can just repalce this ...
+//...tsch MAC with StupidMac without ediding the  timer and scheduler files
 void timer_mac_backoff_fired(){
   fast_alarm_fired();//see next
 }
+
+void timer_mac_watchdog_fired(){
+  fast_alarm_fired();//see next
+}
+
+//end wrapers
 
 void fast_alarm_fired() {
       asn_t             temp_asn;
@@ -388,6 +409,9 @@ void fast_alarm_fired() {
                openserial_printError(COMPONENT_MAC,ERR_SENDNOW_FAILED,
                      (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
                endSlot();
+            }else{
+                   //if we are sucessful start the timer to turn the radio on later to listen for th eack
+                  timer_startOneShot(TIMER_MAC_WATCHDOG,GUARDTIME);
             }
             break;
          case S_TX_RXACKREADY:                                       //[timer fired] transmitter
@@ -396,6 +420,11 @@ void fast_alarm_fired() {
             //I'm calling receiveNow anyways because it reports receivedNothing
             change_state(S_TX_RXACK);
             radio_rxOn(frequencyChannel);
+            //start timer to listen only for a while
+            //if we dont get packet by ACK_WAIT_TIME+, we kill the receiver
+            timer_startOneShot(TIMER_MAC_BACKOFF,ACK_WAIT_TIME+EXTRA_WAIT_TIME);
+            
+            
            /* if ( radio_rxOn(frequencyChannel)!=E_SUCCESS ) {
                //abort
                openserial_printError(COMPONENT_MAC,ERR_RECEIVENOW_FAILED,
@@ -726,6 +755,10 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
                temp_packetACK->l1_txPower        = TX_POWER;
                temp_packetACK->l1_channel = frequencyChannel;
                temp_error = radio_prepare_send(temp_packetACK);
+               
+               //now that we have an ACK packet we want to send it when ACK_WAIT_TIME fires
+               timer_startOneShot(TIMER_MAC_BACKOFF,ACK_WAIT_TIME);
+               
                if (temp_error!=E_SUCCESS) {
                   //abort
                   openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
@@ -952,11 +985,6 @@ void slotAlarm_startAt(uint16_t startingPoint,uint16_t duration){
 
 bool mac_debugPrint() {
    return FALSE;
-}
-
-//legacy
-void timer_mac_watchdog_fired(){
-  
 }
 
 //*********************************hardcore hack -- move later **********//
