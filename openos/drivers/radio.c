@@ -158,7 +158,7 @@ error_t radio_send_now(){
    //send packet
    P4OUT |=  0x80;
    P4OUT &= ~0x80;
-   //radio_send_now_done();
+   radio_send_now_done();
    return E_SUCCESS;
 }
 

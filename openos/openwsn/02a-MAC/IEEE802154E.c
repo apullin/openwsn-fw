@@ -24,8 +24,8 @@
 #define DEBUG_PIN_3 0x08 //p4.3
 
 //for debugging and hardocing to test synchronization
-#define MOTE1_ADDRESS 0x3a
-#define MOTE2_ADDRESS 0xff
+#define MOTE1_ADDRESS 0x87
+#define MOTE2_ADDRESS 0x8b
 
 //===================================== variables =============================
 
@@ -86,7 +86,7 @@ void mac_init(){
     //P1OUT &= ~DEBUG_PIN_3;
 
     isSync = 0; 
-    change_state(S_SYNCHRONIZING);
+    change_state(S_SLEEP);
     dataFrameToSend = NULL;
     asn = 0;
     
@@ -162,6 +162,8 @@ void slot_alarm_fired(){
       
       //flip slot debug pin
       P4OUT ^= DEBUG_PIN_3;
+      //set fast_alarm debug pin to 0 for easier debugging
+      P1OUT &= !DEBUG_PIN_1;
       
       //flip frame debug pin
       if(asn%LENGTHCELLFRAME == 0)
@@ -198,7 +200,7 @@ void slot_alarm_fired(){
          if (temp_state!=S_SYNCHRONIZING) {
             change_state(S_SYNCHRONIZING);
             radio_rxOn(11);
-            endSlot();
+            //endSlot();
          }
          return;
       }
@@ -217,13 +219,6 @@ void slot_alarm_fired(){
            
            //start timer to deal with transmitting or receiving when backofftimer fires
            timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot 
-           
-           //also, if we are not an ADV slot, we want to start the timers to deal with ACK packets
-           if(!cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME)){
-             timer_startOneShot(TIMER_MAC_WATCHDOG,GUARDTIME);//set timer to deal with TXRX in this slot 
-           }
-           
-           
            
             //get a packet out of the buffer (if any)
            if (cellUsageGet_isTX(temp_asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(temp_asn%LENGTHCELLFRAME)) {
@@ -311,7 +306,7 @@ void radio_prepare_send_done(){//poipoi implememnt in phys layer
       
       switch (temp_state) {
          case S_TX_TXDATAPREPARE:
- 
+              change_state(S_TX_TXDATAREADY);//bk added
             break;
          case S_RX_TXACKPREPARE:
 
@@ -558,7 +553,7 @@ void radio_send_now_done(error_t error){//poipoi call from phy layer
             } else {
               //poipoi removed for debugging 
               //fastAlarm_start(TsRxAckDelay);
-               //change_state(S_TX_RXACKREADY);
+               change_state(S_TX_RXACKREADY);
             }
             break;
          case S_RX_TXACK:                                            //[sendNowDone] receiver
