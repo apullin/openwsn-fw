@@ -37,7 +37,7 @@
 #include "stdint.h"
 
 //===== start editing according to the label printed on the board =============
-#define LABEL_009C
+#define LABEL_00A9
 //===== stop editing ==========================================================
 
 enum {
