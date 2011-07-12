@@ -24,8 +24,8 @@
 #define DEBUG_PIN_3 0x08 //p4.3
 
 //for debugging and hardocing to test synchronization
-#define MOTE1_ADDRESS 0x87
-#define MOTE2_ADDRESS 0x8b
+#define MOTE1_ADDRESS 0x99
+#define MOTE2_ADDRESS 0x9B
 
 //===================================== variables =============================
 
@@ -70,6 +70,8 @@
    uint8_t cellUsageGet_isRX(uint16_t slotNum);
    uint8_t cellUsageGet_isADV(uint16_t slotNum);
    uint8_t cellUsageGet_getChannelOffset(uint16_t slotNum);
+   
+   void prepareADVPacket();
 //===================================== public from upper layer ===============
 
 
@@ -77,8 +79,8 @@ void mac_init(){
     
     //set debug pins as outputs
     P1DIR |= DEBUG_PIN_1; //P1.1 0x02
-    P4DIR |= DEBUG_PIN_2; //P1.2 0x04
-    P4DIR |= DEBUG_PIN_3; //P1.3 0x08
+    P4DIR |= DEBUG_PIN_2; //P4.4 0x04
+    P4DIR |= DEBUG_PIN_3; //P4.3 0x08
     
     //initilize debug pins to 0
     //P1OUT &= ~DEBUG_PIN_1;
@@ -164,7 +166,7 @@ void slot_alarm_fired(){
       P4OUT ^= DEBUG_PIN_3;
       //set fast_alarm debug pin to 0 for easier debugging
       P1OUT &= !DEBUG_PIN_1;
-      
+     // P1OUT ^= DEBUG_PIN_1; //txrx debug
       //flip frame debug pin
       if(asn%LENGTHCELLFRAME == 0)
          P4OUT ^= DEBUG_PIN_2;
@@ -222,6 +224,10 @@ void slot_alarm_fired(){
            
             //get a packet out of the buffer (if any)
            if (cellUsageGet_isTX(temp_asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(temp_asn%LENGTHCELLFRAME)) {
+                  //hack add adv packet to queue
+                  if(cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME)){
+                      prepareADVPacket(); //poipoi
+                  }
                   dataFrameToSend = openqueue_inQueue(cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME));
                   temp_dataFrameToSend = dataFrameToSend;                 
             }
@@ -613,13 +619,13 @@ void endSlot() {
       
      // temp_asn   = asn;
      // temp_state = state;
-      if (packetACK!=NULL) {
+      //if (packetACK!=NULL) {
             //malloc_freePacketBuffer(packetACK);
-            openqueue_freePacketBuffer(packetACK);
-            packetACK=NULL;
-      }
+      ///      openqueue_freePacketBuffer(packetACK);
+      //      packetACK=NULL;
+     // }
       
-      radio_rfOff();
+      //radio_rfOff();
       /*if (radio_rfOff()!=E_SUCCESS) {
          //abort
          openserial_printError(COMPONENT_MAC,ERR_RFOFF_FAILED,
@@ -764,7 +770,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
             } else if (packetfunctions_isBroadcastMulticast(&(received_ieee154_header.dest))) {
                //I'm a receiver, sync off of DATA I received iif ADV (I will not send an ACK)
                if (received_ieee154_header.frameType==IEEE154_TYPE_CMD &&
-                     ((IEEE802154E_ADV_t*)(msg->payload))->commandFrameId==IEEE154E_ADV) {
+               ((IEEE802154E_ADV_t*)(msg->payload))->commandFrameId==IEEE154E_ADV) {
                   asn = ((IEEE802154E_ADV_t*)(msg->payload))->timingInformation;
                   resynchronize(FRAME_BASED_RESYNC,
                         &received_ieee154_header.src,
@@ -774,7 +780,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
                frameReceived = msg;
                taskReceive();
                endSlot();
-            } else {
+            } else{
                openqueue_freePacketBuffer(msg);
                endSlot();
             }
@@ -1039,4 +1045,34 @@ uint8_t cellUsageGet_getChannelOffset(uint16_t slotNum){
         return 1;
 }*/
 
-                               
+///////////////////////////Hack to manage scheduling packet transmissions/////
+void prepareADVPacket(){
+          
+              OpenQueueEntry_t* packetADV;
+              packetADV = openqueue_getFreePacketBuffer();
+               
+               if (packetADV==NULL) {
+                  openserial_printError(COMPONENT_MAC,ERR_NO_FREE_PACKET_BUFFER,
+                        (errorparameter_t)0,(errorparameter_t)0);
+                  return;
+               }
+               packetADV->creator       = COMPONENT_RES;
+               packetADV->owner         = COMPONENT_MAC;
+               
+               packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
+               ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
+               prependIEEE802154header(packetADV,
+                     IEEE154_TYPE_CMD,
+                     IEEE154_SEC_NO_SECURITY,
+                     NULL,
+                     NULL
+                     );
+      
+}
+
+
+               
+               
+           
+
+  
