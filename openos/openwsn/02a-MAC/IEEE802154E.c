@@ -25,67 +25,62 @@
 
 //for debugging and hardocing to test synchronization
 #define MOTE1_ADDRESS 0x99
-#define MOTE2_ADDRESS 0x9B
+#define MOTE2_ADDRESS 0x9a
 
-//===================================== variables =============================
+//===================================== variables =========9====================
 
-   uint16_t           fastAlarmStartSlotTimestamp;
-   uint16_t           slotAlarmStartSlotTimestamp;
-   uint8_t            state;
-   asn_t              asn;              //uint16_t  
-   OpenQueueEntry_t*  dataFrameToSend; //NULL at beginning and end
-   OpenQueueEntry_t*  packetACK;       //NULL at beginning and end, free at end of slot
-   OpenQueueEntry_t*  frameReceived;   //NULL at beginning and end
-   bool               isSync;
-   uint8_t            dsn;
-   uint8_t            frequencyChannel;
-   OpenQueueEntry_t*  sendDoneMessage;
-   error_t            sendDoneError;
+uint16_t           fastAlarmStartSlotTimestamp;
+uint16_t           slotAlarmStartSlotTimestamp;
+uint8_t            state;
+asn_t              asn;              //uint16_t  
+OpenQueueEntry_t*  dataFrameToSend; //NULL at beginning and end
+OpenQueueEntry_t*  packetACK;       //NULL at beginning and end, free at end of slot
+OpenQueueEntry_t*  frameReceived;   //NULL at beginning and end
+bool               isSync;
+uint8_t            dsn;
+uint8_t            frequencyChannel;
+error_t            sendDoneError;
 
 //===================================== prototypes ============================
 
 #include "IEEE802154_common.c"
-   void       change_state(uint8_t newstate);
-   void       resynchronize(bool resyncType, open_addr_t* node_id, timervalue_t dataGlobalSlotOffset, int16_t timeCorrection);
-   void       slot_alarm_fired();
-   void       fast_alarm_fired();
-   void       endSlot();
-   void       taskDebugPrint();             //task
-   bool       mac_debugPrint();
-   void       taskResetLosingLostTimers();  //task
-   uint16_t   fastAlarm_getNow();
-   uint16_t   slotAlarm_getNow();
-  // void fastAlarm_start(uint16_t duration);
-  // void slotAlarm_startAt(uint16_t startingPoint,uint16_t duration); 
-  // void fastAlarm_startAt(uint16_t startingPoint,uint16_t duration);
-   //the two following tasks are used to break the asynchronicity: everything in MAC and below is async, all the above not
-   void taskReceive(); //task
-   void postTaskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDoneError);
-   void taskSendDone(); //task
+void       change_state(uint8_t newstate);
+void       resynchronize(bool resyncType, open_addr_t* node_id, timervalue_t dataGlobalSlotOffset, int16_t timeCorrection);
+void       fast_alarm_fired();
+void       endSlot();
+void       taskDebugPrint();             //task
+bool       mac_debugPrint();
+void       taskResetLosingLostTimers();  //task
+uint16_t   fastAlarm_getNow();
+uint16_t   slotAlarm_getNow();
+// void fastAlarm_start(uint16_t duration);
+// void slotAlarm_startAt(uint16_t startingPoint,uint16_t duration); 
+// void fastAlarm_startAt(uint16_t startingPoint,uint16_t duration);
+//the two following tasks are used to break the asynchronicity: everything in MAC and below is async, all the above not
+void taskReceive(); //task
+void taskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDoneError);
 
-   
-   //the following are prototypes for cellUsage -- which needs to be moved to a separate library
-   uint8_t cellUsageGet_getType(uint16_t slotNum);
-   uint8_t cellUsageGet_isTX(uint16_t slotNum);
-   uint8_t cellUsageGet_isRX(uint16_t slotNum);
-   uint8_t cellUsageGet_isADV(uint16_t slotNum);
-   uint8_t cellUsageGet_getChannelOffset(uint16_t slotNum);
-   
-   void prepareADVPacket();
+//the following are prototypes for cellUsage -- which needs to be moved to a separate library
+uint8_t cellUsageGet_getType(uint16_t slotNum);
+uint8_t cellUsageGet_isTX(uint16_t slotNum);
+uint8_t cellUsageGet_isRX(uint16_t slotNum);
+uint8_t cellUsageGet_isADV(uint16_t slotNum);
+uint8_t cellUsageGet_getChannelOffset(uint16_t slotNum);
+
+void prepareADVPacket();
+
 //===================================== public from upper layer ===============
 
 
-void mac_init(){
+void mac_init() {
     
     //set debug pins as outputs
     P1DIR |= DEBUG_PIN_1; //P1.1 0x02
     P4DIR |= DEBUG_PIN_2; //P4.4 0x04
     P4DIR |= DEBUG_PIN_3; //P4.3 0x08
     
-    //initilize debug pins to 0
-    //P1OUT &= ~DEBUG_PIN_1;
-    //P1OUT &= ~DEBUG_PIN_2;
-    //P1OUT &= ~DEBUG_PIN_3;
+    P1DIR |= 0x04; //P1.2 reset debug
+    P1OUT |= 0x04;
 
     isSync = 0; 
     change_state(S_SLEEP);
@@ -95,15 +90,17 @@ void mac_init(){
     /*hardcoded poipoi
     we need to make one mote the DAG root for synchronization purposes
     make mote1 the DAG root*/
-    if(*(&eui64+7) == MOTE1_ADDRESS)
+    if(*(&eui64+7) == MOTE1_ADDRESS) {
       idmanager_setIsDAGroot(TRUE);
-    
+    }
     
     timer_startPeriodic(TIMER_MAC_PERIODIC,PERIODICTIMERPERIOD);
+    
+    P1OUT &= ~0x04;
 }
 
 
-//a packet sent from the upper layer is simply stored into the OpenQueue buffer.
+// a packet sent from the upper layer is simply stored into the OpenQueue buffer.
 error_t mac_send(OpenQueueEntry_t* msg) {
    msg->owner = COMPONENT_MAC;
    if (packetfunctions_isBroadcastMulticast(&(msg->l2_nextORpreviousHop))==TRUE) {
@@ -122,24 +119,13 @@ error_t mac_send(OpenQueueEntry_t* msg) {
    // space for 2-byte CRC
    packetfunctions_reserveFooterSize(msg,2);
    return E_SUCCESS;
-
 }
 
 //===================================SLOT TX/RX================================
 
-//wrapper function
+//new slot
 void timer_mac_periodic_fired() {
-       slot_alarm_fired(); //see next
-}
-
-
-
-
-
-void slot_alarm_fired(){
-  
-
-      asn_t                   temp_asn;
+      
       uint8_t                 temp_state;
       bool                    temp_isSync;
       OpenQueueEntry_t*       temp_dataFrameToSend;
@@ -165,20 +151,17 @@ void slot_alarm_fired(){
       //flip slot debug pin
       P4OUT ^= DEBUG_PIN_3;
       //set fast_alarm debug pin to 0 for easier debugging
-      P1OUT &= !DEBUG_PIN_1;
+      P1OUT &= ~DEBUG_PIN_1;
      // P1OUT ^= DEBUG_PIN_1; //txrx debug
       //flip frame debug pin
-      if(asn%LENGTHCELLFRAME == 0)
+      if(asn%LENGTHCELLFRAME == 0) {
          P4OUT ^= DEBUG_PIN_2;
+      }
 
       openserial_stop();
       
-      //reset WDT
-      //atomic WDTCTL = WDTPW + WDTCNTCL + WDTSSEL; poipoi
-
-      dataFrameToSend   = NULL;
-
-      temp_asn             = asn;
+      dataFrameToSend      = NULL;
+      
       temp_state           = state;
       temp_isSync          = isSync;
       temp_dataFrameToSend = dataFrameToSend;
@@ -188,7 +171,7 @@ void slot_alarm_fired(){
          //if I'm DAGroot, I'm synchronized
          taskResetLosingLostTimers();
          isSync=TRUE;
-         if (state==S_SYNCHRONIZING) {//happens right after node becomes LBR
+         if (state==S_SYNCHRONIZING) { //happens right after node becomes LBR
             endSlot();
             return;
          }
@@ -210,57 +193,81 @@ void slot_alarm_fired(){
       //----- state error
       if (temp_state!=S_SLEEP) {     
          openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_STARTSLOTTASK,
-               (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+               (errorparameter_t)temp_state,(errorparameter_t)asn%LENGTHCELLFRAME);
          endSlot(); //poipoi write
          return;
       }
 
-      switch (cellUsageGet_getType(temp_asn%LENGTHCELLFRAME)) {
+      switch (cellUsageGet_getType(asn%LENGTHCELLFRAME)) {
          case CELLTYPE_TXRX:
            P1OUT ^= DEBUG_PIN_1; //txrx debug
            
            //start timer to deal with transmitting or receiving when backofftimer fires
-           timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot 
+           timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
            
-            //get a packet out of the buffer (if any)
-           if (cellUsageGet_isTX(temp_asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(temp_asn%LENGTHCELLFRAME)) {
-                  //hack add adv packet to queue
-                  if(cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME)){
-                      prepareADVPacket(); //poipoi
-                  }
-                  dataFrameToSend = openqueue_inQueue(cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME));
-                  temp_dataFrameToSend = dataFrameToSend;                 
-            }
-
-            temp_channelOffset = cellUsageGet_getChannelOffset(temp_asn%LENGTHCELLFRAME);//poipoi write
+           //create at ADV apcket, but only use it if we're in the ADV slot -- hardocded poipoi fix
+           
+           OpenQueueEntry_t* packetADV;
+           
+           //get a packet out of the buffer (if any)
+           if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(temp_asn%LENGTHCELLFRAME)) {
+             //hack add adv packet to queue
+             if(cellUsageGet_isADV(asn%LENGTHCELLFRAME)){
+               
+               packetADV = openqueue_getFreePacketBuffer();
+               
+               if (packetADV==NULL) {
+                 P1OUT |= 0x04;
+               } else {
+                 
+                 packetADV->creator       = COMPONENT_RES;
+                 packetADV->owner         = COMPONENT_MAC;
+                 
+                 packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
+                 ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
+                 prependIEEE802154header(packetADV,
+                                         IEEE154_TYPE_CMD,
+                                         IEEE154_SEC_NO_SECURITY,
+                                         NULL,
+                                         NULL
+                                           );
+                 dataFrameToSend = packetADV; 
+                 temp_dataFrameToSend = dataFrameToSend;
+               }
+             }
+           }
+           
+           temp_channelOffset = cellUsageGet_getChannelOffset(asn%LENGTHCELLFRAME);//poipoi write
             if (HOPPING_ENABLED) {
-               frequencyChannel = ((temp_asn+temp_channelOffset)%16)+11;
+               frequencyChannel = ((asn+temp_channelOffset)%16)+11;
             } else {
                frequencyChannel =((temp_channelOffset)%16)+11;
             }
+            
+            frequencyChannel=18; //poipoi
 
             if (temp_dataFrameToSend!=NULL) {                                  //start the TX sequence
                dataFrameToSend->owner = COMPONENT_MAC;
                dataFrameToSend->l1_channel = frequencyChannel;
                transmitted_ieee154_header = retrieveIEEE802154header(temp_dataFrameToSend);
-               if (cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME)) {
+               if (cellUsageGet_isADV(asn%LENGTHCELLFRAME)) {
                   //I will be sending an ADV frame
-                  ((IEEE802154E_ADV_t*)((dataFrameToSend->payload)+transmitted_ieee154_header.headerLength))->timingInformation=temp_asn;// (globalTime.getASN());//poipoi implement
+                  ((IEEE802154E_ADV_t*)((dataFrameToSend->payload)+transmitted_ieee154_header.headerLength))->timingInformation=asn;// (globalTime.getASN());//poipoi implement
                }
                change_state(S_TX_TXDATAPREPARE);
                if (radio_prepare_send(dataFrameToSend)!=E_SUCCESS) {
                   //retry sending the packet later
                   temp_dataFrameToSend->l2_retriesLeft--;
                   if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                     postTaskSendDone(temp_dataFrameToSend,FAIL);
+                     taskSendDone(temp_dataFrameToSend,FAIL);
                   }
                   openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
-                        (errorparameter_t)temp_asn%LENGTHCELLFRAME,(errorparameter_t)0);
+                        (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
                   endSlot();
                };
                //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsTxOffset);//watchdog timer
             } else {
-               if (cellUsageGet_isRX(temp_asn%LENGTHCELLFRAME)) {        //start the RX sequence
+               if (cellUsageGet_isRX(asn%LENGTHCELLFRAME)) {        //start the RX sequence
                   change_state(S_RX_RXDATAPREPARE);
                   radio_rxOn(frequencyChannel);
                   /*if (radio_rxOn(frequencyChannel)!=E_SUCCES) {
@@ -296,7 +303,7 @@ void slot_alarm_fired(){
 
          default:
             openserial_printError(COMPONENT_MAC,ERR_WRONG_CELLTYPE,
-                  cellUsageGet_getType(temp_asn%LENGTHCELLFRAME),0);
+                  cellUsageGet_getType(asn%LENGTHCELLFRAME),0);
             endSlot();
             return;
       }
@@ -393,7 +400,7 @@ void fast_alarm_fired() {
          /*------------------- TX sequence ------------------------*/
          case S_TX_TXDATAPREPARE:                                    //[timer fired] transmitter (ERROR state)
             //I'm a transmitter, didn't have time to prepare for TX
-            postTaskSendDone(temp_dataFrameToSend,FAIL);
+            taskSendDone(temp_dataFrameToSend,FAIL);
             openserial_printError(COMPONENT_MAC,ERR_NO_TIME_TO_PREPARE_TX,
                   (errorparameter_t)temp_asn%LENGTHCELLFRAME,0);
             endSlot();
@@ -405,7 +412,7 @@ void fast_alarm_fired() {
                //retry later
                temp_dataFrameToSend->l2_retriesLeft--;
                if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                  postTaskSendDone(temp_dataFrameToSend,FAIL);
+                  taskSendDone(temp_dataFrameToSend,FAIL);
                }
                openserial_printError(COMPONENT_MAC,ERR_SENDNOW_FAILED,
                      (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
@@ -508,7 +515,7 @@ void radioControl_receivedNothing(error_t error){
            
            temp_dataFrameToSend->l2_retriesLeft--;
             if (temp_dataFrameToSend->l2_retriesLeft==0) {
-               postTaskSendDone(temp_dataFrameToSend,FAIL);
+               taskSendDone(temp_dataFrameToSend,FAIL);
             }
             endSlot();
             break;
@@ -524,7 +531,7 @@ void radioControl_receivedNothing(error_t error){
       
 }
 
-void radio_send_now_done(error_t error){//poipoi call from phy layer
+void radio_send_now_done(error_t error) {//poipoi call from phy layer
       asn_t                   temp_asn;
       uint8_t                 temp_state;
       OpenQueueEntry_t*       temp_dataFrameToSend;
@@ -540,7 +547,7 @@ void radio_send_now_done(error_t error){//poipoi call from phy layer
                //retry later
                temp_dataFrameToSend->l2_retriesLeft--;
                if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                  postTaskSendDone(temp_dataFrameToSend,FAIL);
+                  taskSendDone(temp_dataFrameToSend,FAIL);
                }
                openserial_printError(COMPONENT_MAC,ERR_SENDNOWDONE_FAILED,
                      (errorparameter_t)temp_state,
@@ -553,7 +560,7 @@ void radio_send_now_done(error_t error){//poipoi call from phy layer
                /// major poipoi, implement all three of these later for true tsch neighbor management
                //call NeighborStats.indicateTx(&(temp_dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
                //call CellStats.indicateUse(temp_asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
-               //postTaskSendDone(temp_dataFrameToSend,SUCCESS);
+               //taskSendDone(temp_dataFrameToSend,SUCCESS);
                
               endSlot();
             } else {
@@ -588,29 +595,12 @@ void radio_send_now_done(error_t error){//poipoi call from phy layer
       }
 }
 
-void postTaskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDoneError) {
-      
-  //just call senddone
-  if (sendDoneMessage!=NULL) {
-         openserial_printError(COMPONENT_MAC,ERR_BUSY_SENDDONE,
-               (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
-      }
-      sendDoneMessage = param_sendDoneMessage;
-      sendDoneError   = param_sendDoneError;
-      
-      taskSendDone(); //poipoi wthat?
-}
-
-void taskSendDone() {
-      OpenQueueEntry_t*  temp_sendDoneMessage;
-      error_t            temp_sendDoneError;
-      
-      temp_sendDoneMessage = sendDoneMessage;
-      temp_sendDoneError   = sendDoneError;
-      
-      //openSendFromUpper_sendDone(temp_sendDoneMessage,temp_sendDoneError);
-      nores_sendDone(temp_sendDoneMessage,temp_sendDoneError);
-      sendDoneMessage = NULL;
+void taskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDoneError) {
+   if (param_sendDoneMessage->creator==COMPONENT_RES) {
+      openqueue_freePacketBuffer(param_sendDoneMessage);
+   } else {
+      nores_sendDone(param_sendDoneMessage,param_sendDoneError);
+   }
 }
 
 void endSlot() {
@@ -637,8 +627,9 @@ void endSlot() {
 //===================================== public from lower layer ===============
 
 void mac_sendDone(OpenQueueEntry_t* pkt, error_t error) {
-    taskSendDone();
+   taskSendDone(pkt, error);
 }
+
 //===================================== private ===============================
 
 //*******************************from here***********************/
@@ -695,14 +686,14 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
                //cellStats_indicateUse(temp_asn%LENGTHCELLFRAME,WAS_ACKED);
                //neighborStats_indicateTx(&(temp_dataFrameToSend->l2_nextORpreviousHop),WAS_ACKED);
               
-               //postTaskSendDone(temp_dataFrameToSend,SUCCESS); poipoi what?
+               //taskSendDone(temp_dataFrameToSend,SUCCESS); poipoi what?
             } else {
               //implement these poipoi
              // cellStats.indicateUse(temp_asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
              //  neighborStats.indicateTx(&(temp_dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
                temp_dataFrameToSend->l2_retriesLeft--;
                if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                  postTaskSendDone(temp_dataFrameToSend,FAIL);
+                  taskSendDone(temp_dataFrameToSend,FAIL);
                }
             }
             openqueue_freePacketBuffer(msg);//free ACK
@@ -1045,30 +1036,7 @@ uint8_t cellUsageGet_getChannelOffset(uint16_t slotNum){
         return 1;
 }*/
 
-///////////////////////////Hack to manage scheduling packet transmissions/////
-void prepareADVPacket(){
-          
-              OpenQueueEntry_t* packetADV;
-              packetADV = openqueue_getFreePacketBuffer();
-               
-               if (packetADV==NULL) {
-                  openserial_printError(COMPONENT_MAC,ERR_NO_FREE_PACKET_BUFFER,
-                        (errorparameter_t)0,(errorparameter_t)0);
-                  return;
-               }
-               packetADV->creator       = COMPONENT_RES;
-               packetADV->owner         = COMPONENT_MAC;
-               
-               packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
-               ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
-               prependIEEE802154header(packetADV,
-                     IEEE154_TYPE_CMD,
-                     IEEE154_SEC_NO_SECURITY,
-                     NULL,
-                     NULL
-                     );
-      
-}
+
 
 
                
