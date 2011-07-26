@@ -42,7 +42,7 @@ void radio_init() {
 
    // configure radio
    spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);  // turn radio off
-   spi_write_register(RG_IRQ_MASK, 0x08);                // fire interrupt only on TRX_END
+   spi_write_register(RG_IRQ_MASK, 0x0C);                // fire interrupt only on TRX_END and RX_START
    spi_read_register(RG_IRQ_STATUS);                     // deassert the interrupt pin (P1.6) in case high
    spi_write_register(RG_ANT_DIV, USE_CHIP_ANTENNA);     // always use chip antenna
 #define RG_TRX_CTRL_1 0x04
@@ -182,10 +182,14 @@ void radio_rxOn(uint8_t channel) {
 
 void isr_radio() {
    uint8_t temp_reg_value;
+   uint8_t irq_status;
    OpenQueueEntry_t* radioPacketReceived_new;
-   spi_read_register(RG_IRQ_STATUS);          // reading IRQ_STATUS causes IRQ_RF (P1.6) to go low
+   irq_status = spi_read_register(RG_IRQ_STATUS);          // reading IRQ_STATUS causes IRQ_RF (P1.6) to go low
    switch (radio_state) {
       case RADIO_STATE_READY_RX:
+        if(irq_status == 0x04)//meaning RX_START
+          radio_began_receiving();
+        else{//meaning TRX_END
          radio_state = RADIO_STATE_RECEIVING;
          // initialize the reception buffer
          radioPacketReceived->payload = &(radioPacketReceived->packet[0]);
@@ -226,13 +230,15 @@ void isr_radio() {
             radio_state=RADIO_STATE_READY_RX;
          }
          break;
+        }
       case RADIO_STATE_TRANSMITTING:
          //remove 1B SPI destination address
          packetfunctions_tossHeader(radioPacketToSend,1);
          //remove 1B length field
          packetfunctions_tossHeader(radioPacketToSend,1);
          //signal sendDone to upper layer
-         mac_sendDone(radioPacketToSend,E_SUCCESS);
+         radio_send_now_done(E_SUCCESS);
+         //mac_sendDone(radioPacketToSend,E_SUCCESS);//older implementation
          radioPacketToSend = NULL;
          //return to default state
          if (default_radio_state==RADIO_STATE_READY_RX) {
