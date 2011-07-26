@@ -7,6 +7,7 @@
 //===================================== variables =============================
 
 void               radio_send_now_done(error_t error);
+void               radio_began_receiving();
 uint8_t            radio_state;
 uint8_t            default_radio_state;
 uint8_t            default_channel;
@@ -159,7 +160,7 @@ error_t radio_send_now(){
    //send packet
    P4OUT |=  0x80;
    P4OUT &= ~0x80;
-   radio_send_now_done(E_SUCCESS);
+   //radio_send_now_done(E_SUCCESS);
    return E_SUCCESS;
 }
 

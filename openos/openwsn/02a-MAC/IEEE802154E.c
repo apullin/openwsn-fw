@@ -19,13 +19,13 @@
 #include "nores.h"
 
 
-#define DEBUG_PIN_1 0x02 //p1.1
-#define DEBUG_PIN_2 0x10 //p4.4
-#define DEBUG_PIN_3 0x08 //p4.3
+#define DEBUG_PIN_FRAME 0x02 //p1.1
+#define DEBUG_PIN_SLOT 0x10 //p4.4
+#define DEBUG_PIN_FAST 0x08 //p4.3
 
 //for debugging and hardocing to test synchronization
 #define MOTE1_ADDRESS 0x99
-#define MOTE2_ADDRESS 0x9a
+#define MOTE2_ADDRESS 0xb6
 
 //===================================== variables =========9====================
 
@@ -57,6 +57,7 @@ uint16_t   slotAlarm_getNow();
 // void slotAlarm_startAt(uint16_t startingPoint,uint16_t duration); 
 // void fastAlarm_startAt(uint16_t startingPoint,uint16_t duration);
 //the two following tasks are used to break the asynchronicity: everything in MAC and below is async, all the above not
+
 void taskReceive(); //task
 void taskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDoneError);
 
@@ -75,9 +76,9 @@ void prepareADVPacket();
 void mac_init() {
     
     //set debug pins as outputs
-    P1DIR |= DEBUG_PIN_1; //P1.1 0x02
-    P4DIR |= DEBUG_PIN_2; //P4.4 0x04
-    P4DIR |= DEBUG_PIN_3; //P4.3 0x08
+    P1DIR |= DEBUG_PIN_FRAME; //P1.1 0x02
+    P4DIR |= DEBUG_PIN_SLOT; //P4.4 0x04
+    P4DIR |= DEBUG_PIN_FAST; //P4.3 0x08
     
     P1DIR |= 0x04; //P1.2 reset debug
     P1OUT |= 0x04;
@@ -126,14 +127,9 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 //new slot
 void timer_mac_periodic_fired() {
       
-      uint8_t                 temp_state;
-      bool                    temp_isSync;
-      OpenQueueEntry_t*       temp_dataFrameToSend;
-      //error_t                 temp_error;
-      //open_addr_t             temp_addr_16b;
-      //open_addr_t             temp_addr_64b;
+
       ieee802154_header_iht   transmitted_ieee154_header;
-      uint8_t                 temp_channelOffset;
+       uint8_t                 channelOffset;
 
       
       /*This is an exmaple for a 10ms timeslot
@@ -149,22 +145,19 @@ void timer_mac_periodic_fired() {
       asn++;
       
       //flip slot debug pin
-      P4OUT ^= DEBUG_PIN_3;
+      P4OUT ^= DEBUG_PIN_FAST;
       //set fast_alarm debug pin to 0 for easier debugging
-      P1OUT &= ~DEBUG_PIN_1;
-     // P1OUT ^= DEBUG_PIN_1; //txrx debug
+      P1OUT &= ~DEBUG_PIN_FRAME;
+     // P1OUT ^= DEBUG_PIN_FRAME; //txrx debug
       //flip frame debug pin
       if(asn%LENGTHCELLFRAME == 0) {
-         P4OUT ^= DEBUG_PIN_2;
+         P4OUT ^= DEBUG_PIN_SLOT;
       }
 
       openserial_stop();
       
       dataFrameToSend      = NULL;
-      
-      temp_state           = state;
-      temp_isSync          = isSync;
-      temp_dataFrameToSend = dataFrameToSend;
+
 
       //----- switch to/from S_SYNCHRONIZING
       if (idmanager_getIsDAGroot()==TRUE) {
@@ -175,32 +168,32 @@ void timer_mac_periodic_fired() {
             endSlot();
             return;
          }
-      } else if (temp_isSync==FALSE) {
+      } else if (isSync==FALSE) {
          //If I'm not in sync, enter/stay in S_SYNCHRONIZING
-         /*atomic if (temp_asn%2==1) {
+         /*atomic if (asn%2==1) {
             openserial_startOutput();
          } else {
             openserial_startInput();
          }*///poipoi
-         if (temp_state!=S_SYNCHRONIZING) {
+         if (state!=S_SYNCHRONIZING) {
             change_state(S_SYNCHRONIZING);
-            radio_rxOn(11);
-            //endSlot();
+            radio_rxOn(18);
+            endSlot();
          }
          return;
       }
 
       //----- state error
-      if (temp_state!=S_SLEEP) {     
+      if (state!=S_SLEEP) {     
          openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_STARTSLOTTASK,
-               (errorparameter_t)temp_state,(errorparameter_t)asn%LENGTHCELLFRAME);
+               (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
          endSlot(); //poipoi write
          return;
       }
 
       switch (cellUsageGet_getType(asn%LENGTHCELLFRAME)) {
          case CELLTYPE_TXRX:
-           P1OUT ^= DEBUG_PIN_1; //txrx debug
+           P1OUT ^= DEBUG_PIN_FRAME; //txrx debug
            
            //start timer to deal with transmitting or receiving when backofftimer fires
            timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
@@ -210,7 +203,7 @@ void timer_mac_periodic_fired() {
            OpenQueueEntry_t* packetADV;
            
            //get a packet out of the buffer (if any)
-           if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(temp_asn%LENGTHCELLFRAME)) {
+           if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(asn%LENGTHCELLFRAME)) {
              //hack add adv packet to queue
              if(cellUsageGet_isADV(asn%LENGTHCELLFRAME)){
                
@@ -232,24 +225,24 @@ void timer_mac_periodic_fired() {
                                          NULL
                                            );
                  dataFrameToSend = packetADV; 
-                 temp_dataFrameToSend = dataFrameToSend;
+
                }
              }
            }
            
-           temp_channelOffset = cellUsageGet_getChannelOffset(asn%LENGTHCELLFRAME);//poipoi write
+           channelOffset = cellUsageGet_getChannelOffset(asn%LENGTHCELLFRAME);//poipoi write
             if (HOPPING_ENABLED) {
-               frequencyChannel = ((asn+temp_channelOffset)%16)+11;
+               frequencyChannel = ((asn+channelOffset)%16)+11;
             } else {
-               frequencyChannel =((temp_channelOffset)%16)+11;
+               frequencyChannel =((channelOffset)%16)+11;
             }
             
             frequencyChannel=18; //poipoi
 
-            if (temp_dataFrameToSend!=NULL) {                                  //start the TX sequence
+            if (dataFrameToSend!=NULL) {                                  //start the TX sequence
                dataFrameToSend->owner = COMPONENT_MAC;
                dataFrameToSend->l1_channel = frequencyChannel;
-               transmitted_ieee154_header = retrieveIEEE802154header(temp_dataFrameToSend);
+               transmitted_ieee154_header = retrieveIEEE802154header(dataFrameToSend);
                if (cellUsageGet_isADV(asn%LENGTHCELLFRAME)) {
                   //I will be sending an ADV frame
                   ((IEEE802154E_ADV_t*)((dataFrameToSend->payload)+transmitted_ieee154_header.headerLength))->timingInformation=asn;// (globalTime.getASN());//poipoi implement
@@ -257,9 +250,9 @@ void timer_mac_periodic_fired() {
                change_state(S_TX_TXDATAPREPARE);
                if (radio_prepare_send(dataFrameToSend)!=E_SUCCESS) {
                   //retry sending the packet later
-                  temp_dataFrameToSend->l2_retriesLeft--;
-                  if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                     taskSendDone(temp_dataFrameToSend,FAIL);
+                  dataFrameToSend->l2_retriesLeft--;
+                  if (dataFrameToSend->l2_retriesLeft==0) {
+                     taskSendDone(dataFrameToSend,FAIL);
                   }
                   openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
                         (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
@@ -273,7 +266,7 @@ void timer_mac_periodic_fired() {
                   /*if (radio_rxOn(frequencyChannel)!=E_SUCCES) {
                      //abort
                      openserial_printError(COMPONENT_MAC,ERR_PREPARERECEIVE_FAILED,
-                           (errorparameter_t)temp_asn%LENGTHCELLFRAME,(errorparameter_t)0);
+                           (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
                      endSlot();
                   };*/
                   
@@ -311,13 +304,9 @@ void timer_mac_periodic_fired() {
 }
 
 void radio_prepare_send_done(){//poipoi implememnt in phys layer
-      asn_t   temp_asn;
-      uint8_t temp_state;
+
       
-      temp_asn   = asn;
-      temp_state = state;
-      
-      switch (temp_state) {
+      switch (state) {
          case S_TX_TXDATAPREPARE:
               change_state(S_TX_TXDATAREADY);//bk added
             break;
@@ -328,26 +317,21 @@ void radio_prepare_send_done(){//poipoi implememnt in phys layer
             break;
          default:
             openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_PREPARESENDDONE,
-                  (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
             endSlot();
             break;
       }
 }
 
 void radioControl_prepareReceiveDone(error_t error){
-      asn_t   temp_asn;
-      uint8_t temp_state;
-      
-      temp_asn = asn;
-      temp_state = state;
       
       if (error!=E_SUCCESS) {
          //abort
          openserial_printError(COMPONENT_MAC,ERR_PREPARERECEIVEDONE_FAILED,
-               (errorparameter_t)error,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+               (errorparameter_t)error,(errorparameter_t)asn%LENGTHCELLFRAME);
          endSlot();
       }
-      switch (temp_state) {
+      switch (state) {
          case S_TX_RXACKPREPARE:
             change_state(S_TX_RXACKREADY);
             break;
@@ -360,13 +344,13 @@ void radioControl_prepareReceiveDone(error_t error){
            /*if(radio_rxOn(frequencyChannel)!=E_SUCCESS){
                //abort
                openserial_printError(COMPONENT_MAC,ERR_RECEIVENOW_FAILED,
-                     (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                     (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
                endSlot();
             }poipoi*/
             break;
          default:
             openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_PREPARERECEIVEDONE,
-                  (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
             endSlot();
             break;
       }
@@ -385,24 +369,17 @@ void timer_mac_watchdog_fired(){
 //end wrapers
 
 void fast_alarm_fired() {
-      asn_t             temp_asn;
-      uint8_t           temp_state;
-      OpenQueueEntry_t* temp_dataFrameToSend;
-      
-      temp_asn             = asn;
-      temp_state           = state;
-      temp_dataFrameToSend = dataFrameToSend;
 
        //flip timer debug pin
-      P1OUT ^= DEBUG_PIN_1; //txrx debug
+      P1OUT ^= DEBUG_PIN_FRAME; //txrx debug
       
-      switch (temp_state) {
+      switch (state) {
          /*------------------- TX sequence ------------------------*/
          case S_TX_TXDATAPREPARE:                                    //[timer fired] transmitter (ERROR state)
             //I'm a transmitter, didn't have time to prepare for TX
-            taskSendDone(temp_dataFrameToSend,FAIL);
+            taskSendDone(dataFrameToSend,FAIL);
             openserial_printError(COMPONENT_MAC,ERR_NO_TIME_TO_PREPARE_TX,
-                  (errorparameter_t)temp_asn%LENGTHCELLFRAME,0);
+                  (errorparameter_t)asn%LENGTHCELLFRAME,0);
             endSlot();
             break;
          case S_TX_TXDATAREADY:                                      //[timer fired] transmitter
@@ -410,16 +387,18 @@ void fast_alarm_fired() {
             change_state(S_TX_TXDATA);
             if ((radio_send_now())!=E_SUCCESS) {
                //retry later
-               temp_dataFrameToSend->l2_retriesLeft--;
-               if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                  taskSendDone(temp_dataFrameToSend,FAIL);
+               dataFrameToSend->l2_retriesLeft--;
+               if (dataFrameToSend->l2_retriesLeft==0) {
+                  taskSendDone(dataFrameToSend,FAIL);
                }
                openserial_printError(COMPONENT_MAC,ERR_SENDNOW_FAILED,
-                     (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                     (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
                endSlot();
             }else{
                    //if we are sucessful start the timer to turn the radio on later to listen for th eack
-                  timer_startOneShot(TIMER_MAC_WATCHDOG,GUARDTIME);
+                  //no need to listen if we just sent an ADV (slot == 0)
+                  if(asn%LENGTHCELLFRAME != 0)
+                     timer_startOneShot(TIMER_MAC_WATCHDOG,GUARDTIME);
             }
             break;
          case S_TX_RXACKREADY:                                       //[timer fired] transmitter
@@ -436,7 +415,7 @@ void fast_alarm_fired() {
            /* if ( radio_rxOn(frequencyChannel)!=E_SUCCESS ) {
                //abort
                openserial_printError(COMPONENT_MAC,ERR_RECEIVENOW_FAILED,
-                     (errorparameter_t)temp_state,(errorparameter_t)0);
+                     (errorparameter_t)state,(errorparameter_t)0);
                endSlot();
             };poipoi*/
             break;//from here***
@@ -445,7 +424,7 @@ void fast_alarm_fired() {
          case S_RX_RXDATAPREPARE:                                    //[timer fired] receiver (ERROR state)
             //I'm a receiver, didn't have time to prepare for RX
             openserial_printError(COMPONENT_MAC,ERR_NO_TIME_TO_PREPARE_RX,
-                  (errorparameter_t)temp_asn%LENGTHCELLFRAME,0);
+                  (errorparameter_t)asn%LENGTHCELLFRAME,0);
             endSlot();
             break;
          case S_RX_RXDATAREADY:                                      //[timer fired] receiver
@@ -457,14 +436,14 @@ void fast_alarm_fired() {
             /*if ( (call RadioControl.receiveNow(TIME_LIMITED_RX,TsRxWaitTime))!=SUCCESS ) {
                //abort
                openserial_printError(COMPONENT_MAC,ERR_RECEIVENOW_FAILED,
-                     (errorparameter_t)temp_state,(errorparameter_t)0);
+                     (errorparameter_t)state,(errorparameter_t)0);
                endSlot();
             };poipoi*/
             break;
          case S_RX_TXACKPREPARE:                                     //[timer fired] receiver (ERROR state)
             //I'm a receiver, didn't have time to prepare ACK
             openserial_printError(COMPONENT_MAC,ERR_NO_TIME_TO_PREPARE_ACK,
-                  (errorparameter_t)temp_asn%LENGTHCELLFRAME,0);
+                  (errorparameter_t)asn%LENGTHCELLFRAME,0);
             endSlot();
             break;
          case S_RX_TXACKREADY:                                       //[timer fired] receiver
@@ -475,14 +454,14 @@ void fast_alarm_fired() {
             if ((radio_send_now()) {
                //abort
                openserial_printError(COMPONENT_MAC,ERR_SENDNOW_FAILED,
-                     (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                     (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
                endSlot();
             }*/
             break;
 
          default:
             openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_FASTTIMER_FIRED,
-                  (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
             endSlot();
             break;
       }
@@ -492,15 +471,10 @@ void fast_alarm_fired() {
 //call in mac, not from radio, if no interupt by now, turn radio off
 void radioControl_receivedNothing(error_t error){
  
-      asn_t                   temp_asn;
-      uint8_t                 temp_state;
-      OpenQueueEntry_t*       temp_dataFrameToSend;
 
-      temp_asn             = asn;
-      temp_state           = state;
-      temp_dataFrameToSend = dataFrameToSend;
 
-      switch(temp_state) {
+
+      switch(state) {
          case S_RX_RXDATA:                                           //[receivedNothing] receiver (WARNING state)
             //I'm a receiver, didn't receive data
             endSlot();
@@ -509,13 +483,13 @@ void radioControl_receivedNothing(error_t error){
             //I'm a transmitter, didn't receive ACK (end of TX sequence)
             
            /// major poipoi, implement both of these later for true tsch neighbor management
-           //cellStats_indicateUse(temp_asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
+           //cellStats_indicateUse(asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
            //count num of sent packets
-           //neighborStats_indicateTx(&(temp_dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
+           //neighborStats_indicateTx(&(dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
            
-           temp_dataFrameToSend->l2_retriesLeft--;
-            if (temp_dataFrameToSend->l2_retriesLeft==0) {
-               taskSendDone(temp_dataFrameToSend,FAIL);
+           dataFrameToSend->l2_retriesLeft--;
+            if (dataFrameToSend->l2_retriesLeft==0) {
+               taskSendDone(dataFrameToSend,FAIL);
             }
             endSlot();
             break;
@@ -524,7 +498,7 @@ void radioControl_receivedNothing(error_t error){
             break;
          default:
             openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_RECEIVEDNOTHING,
-                  (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
             endSlot();
             break;
       }
@@ -532,35 +506,29 @@ void radioControl_receivedNothing(error_t error){
 }
 
 void radio_send_now_done(error_t error) {//poipoi call from phy layer
-      asn_t                   temp_asn;
-      uint8_t                 temp_state;
-      OpenQueueEntry_t*       temp_dataFrameToSend;
 
-      temp_asn             = asn;
-      temp_state           = state;
-      temp_dataFrameToSend = dataFrameToSend;
-         
-      switch (temp_state) {
+
+      switch (state) {
          case S_TX_TXDATA:                                           //[sendNowDone] transmitter
             //I'm a transmitter, finished sending data
             if (error!=E_SUCCESS) {
                //retry later
-               temp_dataFrameToSend->l2_retriesLeft--;
-               if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                  taskSendDone(temp_dataFrameToSend,FAIL);
+               dataFrameToSend->l2_retriesLeft--;
+               if (dataFrameToSend->l2_retriesLeft==0) {
+                  taskSendDone(dataFrameToSend,FAIL);
                }
                openserial_printError(COMPONENT_MAC,ERR_SENDNOWDONE_FAILED,
-                     (errorparameter_t)temp_state,
-                     (errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                     (errorparameter_t)state,
+                     (errorparameter_t)asn%LENGTHCELLFRAME);
                endSlot();
                return;
             }
-            if (cellUsageGet_isADV(temp_asn%LENGTHCELLFRAME)==TRUE) {
+            if (cellUsageGet_isADV(asn%LENGTHCELLFRAME)==TRUE) {
                //ADV slot, don't have to listen for ACK
                /// major poipoi, implement all three of these later for true tsch neighbor management
-               //call NeighborStats.indicateTx(&(temp_dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
-               //call CellStats.indicateUse(temp_asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
-               //taskSendDone(temp_dataFrameToSend,SUCCESS);
+               //call NeighborStats.indicateTx(&(dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
+               //call CellStats.indicateUse(asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
+               taskSendDone(dataFrameToSend,E_SUCCESS);
                
               endSlot();
             } else {
@@ -574,8 +542,8 @@ void radio_send_now_done(error_t error) {//poipoi call from phy layer
             if (error!=E_SUCCESS) {
                //don't do anything if error==FAIL
                openserial_printError(COMPONENT_MAC,ERR_SENDNOWDONE_FAILED,
-                     (errorparameter_t)temp_state,
-                     (errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                     (errorparameter_t)state,
+                     (errorparameter_t)asn%LENGTHCELLFRAME);
             }
             /* //sync off of DATA I received before I sent ACK
              * poipoi for simplicity, only resync from ADV
@@ -589,7 +557,7 @@ void radio_send_now_done(error_t error) {//poipoi call from phy layer
             break;
          default:
             openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_SUBSEND_SENDDONE,
-                  (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
             endSlot();
             break;
       }
@@ -604,11 +572,11 @@ void taskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDon
 }
 
 void endSlot() {
-      //asn_t   temp_asn;
-      //uint8_t temp_state;
+      //asn_t   asn;
+      //uint8_t state;
       
-     // temp_asn   = asn;
-     // temp_state = state;
+     // asn   = asn;
+     // state = state;
       //if (packetACK!=NULL) {
             //malloc_freePacketBuffer(packetACK);
       ///      openqueue_freePacketBuffer(packetACK);
@@ -619,7 +587,7 @@ void endSlot() {
       /*if (radio_rfOff()!=E_SUCCESS) {
          //abort
          openserial_printError(COMPONENT_MAC,ERR_RFOFF_FAILED,
-               (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+               (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
       }*/
       change_state(S_SLEEP);
 }
@@ -632,21 +600,21 @@ void mac_sendDone(OpenQueueEntry_t* pkt, error_t error) {
 
 //===================================== private ===============================
 
+void radio_began_receiving(){
+
+}
+
+
 //*******************************from here***********************/
 void radio_packet_received(OpenQueueEntry_t* msg) {
-      asn_t                   temp_asn;
-      uint8_t                 temp_state;
-      //bool                    temp_isSync;
-      OpenQueueEntry_t*       temp_dataFrameToSend;
-      OpenQueueEntry_t*       temp_packetACK;
-      error_t                 temp_error;
+     
+
+
       ieee802154_header_iht   received_ieee154_header;
       ieee802154_header_iht   transmitted_ieee154_header;
 
-      temp_asn             = asn;
-     // temp_isSync          = isSync;
-      temp_state           = state;
-      temp_dataFrameToSend = dataFrameToSend;
+
+
  
 
       msg->owner = COMPONENT_MAC;
@@ -668,12 +636,12 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
          return;
       }
 
-      switch (temp_state) {
+      switch (state) {
 
          /*------------------- TX sequence ------------------------*/
          case S_TX_RXACK:                                            //[receive] transmitter
             //I'm a transmitter, just received ACK (end of TX sequence)
-            transmitted_ieee154_header = retrieveIEEE802154header(temp_dataFrameToSend);
+            transmitted_ieee154_header = retrieveIEEE802154header(dataFrameToSend);
             if (received_ieee154_header.dsn == transmitted_ieee154_header.dsn) {
                //I'm a transmitter, sync off of ACK message
                /* poipoi for simplicity, only resync from ADV
@@ -683,17 +651,17 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
                   (((IEEE802154E_ACK_ht*)(msg->payload))->timeCorrection));//poipoi /32  poipoipoipoi*/
                
                //poipoi implement
-               //cellStats_indicateUse(temp_asn%LENGTHCELLFRAME,WAS_ACKED);
-               //neighborStats_indicateTx(&(temp_dataFrameToSend->l2_nextORpreviousHop),WAS_ACKED);
+               //cellStats_indicateUse(asn%LENGTHCELLFRAME,WAS_ACKED);
+               //neighborStats_indicateTx(&(dataFrameToSend->l2_nextORpreviousHop),WAS_ACKED);
               
-               //taskSendDone(temp_dataFrameToSend,SUCCESS); poipoi what?
+               //taskSendDone(dataFrameToSend,SUCCESS); poipoi what?
             } else {
               //implement these poipoi
-             // cellStats.indicateUse(temp_asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
-             //  neighborStats.indicateTx(&(temp_dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
-               temp_dataFrameToSend->l2_retriesLeft--;
-               if (temp_dataFrameToSend->l2_retriesLeft==0) {
-                  taskSendDone(temp_dataFrameToSend,FAIL);
+             // cellStats.indicateUse(asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
+             //  neighborStats.indicateTx(&(dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
+               dataFrameToSend->l2_retriesLeft--;
+               if (dataFrameToSend->l2_retriesLeft==0) {
+                  taskSendDone(dataFrameToSend,FAIL);
                }
             }
             openqueue_freePacketBuffer(msg);//free ACK
@@ -710,7 +678,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
               /*if (radio_rfOff()!=E_SUCCESS) {
                   //do nothing about it
                   openserial_printError(COMPONENT_MAC,ERR_RFOFF_FAILED,
-                        (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                        (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
                }*/
                
               //poipoi add for ack
@@ -718,43 +686,42 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
                //change_state(S_RX_TXACKPREPARE);
                
                packetACK = openqueue_getFreePacketBuffer();
-               temp_packetACK = packetACK;
                
-               if (temp_packetACK==NULL) {
+               if (packetACK==NULL) {
                   openserial_printError(COMPONENT_MAC,ERR_NO_FREE_PACKET_BUFFER,
                         (errorparameter_t)0,(errorparameter_t)0);
                   openqueue_freePacketBuffer(msg);
                   endSlot();
                   return;
                }
-               temp_packetACK->creator       = COMPONENT_MAC;
-               temp_packetACK->owner         = COMPONENT_MAC;
+               packetACK->creator       = COMPONENT_MAC;
+               packetACK->owner         = COMPONENT_MAC;
                //ACK payload
-               packetfunctions_reserveHeaderSize(temp_packetACK,sizeof(IEEE802154E_ACK_ht));
-               ((IEEE802154E_ACK_ht*)(temp_packetACK->payload))->dhrAckNack     = IEEE154E_ACK_dhrAckNack_DEFAULT;
-               ((IEEE802154E_ACK_ht*)(temp_packetACK->payload))->timeCorrection =
+               packetfunctions_reserveHeaderSize(packetACK,sizeof(IEEE802154E_ACK_ht));
+               ((IEEE802154E_ACK_ht*)(packetACK->payload))->dhrAckNack     = IEEE154E_ACK_dhrAckNack_DEFAULT;
+               ((IEEE802154E_ACK_ht*)(packetACK->payload))->timeCorrection =
                   (int16_t)((int32_t)(TsTxOffset+radio_delay)-(int32_t)(msg->l1_rxTimestamp));//poipoi *32
                //154 header
-               prependIEEE802154header(temp_packetACK,
+               prependIEEE802154header(packetACK,
                      IEEE154_TYPE_ACK,
                      IEEE154_SEC_NO_SECURITY,
                      received_ieee154_header.dsn,
                      NULL
                      );
                //l2 metadata
-               temp_packetACK->l2_retriesLeft  = 1;
+               packetACK->l2_retriesLeft  = 1;
                //l1_metadata
-               temp_packetACK->l1_txPower        = TX_POWER;
-               temp_packetACK->l1_channel = frequencyChannel;
-               temp_error = radio_prepare_send(temp_packetACK);
+               packetACK->l1_txPower        = TX_POWER;
+               packetACK->l1_channel = frequencyChannel;
+               error_t error = radio_prepare_send(packetACK);
                
                //now that we have an ACK packet we want to send it when ACK_WAIT_TIME fires
                timer_startOneShot(TIMER_MAC_BACKOFF,ACK_WAIT_TIME);
                
-               if (temp_error!=E_SUCCESS) {
+               if (error!=E_SUCCESS) {
                   //abort
                   openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
-                        (errorparameter_t)temp_asn%LENGTHCELLFRAME,(errorparameter_t)0);
+                        (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
                   endSlot();
                };
                frameReceived = msg;
@@ -781,7 +748,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
             openqueue_freePacketBuffer(msg);
             endSlot();
             openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_RECEIVE,
-                  (errorparameter_t)temp_state,(errorparameter_t)temp_asn%LENGTHCELLFRAME);
+                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
             endSlot();
             break;
       }
@@ -789,37 +756,34 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
 
 
  void taskReceive() {
-      //asn_t              temp_asn;
-      OpenQueueEntry_t*  temp_frameReceived;
-      //temp_asn = asn;
-      temp_frameReceived = frameReceived;
+
 
       
-      if (temp_frameReceived->length>0) {
-      //packet contains payload destined to an upper layer
-          nores_receive(temp_frameReceived);
-      } else {
-        openqueue_freePacketBuffer(temp_frameReceived);
-      }
-      temp_frameReceived = NULL;
-     
+   if (frameReceived->length>0) {
+     //packet contains payload destined to an upper layer
+     nores_receive(frameReceived);
+   } else {
+     openqueue_freePacketBuffer(frameReceived);
+   }
+   frameReceived = NULL;
+   
  }
 
-   /*------------------------------ resynchronization ---------------------------------*/
-   void resynchronize(bool resyncType, open_addr_t* node_id, timervalue_t dataGlobalSlotOffset, int16_t timeCorrection) {
+/*------------------------------ resynchronization ---------------------------------*/
+void resynchronize(bool resyncType, open_addr_t* node_id, timervalue_t dataGlobalSlotOffset, int16_t timeCorrection) {
 
-      bool          temp_isSync;
+
      // open_addr_t   timeParent;
       bool          iShouldSynchronize;
 
  
-      temp_isSync = isSync;
+
      
 
       if ((idmanager_getIsDAGroot())==FALSE) {        //I resync only if I'm not a DAGroot
          //---checking whether I should synchronize
          iShouldSynchronize=FALSE;
-         if (temp_isSync==FALSE) {                    //I'm not synchronized, I sync off of all ADV packets
+         if (isSync==FALSE) {                    //I'm not synchronized, I sync off of all ADV packets
             if (resyncType==FRAME_BASED_RESYNC) {
                iShouldSynchronize=TRUE;
                isSync=TRUE;
