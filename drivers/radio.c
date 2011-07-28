@@ -7,7 +7,6 @@
 //===================================== variables =============================
 
 void               radio_send_now_done(error_t error);
-void               radio_began_receiving();
 uint8_t            radio_state;
 uint8_t            default_radio_state;
 uint8_t            default_channel;
@@ -28,7 +27,7 @@ void radio_init() {
    radioPacketReceived =  openqueue_getFreePacketBuffer();
    radioPacketReceived->creator = COMPONENT_RADIODRIVER;
    radioPacketReceived->owner   = COMPONENT_RADIODRIVER;
-
+   
    // initialize communication between MSP430 and radio
    //-- 4-wire SPI
    spi_init();
@@ -40,7 +39,7 @@ void radio_init() {
    P1DIR  &= ~0x40;                              // input direction
    P1IES  &= ~0x40;                              // interrup when transition is low-to-high
    P1IE   |=  0x40;                              // enable interrupt
-
+   
    // configure radio
    spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);  // turn radio off
    spi_write_register(RG_IRQ_MASK, 0x0C);                // fire interrupt only on TRX_END and RX_START
@@ -53,11 +52,11 @@ void radio_init() {
 #else
    spi_write_register(RG_TRX_CTRL_1, 0x20);              // calculate CRC
 #endif
-
+   
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
    radio_state = RADIO_STATE_STARTED;
    default_radio_state = radio_state;
-
+   
    radioPacketToSend = NULL;
 #ifdef HYBRID_ARQ
    radio_corrupted_packet_counter=0;
@@ -179,6 +178,8 @@ void radio_rxOn(uint8_t channel) {
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON); //busy wait until radio status is PLL_ON
    radio_state = RADIO_STATE_READY_RX;
    default_radio_state = radio_state;
+   
+   CLEAR_TIMER_B5_OVERFLOW(); //used for timestamping incoming packets
 }
 
 void isr_radio() {
@@ -187,10 +188,11 @@ void isr_radio() {
    OpenQueueEntry_t* radioPacketReceived_new;
    irq_status = spi_read_register(RG_IRQ_STATUS);          // reading IRQ_STATUS causes IRQ_RF (P1.6) to go low
    switch (radio_state) {
-      case RADIO_STATE_READY_RX:
-        if(irq_status == 0x04)//meaning RX_START
-          radio_began_receiving();
-        else{//meaning TRX_END
+   case RADIO_STATE_READY_RX:
+      if(irq_status == 0x04) {//meaning RX_START
+         __no_operation();
+         // poipoi: TODO store timestamp
+      } else {//meaning TRX_END
          radio_state = RADIO_STATE_RECEIVING;
          // initialize the reception buffer
          radioPacketReceived->payload = &(radioPacketReceived->packet[0]);
@@ -207,7 +209,7 @@ void isr_radio() {
             radioPacketReceived->payload += 2;
             // read 1B "footer" (LQI) and store that information
             radioPacketReceived->l1_lqi = radioPacketReceived->payload[radioPacketReceived->length];
-
+            
             if (radioPacketReceived->l1_crc==1) {
                // get a new space for receiving packet
                radioPacketReceived_new =  openqueue_getFreePacketBuffer();
@@ -230,24 +232,25 @@ void isr_radio() {
          } else {
             radio_state=RADIO_STATE_READY_RX;
          }
-         break;
-        }
-      case RADIO_STATE_TRANSMITTING:
-         //remove 1B SPI destination address
-         packetfunctions_tossHeader(radioPacketToSend,1);
-         //remove 1B length field
-         packetfunctions_tossHeader(radioPacketToSend,1);
-         //signal sendDone to upper layer
-         radio_send_now_done(E_SUCCESS);
-         //mac_sendDone(radioPacketToSend,E_SUCCESS);//older implementation
-         radioPacketToSend = NULL;
-         //return to default state
-         if (default_radio_state==RADIO_STATE_READY_RX) {
-            radio_rxOn(default_channel);
-         } else {
-            radio_state=RADIO_STATE_STARTED;
-         }
-         break;
+        
+      }
+      break;
+   case RADIO_STATE_TRANSMITTING:
+      //remove 1B SPI destination address
+      packetfunctions_tossHeader(radioPacketToSend,1);
+      //remove 1B length field
+      packetfunctions_tossHeader(radioPacketToSend,1);
+      //signal sendDone to upper layer
+      radio_send_now_done(E_SUCCESS);
+      //mac_sendDone(radioPacketToSend,E_SUCCESS);//older implementation
+      radioPacketToSend = NULL;
+      //return to default state
+      if (default_radio_state==RADIO_STATE_READY_RX) {
+         radio_rxOn(default_channel);
+      } else {
+         radio_state=RADIO_STATE_STARTED;
+      }
+      break;
    }
 }
 

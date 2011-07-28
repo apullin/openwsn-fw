@@ -37,6 +37,7 @@ uint16_t            task_app_count;
 //===================================== prototypes ============================
 
 void remove_first_task();
+#define CAPTURE_B5 TBCCTL5 ^= CCIS0 //poipoi use something like __asm__("XOR #CCIS0, &TBCCTL5") //used for time stamping incoming packtes
 
 //===================================== public ================================
 
@@ -158,6 +159,7 @@ void task_application() {
 
 #pragma vector = PORT1_VECTOR
 __interrupt void PORT1_ISR (void) {
+    CAPTURE_B5;
 #ifdef ISR_RADIO
    //interrupt from radio through IRQ_RF connected to P1.6
    if ((P1IFG & 0x40)!=0) {
@@ -170,6 +172,7 @@ __interrupt void PORT1_ISR (void) {
 
 #pragma vector = PORT2_VECTOR
 __interrupt void PORT2_ISR (void) {
+   CAPTURE_B5;
 #ifdef ISR_BUTTON
    //interrupt from button connected to P2.7
    if ((P2IFG & 0x80)!=0) {
@@ -183,6 +186,7 @@ __interrupt void PORT2_ISR (void) {
 // TimerB CCR0 interrupt service routine
 #pragma vector = TIMERB0_VECTOR
 __interrupt void TIMERB0_ISR (void) {
+      CAPTURE_B5;
 #ifdef ISR_TIMERS
    if (timers_continuous[0]==TRUE) {
       TBCCR0 += timers_period[0];                // continuous timer: schedule next instant
@@ -198,6 +202,7 @@ __interrupt void TIMERB0_ISR (void) {
 // TimerB CCR1-6 interrupt service routine
 #pragma vector = TIMERB1_VECTOR
 __interrupt void TIMERB1through6_ISR (void) {
+      CAPTURE_B5;
 #ifdef ISR_TIMERS
    uint16_t tbiv_temp = TBIV;                    // read only once because accessing TBIV resets it
    switch (tbiv_temp) {
@@ -285,6 +290,7 @@ __interrupt void TIMERB1through6_ISR (void) {
 
 #pragma vector = USCIAB1TX_VECTOR
 __interrupt void USCIAB1TX_ISR(void) {
+   CAPTURE_B5;
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1TXIFG) && (UC1IE & UCB1TXIE)) ||
         ((UC1IFG & UCB1RXIFG) && (UC1IE & UCB1RXIE)) ) {
@@ -292,6 +298,7 @@ __interrupt void USCIAB1TX_ISR(void) {
    }
 #endif
 #ifdef ISR_SERIAL
+   CAPTURE_B5;
    if ( (UC1IFG & UCA1TXIFG) && (UC1IE & UCA1TXIE) ){
       openserial_txInterrupt();                  // implemented in serial driver
    }
@@ -300,6 +307,7 @@ __interrupt void USCIAB1TX_ISR(void) {
 
 #pragma vector = USCIAB1RX_VECTOR
 __interrupt void USCIAB1RX_ISR(void) {
+   CAPTURE_B5;
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1RXIFG) && (UC1IE & UCB1RXIE)) ||
          (UCB1STAT & UCNACKIFG) ) {
@@ -315,6 +323,7 @@ __interrupt void USCIAB1RX_ISR(void) {
 
 #pragma vector = USCIAB0RX_VECTOR
 __interrupt void USCIAB0RX_ISR (void) {
+    CAPTURE_B5;
 #ifdef ISR_RADIO
    if ( (IFG2 & UCA0RXIFG) && (IE2 & UCA0RXIE) ){
       spi_rxInterrupt();                         // implemented in SPI driver
@@ -334,6 +343,7 @@ __interrupt void USCIAB0RX_ISR (void) {
 
 #pragma vector = ADC12_VECTOR
 __interrupt void ADC12_ISR (void) {
+    CAPTURE_B5;
 #ifdef ISR_ADC
    ADC12IFG &= ~0x1F;                            // clear interrupt flags
    __bic_SR_register_on_exit(CPUOFF);            // restart CPU

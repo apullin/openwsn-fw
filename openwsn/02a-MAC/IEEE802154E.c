@@ -18,16 +18,15 @@
 #include "neighbors.h"
 #include "nores.h"
 
-
 #define DEBUG_PIN_FRAME 0x02 //p1.1
-#define DEBUG_PIN_SLOT 0x10 //p4.4
-#define DEBUG_PIN_FAST 0x08 //p4.3
+#define DEBUG_PIN_SLOT  0x10 //p4.4
+#define DEBUG_PIN_FAST  0x08 //p4.3
 
 //for debugging and hardocing to test synchronization
-#define MOTE1_ADDRESS 0x99
-#define MOTE2_ADDRESS 0xb6
+#define MOTE1_ADDRESS   0x99
+#define MOTE2_ADDRESS   0xb6
 
-//===================================== variables =========9====================
+//===================================== variables ==============================
 
 uint16_t           fastAlarmStartSlotTimestamp;
 uint16_t           slotAlarmStartSlotTimestamp;
@@ -41,7 +40,7 @@ uint8_t            dsn;
 uint8_t            frequencyChannel;
 error_t            sendDoneError;
 
-//===================================== prototypes ============================
+//===================================== prototypes =============================
 
 #include "IEEE802154_common.c"
 void       change_state(uint8_t newstate);
@@ -72,34 +71,28 @@ void prepareADVPacket();
 
 //===================================== public from upper layer ===============
 
-
-void mac_init() {
-    
-    //set debug pins as outputs
-    P1DIR |= DEBUG_PIN_FRAME; //P1.1 0x02
-    P4DIR |= DEBUG_PIN_SLOT; //P4.4 0x04
-    P4DIR |= DEBUG_PIN_FAST; //P4.3 0x08
-    
-    P1DIR |= 0x04; //P1.2 reset debug
-    P1OUT |= 0x04;
-
-    isSync = 0; 
-    change_state(S_SLEEP);
-    dataFrameToSend = NULL;
-    asn = 0;
-    
-    /*hardcoded poipoi
-    we need to make one mote the DAG root for synchronization purposes
-    make mote1 the DAG root*/
-    if(*(&eui64+7) == MOTE1_ADDRESS) {
+void mac_init() {    
+   //set debug pins as outputs
+   P1DIR |= DEBUG_PIN_FRAME; //P1.1 0x02
+   P4DIR |= DEBUG_PIN_SLOT;  //P4.4 0x04
+   P4DIR |= DEBUG_PIN_FAST;  //P4.3 0x08
+   
+   isSync          = 0; 
+   dataFrameToSend = NULL;
+   asn             = 0;
+   change_state(S_SLEEP);
+   
+   /*hardcoded poipoi
+   we need to make one mote the DAG root for synchronization purposes
+   make mote1 the DAG root*/
+   if(*(&eui64+7) == MOTE1_ADDRESS) {
       idmanager_setIsDAGroot(TRUE);
-    }
-    
-    timer_startPeriodic(TIMER_MAC_PERIODIC,PERIODICTIMERPERIOD);
-    
-    P1OUT &= ~0x04;
+   }
+   
+   enable_capture(TIMER_B5);//set timer B5 to capture -- will be used to time-stamp incoming radio packets in software
+   
+   timer_startPeriodic(TIMER_MAC_PERIODIC,PERIODICTIMERPERIOD);
 }
-
 
 // a packet sent from the upper layer is simply stored into the OpenQueue buffer.
 error_t mac_send(OpenQueueEntry_t* msg) {
@@ -127,200 +120,191 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 //new slot
 void timer_mac_periodic_fired() {
       
+   ieee802154_header_iht   transmitted_ieee154_header;
+   uint8_t                 channelOffset;
 
-      ieee802154_header_iht   transmitted_ieee154_header;
-       uint8_t                 channelOffset;
+   /*This is an example for a 10ms timeslot
+   After the slot fires, we also start a backoff timer
+   if we are a transmitter, we haev already loaded a packet into the radio buffer, and we simply tranmitt when the timer fires (say 2ms)
+   as a receiver, we want to extend the timer (by 1ms, for exmaple) so we can listen to an incoming packet,
+   which will hopefully have been sent at 2ms
+   */
+   //timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);
+   //fastAlarmStartSlotTimestamp     = fastAlarm_getNow();
+   //slotAlarmStartSlotTimestamp     = slotAlarm_getNow();
 
-      
-      /*This is an exmaple for a 10ms timeslot
-      After the slot fires, we also start a backoff timer
-      if we are a transmitter, we haev already loaded a packet into the radio buffer, and we simply tranmitt when the timer fires (say 2ms)
-      as a receiver, we want to extend the timer (by 1ms, for exmaple) so we can listen to an incoming packet,
-      which will hopefully have been sent at 2ms
-      */
-      //timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);
-      //fastAlarmStartSlotTimestamp     = fastAlarm_getNow();
-      //slotAlarmStartSlotTimestamp     = slotAlarm_getNow();
-      
-      asn++;
-      
-      //flip slot debug pin
-      P4OUT ^= DEBUG_PIN_FAST;
-      //set fast_alarm debug pin to 0 for easier debugging
-      P1OUT &= ~DEBUG_PIN_FRAME;
-     // P1OUT ^= DEBUG_PIN_FRAME; //txrx debug
-      //flip frame debug pin
-      if(asn%LENGTHCELLFRAME == 0) {
-         P4OUT ^= DEBUG_PIN_SLOT;
-      }
+   asn++;
+   
+   //flip slot debug pin
+   P4OUT ^=  DEBUG_PIN_FAST;
+   //set fast_alarm debug pin to 0 for easier debugging
+   P1OUT &= ~DEBUG_PIN_FRAME;
+  // P1OUT ^= DEBUG_PIN_FRAME; //txrx debug
+   //flip frame debug pin
+   if(asn%LENGTHCELLFRAME == 0) {
+      P4OUT ^= DEBUG_PIN_SLOT;
+   }
 
-      openserial_stop();
-      
-      dataFrameToSend      = NULL;
+   openserial_stop();
+   
+   dataFrameToSend      = NULL;
 
-
-      //----- switch to/from S_SYNCHRONIZING
-      if (idmanager_getIsDAGroot()==TRUE) {
-         //if I'm DAGroot, I'm synchronized
-         taskResetLosingLostTimers();
-         isSync=TRUE;
-         if (state==S_SYNCHRONIZING) { //happens right after node becomes LBR
-            endSlot();
-            return;
-         }
-      } else if (isSync==FALSE) {
-         //If I'm not in sync, enter/stay in S_SYNCHRONIZING
-         /*atomic if (asn%2==1) {
-            openserial_startOutput();
-         } else {
-            openserial_startInput();
-         }*///poipoi
-         if (state!=S_SYNCHRONIZING) {
-            change_state(S_SYNCHRONIZING);
-            radio_rxOn(18);
-            endSlot();
-         }
+   //----- switch to/from S_SYNCHRONIZING
+   if (idmanager_getIsDAGroot()==TRUE) {
+      //if I'm DAGroot, I'm synchronized
+      taskResetLosingLostTimers();
+      isSync=TRUE;
+      if (state==S_SYNCHRONIZING) { //happens right after node becomes LBR
+         endSlot();
          return;
       }
-
-      //----- state error
-      if (state!=S_SLEEP) {     
-         openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_STARTSLOTTASK,
-               (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
-         endSlot(); //poipoi write
-         return;
+   } else if (isSync==FALSE) {
+      //If I'm not in sync, enter/stay in S_SYNCHRONIZING
+      /*atomic if (asn%2==1) {
+         openserial_startOutput();
+      } else {
+         openserial_startInput();
+      }*///poipoi
+      if (state!=S_SYNCHRONIZING) {
+         change_state(S_SYNCHRONIZING);
+         radio_rxOn(18);
       }
+      return;
+   }
 
-      switch (cellUsageGet_getType(asn%LENGTHCELLFRAME)) {
-         case CELLTYPE_TXRX:
-           P1OUT ^= DEBUG_PIN_FRAME; //txrx debug
-           
-           //start timer to deal with transmitting or receiving when backofftimer fires
-           timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
-           
-           //create at ADV apcket, but only use it if we're in the ADV slot -- hardocded poipoi fix
-           
-           OpenQueueEntry_t* packetADV;
-           
-           //get a packet out of the buffer (if any)
-           if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(asn%LENGTHCELLFRAME)) {
-             //hack add adv packet to queue
-             if(cellUsageGet_isADV(asn%LENGTHCELLFRAME)){
-               
-               packetADV = openqueue_getFreePacketBuffer();
-               
-               if (packetADV==NULL) {
-                 P1OUT |= 0x04;
-               } else {
-                 
-                 packetADV->creator       = COMPONENT_RES;
-                 packetADV->owner         = COMPONENT_MAC;
-                 
-                 packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
-                 ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
-                 prependIEEE802154header(packetADV,
-                                         IEEE154_TYPE_CMD,
-                                         IEEE154_SEC_NO_SECURITY,
-                                         NULL,
-                                         NULL
-                                           );
-                 dataFrameToSend = packetADV; 
+   //----- state error
+   if (state!=S_SLEEP) {     
+      openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_STARTSLOTTASK,
+            (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
+      endSlot(); //poipoi write
+      return;
+   }
 
-               }
-             }
-           }
-           
-           channelOffset = cellUsageGet_getChannelOffset(asn%LENGTHCELLFRAME);//poipoi write
-            if (HOPPING_ENABLED) {
-               frequencyChannel = ((asn+channelOffset)%16)+11;
-            } else {
-               frequencyChannel =((channelOffset)%16)+11;
-            }
+   switch (cellUsageGet_getType(asn%LENGTHCELLFRAME)) {
+      case CELLTYPE_TXRX:
+        P1OUT ^= DEBUG_PIN_FRAME; //txrx debug
+        
+        //start timer to deal with transmitting or receiving when backofftimer fires
+        timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
+        
+        //create at ADV apcket, but only use it if we're in the ADV slot -- hardocded poipoi fix
+        
+        OpenQueueEntry_t* packetADV;
+        
+        //get a packet out of the buffer (if any)
+        if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(asn%LENGTHCELLFRAME)) {
+          //hack add adv packet to queue
+          if(cellUsageGet_isADV(asn%LENGTHCELLFRAME)){
             
-            frequencyChannel=18; //poipoi
+            packetADV = openqueue_getFreePacketBuffer();
+            
+            if (packetADV==NULL) {
+              P1OUT |= 0x04;
+            } else {
+              
+              packetADV->creator       = COMPONENT_RES;
+              packetADV->owner         = COMPONENT_MAC;
+              
+              packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
+              ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
+              prependIEEE802154header(packetADV,
+                                      IEEE154_TYPE_CMD,
+                                      IEEE154_SEC_NO_SECURITY,
+                                      NULL,
+                                      NULL
+                                        );
+              dataFrameToSend = packetADV; 
 
-            if (dataFrameToSend!=NULL) {                                  //start the TX sequence
-               dataFrameToSend->owner = COMPONENT_MAC;
-               dataFrameToSend->l1_channel = frequencyChannel;
-               transmitted_ieee154_header = retrieveIEEE802154header(dataFrameToSend);
-               if (cellUsageGet_isADV(asn%LENGTHCELLFRAME)) {
-                  //I will be sending an ADV frame
-                  ((IEEE802154E_ADV_t*)((dataFrameToSend->payload)+transmitted_ieee154_header.headerLength))->timingInformation=asn;// (globalTime.getASN());//poipoi implement
+            }
+          }
+        }
+        
+        channelOffset = cellUsageGet_getChannelOffset(asn%LENGTHCELLFRAME);//poipoi write
+         if (HOPPING_ENABLED) {
+            frequencyChannel = ((asn+channelOffset)%16)+11;
+         } else {
+            frequencyChannel =((channelOffset)%16)+11;
+         }
+         
+         frequencyChannel=18; //poipoi
+
+         if (dataFrameToSend!=NULL) {                                  //start the TX sequence
+            dataFrameToSend->owner = COMPONENT_MAC;
+            dataFrameToSend->l1_channel = frequencyChannel;
+            transmitted_ieee154_header = retrieveIEEE802154header(dataFrameToSend);
+            if (cellUsageGet_isADV(asn%LENGTHCELLFRAME)) {
+               //I will be sending an ADV frame
+               ((IEEE802154E_ADV_t*)((dataFrameToSend->payload)+transmitted_ieee154_header.headerLength))->timingInformation=asn;// (globalTime.getASN());//poipoi implement
+            }
+            change_state(S_TX_TXDATAPREPARE);
+            if (radio_prepare_send(dataFrameToSend)!=E_SUCCESS) {
+               //retry sending the packet later
+               dataFrameToSend->l2_retriesLeft--;
+               if (dataFrameToSend->l2_retriesLeft==0) {
+                  taskSendDone(dataFrameToSend,FAIL);
                }
-               change_state(S_TX_TXDATAPREPARE);
-               if (radio_prepare_send(dataFrameToSend)!=E_SUCCESS) {
-                  //retry sending the packet later
-                  dataFrameToSend->l2_retriesLeft--;
-                  if (dataFrameToSend->l2_retriesLeft==0) {
-                     taskSendDone(dataFrameToSend,FAIL);
-                  }
-                  openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
+               openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
+                     (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
+               endSlot();
+            };
+            //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsTxOffset);//watchdog timer
+         } else {
+            if (cellUsageGet_isRX(asn%LENGTHCELLFRAME)) {        //start the RX sequence
+               change_state(S_RX_RXDATAPREPARE);
+               radio_rxOn(frequencyChannel);
+               /*if (radio_rxOn(frequencyChannel)!=E_SUCCES) {
+                  //abort
+                  openserial_printError(COMPONENT_MAC,ERR_PREPARERECEIVE_FAILED,
                         (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
                   endSlot();
-               };
-               //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsTxOffset);//watchdog timer
-            } else {
-               if (cellUsageGet_isRX(asn%LENGTHCELLFRAME)) {        //start the RX sequence
-                  change_state(S_RX_RXDATAPREPARE);
-                  radio_rxOn(frequencyChannel);
-                  /*if (radio_rxOn(frequencyChannel)!=E_SUCCES) {
-                     //abort
-                     openserial_printError(COMPONENT_MAC,ERR_PREPARERECEIVE_FAILED,
-                           (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
-                     endSlot();
-                  };*/
-                  
-                  //add some time to extend wait period for incoming packet to allow for a little overlap
-                  //TBCCR1 is used by TIMER_MAC_BACKOFF
-                  TBCCR1   = TBCCR1+EXTRA_WAIT_TIME;   //add one extra guardtime to wait for incoming packet
-                  TBCCTL1  = CCIE;                     //enable interupt
-                  
-                  //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
-               } else {                                                        //nothing to do, abort
-                  openserial_startOutput();
-                  endSlot();
-                  return;
-               }
+               };*/
+               
+               //add some time to extend wait period for incoming packet to allow for a little overlap
+               //TBCCR1 is used by TIMER_MAC_BACKOFF
+               TBCCR1   = TBCCR1+EXTRA_WAIT_TIME;   //add one extra guardtime to wait for incoming packet
+               TBCCTL1  = CCIE;                     //enable interupt
+               
+               //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
+            } else {                                                        //nothing to do, abort
+               openserial_startOutput();
+               endSlot();
+               return;
             }
-            break;
+         }
+         break;
 
-         case CELLTYPE_RXSERIAL:
-           openserial_startInput();
-            endSlot();
-            return;
+      case CELLTYPE_RXSERIAL:
+        openserial_startInput();
+         endSlot();
+         return;
 
-         case CELLTYPE_OFF:
-            openserial_startOutput();
-            endSlot();
-            return;
+      case CELLTYPE_OFF:
+         openserial_startOutput();
+         endSlot();
+         return;
 
-         default:
-            openserial_printError(COMPONENT_MAC,ERR_WRONG_CELLTYPE,
-                  cellUsageGet_getType(asn%LENGTHCELLFRAME),0);
-            endSlot();
-            return;
-      }
-  
+      default:
+         openserial_printError(COMPONENT_MAC,ERR_WRONG_CELLTYPE,
+               cellUsageGet_getType(asn%LENGTHCELLFRAME),0);
+         endSlot();
+         return;
+   }
 }
 
 void radio_prepare_send_done(){//poipoi implememnt in phys layer
-
-      
-      switch (state) {
-         case S_TX_TXDATAPREPARE:
-              change_state(S_TX_TXDATAREADY);//bk added
-            break;
-         case S_RX_TXACKPREPARE:
-
-               change_state(S_RX_TXACKREADY);
-
-            break;
-         default:
-            openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_PREPARESENDDONE,
-                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
-            endSlot();
-            break;
-      }
+   switch (state) {
+   case S_TX_TXDATAPREPARE:
+      change_state(S_TX_TXDATAREADY);//bk added
+      break;
+   case S_RX_TXACKPREPARE:
+      change_state(S_RX_TXACKREADY);
+      break;
+   default:
+      openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_PREPARESENDDONE,
+                            (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
+      endSlot();
+      break;
+   }
 }
 
 void radioControl_prepareReceiveDone(error_t error){
@@ -470,39 +454,34 @@ void fast_alarm_fired() {
 
 //call in mac, not from radio, if no interupt by now, turn radio off
 void radioControl_receivedNothing(error_t error){
- 
-
-
-
-      switch(state) {
-         case S_RX_RXDATA:                                           //[receivedNothing] receiver (WARNING state)
-            //I'm a receiver, didn't receive data
-            endSlot();
-            break;
-         case S_TX_RXACK:                                            //[receivedNothing] transmitter (WARNING state)
-            //I'm a transmitter, didn't receive ACK (end of TX sequence)
-            
-           /// major poipoi, implement both of these later for true tsch neighbor management
-           //cellStats_indicateUse(asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
-           //count num of sent packets
-           //neighborStats_indicateTx(&(dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
-           
-           dataFrameToSend->l2_retriesLeft--;
-            if (dataFrameToSend->l2_retriesLeft==0) {
-               taskSendDone(dataFrameToSend,FAIL);
-            }
-            endSlot();
-            break;
-         case S_SYNCHRONIZING:                                       //[receivedNothing] synchronizer
-            //it's OK not to receive anything after TsRxWaitTime when trying to synchronize
-            break;
-         default:
-            openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_RECEIVEDNOTHING,
-                  (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
-            endSlot();
-            break;
-      }
+   switch(state) {
+   case S_RX_RXDATA:                                           //[receivedNothing] receiver (WARNING state)
+      //I'm a receiver, didn't receive data
+      endSlot();
+      break;
+   case S_TX_RXACK:                                            //[receivedNothing] transmitter (WARNING state)
+      //I'm a transmitter, didn't receive ACK (end of TX sequence)
       
+      /// major poipoi, implement both of these later for true tsch neighbor management
+      //cellStats_indicateUse(asn%LENGTHCELLFRAME,WAS_NOT_ACKED);
+      //count num of sent packets
+      //neighborStats_indicateTx(&(dataFrameToSend->l2_nextORpreviousHop),WAS_NOT_ACKED);
+      
+      dataFrameToSend->l2_retriesLeft--;
+      if (dataFrameToSend->l2_retriesLeft==0) {
+         taskSendDone(dataFrameToSend,FAIL);
+      }
+      endSlot();
+      break;
+   case S_SYNCHRONIZING:                                       //[receivedNothing] synchronizer
+      //it's OK not to receive anything after TsRxWaitTime when trying to synchronize
+      break;
+   default:
+      openserial_printError(COMPONENT_MAC,ERR_WRONG_STATE_IN_RECEIVEDNOTHING,
+                            (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
+      endSlot();
+      break;
+   } 
 }
 
 void radio_send_now_done(error_t error) {//poipoi call from phy layer
@@ -572,24 +551,24 @@ void taskSendDone(OpenQueueEntry_t* param_sendDoneMessage, error_t param_sendDon
 }
 
 void endSlot() {
-      //asn_t   asn;
-      //uint8_t state;
-      
-     // asn   = asn;
-     // state = state;
-      //if (packetACK!=NULL) {
-            //malloc_freePacketBuffer(packetACK);
-      ///      openqueue_freePacketBuffer(packetACK);
-      //      packetACK=NULL;
-     // }
-      
-      //radio_rfOff();
-      /*if (radio_rfOff()!=E_SUCCESS) {
-         //abort
-         openserial_printError(COMPONENT_MAC,ERR_RFOFF_FAILED,
-               (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
-      }*/
+   //if (packetACK!=NULL) {
+   //malloc_freePacketBuffer(packetACK);
+   ///      openqueue_freePacketBuffer(packetACK);
+   //      packetACK=NULL;
+   //}
+   
+   if (state!=S_SYNCHRONIZING) {
       change_state(S_SLEEP);
+   }
+   
+    CLEAR_TIMER_B5_OVERFLOW();    //need to clear timer capture
+   //radio_rfOff();
+   /*if (radio_rfOff()!=E_SUCCESS) {
+   //abort
+   openserial_printError(COMPONENT_MAC,ERR_RFOFF_FAILED,
+   (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
+   }*/
+   
 }
 
 //===================================== public from lower layer ===============
@@ -600,22 +579,10 @@ void mac_sendDone(OpenQueueEntry_t* pkt, error_t error) {
 
 //===================================== private ===============================
 
-void radio_began_receiving(){
-
-}
-
-
 //*******************************from here***********************/
 void radio_packet_received(OpenQueueEntry_t* msg) {
-     
-
-
       ieee802154_header_iht   received_ieee154_header;
       ieee802154_header_iht   transmitted_ieee154_header;
-
-
-
- 
 
       msg->owner = COMPONENT_MAC;
 
@@ -625,7 +592,6 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
 
       msg->l2_frameType = received_ieee154_header.frameType;
       memcpy(&(msg->l2_nextORpreviousHop),&(received_ieee154_header.src),sizeof(open_addr_t));
-
 
       if (received_ieee154_header.frameType==IEEE154_TYPE_DATA &&
             !(idmanager_isMyAddress(&received_ieee154_header.panid))) {
@@ -637,7 +603,6 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
       }
 
       switch (state) {
-
          /*------------------- TX sequence ------------------------*/
          case S_TX_RXACK:                                            //[receive] transmitter
             //I'm a transmitter, just received ACK (end of TX sequence)
