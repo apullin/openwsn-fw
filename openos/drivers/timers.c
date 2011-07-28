@@ -117,6 +117,14 @@ void timer_stop(uint8_t timer_id) {
    }
 }
 
+void enable_capture(uint8_t timer_id){
+   //poipoi expand to include other timer, we only do timer5 now for tsch
+   if(timer_id == 5)
+   {
+      TBCCTL5 = CAP|SCS|CCIS1|CM_3;
+   }
+}
+
 //=========================== private =============================================
 
 void timer_start(uint8_t timer_id, uint16_t duration, bool continuous) {

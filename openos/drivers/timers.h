@@ -44,6 +44,7 @@ void timer_start(uint8_t timer_id, uint16_t duration, bool continuous);
 void timer_startOneShot(uint8_t timer_id, uint16_t duration);
 void timer_startPeriodic(uint8_t timer_id, uint16_t duration);
 void timer_stop(uint8_t timer_id);
+void enable_capture(uint8_t timer_id);
 // functions to call when timer fires
 #ifdef OPENWSN_STACK
 void timer_mac_periodic_fired();

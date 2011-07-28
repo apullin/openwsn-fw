@@ -20,10 +20,7 @@
 #include "openserial.h"
 
 void main(void) {
-   P1DIR ^= 0x06;                                // set P1.1,2 as output for debug
-
    gina_init();
    openwsn_init();
-   
    scheduler_start();
 }

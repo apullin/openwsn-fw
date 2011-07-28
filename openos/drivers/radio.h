@@ -21,6 +21,8 @@
 #define USE_WIRE_ANTENNA               0x06
 #define USE_CHIP_ANTENNA               0x05
 
+#define CLEAR_TIMER_B5_OVERFLOW() TBCCTL5 &= ~(CCIFG|COV)
+
 //===================================== prototypes ============================
 
 void    radio_init();                      // configures both MSP and radio chip
