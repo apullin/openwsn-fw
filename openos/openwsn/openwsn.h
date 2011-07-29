@@ -16,6 +16,32 @@
 
 #define bool uint8_t
 
+
+/**************defining debug pins*******************/
+#define DEBUG_PIN_CPUON 0x04 //p4.2
+#define DEBUG_PIN_CPUON_ISR 0x02 //p4.1
+#define DEBUG_PIN_RADIO_ON 0x20 //p4.5
+
+//set them as outputs here:
+#define DEBUG_PIN_CPUON_OUT P4DIR |= DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_ISR_OUT P4DIR |= DEBUG_PIN_CPUON_ISR
+#define DEBUG_PIN_RADIO_ON_OUT P4DIR |= DEBUG_PIN_RADIO_ON
+
+//define functions assotiated with them.
+#define DEBUG_PIN_CPUON_TOGGLE P4OUT ^= DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_CLR P4OUT &= ~DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_SET P4OUT |= DEBUG_PIN_CPUON //toggle, clr and set
+
+#define DEBUG_PIN_CPUON_ISR_TOGGLE P4OUT ^= DEBUG_PIN_CPUON_ISR
+#define DEBUG_PIN_CPUON_ISR_CLR P4OUT &= ~DEBUG_PIN_CPUON_ISR
+#define DEBUG_PIN_CPUON_ISR_SET P4OUT |= DEBUG_PIN_CPUON_ISR //toggle, clr and set
+
+#define DEBUG_PIN_RADIO_ON_TOGGLE P4OUT ^= DEBUG_PIN_RADIO_ON
+#define DEBUG_PIN_RADIO_ON_CLR P4OUT &= ~DEBUG_PIN_RADIO_ON
+#define DEBUG_PIN_RADIO_ON_SET P4OUT |= DEBUG_PIN_RADIO_ON //toggle, clr and set
+
+/**************end debug pins*************8888******/
+
 __no_init volatile uint8_t eui64 @ 0x10ee;       // address is flash where the node's EUI64 identifier is stored
 
 enum {
