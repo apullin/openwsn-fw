@@ -18,12 +18,9 @@
 #include "neighbors.h"
 #include "nores.h"
 
-#define DEBUG_PIN_FRAME 0x02 //p1.1
-#define DEBUG_PIN_SLOT  0x10 //p4.4
-#define DEBUG_PIN_FAST  0x08 //p4.3
 
 //for debugging and hardocing to test synchronization
-#define MOTE1_ADDRESS   0x99
+#define MOTE1_ADDRESS   0x98
 #define MOTE2_ADDRESS   0xb6
 
 //===================================== variables ==============================
@@ -72,9 +69,12 @@ void prepareADVPacket();
 
 void mac_init() {    
    //set debug pins as outputs
-   P1DIR |= DEBUG_PIN_FRAME; //P1.1 0x02
-   P4DIR |= DEBUG_PIN_SLOT;  //P4.4 0x04
-   P4DIR |= DEBUG_PIN_FAST;  //P4.3 0x08
+   DEBUG_PIN_FRAME_OUT; //P1.1 0x02
+   DEBUG_PIN_SLOT_OUT;  //P4.4 0x04
+   DEBUG_PIN_FAST_OUT;  //P4.3 0x08
+   DEBUG_PIN_CPUON_OUT;
+   DEBUG_PIN_CPUON_ISR_OUT;
+   DEBUG_PIN_RADIO_ON_OUT;
    
    isSync          = 0; 
    dataFrameToSend = NULL;
@@ -135,7 +135,7 @@ void timer_mac_periodic_fired() {
    asn++;
    
    //flip slot debug pin
-   P4OUT ^=  DEBUG_PIN_FAST;
+   DEBUG_PIN_FAST_TOGGLE;
    //set fast_alarm debug pin to 0 for easier debugging
    P1OUT &= ~DEBUG_PIN_FRAME;
    //flip frame debug pin
