@@ -8,7 +8,6 @@
 
 void               radio_send_now_done(error_t error);
 uint8_t            radio_state;
-uint8_t            default_radio_state;
 uint8_t            default_channel;
 OpenQueueEntry_t*  radioPacketReceived;
 OpenQueueEntry_t*  radioPacketToSend;
@@ -22,6 +21,7 @@ uint8_t            radio_corrupted_packet_buffer[RADIO_CORRUPTED_PACKET_BUFFER_L
 //=========================== initialize the radio ============================
 
 void radio_init() {
+  DEBUG_PIN_RADIO_OUT;
    radio_state = RADIO_STATE_STOPPED;
    // initialize radio-specific variables
    radioPacketReceived =  openqueue_getFreePacketBuffer();
@@ -55,7 +55,6 @@ void radio_init() {
    
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
    radio_state = RADIO_STATE_STARTED;
-   default_radio_state = radio_state;
    
    radioPacketToSend = NULL;
 #ifdef HYBRID_ARQ
@@ -104,6 +103,7 @@ error_t radio_send(OpenQueueEntry_t* packet) {
    spi_write_buffer(radioPacketToSend);
    radio_state = RADIO_STATE_READY_TX;
    //turn on radio's PLL
+   DEBUG_PIN_RADIO_SET;
    radio_state = RADIO_STATE_TRANSMITTING;
    spi_write_register(RG_TRX_STATE, CMD_PLL_ON);
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON); //busy wait until radio status is PLL_ON
@@ -146,6 +146,7 @@ error_t radio_prepare_send(OpenQueueEntry_t* packet) {
    spi_write_buffer(radioPacketToSend);
    radio_state = RADIO_STATE_READY_TX;
    //turn on radio's PLL
+   DEBUG_PIN_RADIO_SET;
    radio_state = RADIO_STATE_TRANSMITTING;
    spi_write_register(RG_TRX_STATE, CMD_PLL_ON);
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON); //busy wait until radio status is PLL_ON
@@ -177,7 +178,6 @@ void radio_rxOn(uint8_t channel) {
    spi_write_register(RG_TRX_STATE, CMD_RX_ON);
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON); //busy wait until radio status is PLL_ON
    radio_state = RADIO_STATE_READY_RX;
-   default_radio_state = radio_state;
    
    CLEAR_TIMER_B5_OVERFLOW(); //used for timestamping incoming packets
 }
@@ -245,11 +245,8 @@ void isr_radio() {
       //mac_sendDone(radioPacketToSend,E_SUCCESS);//older implementation
       radioPacketToSend = NULL;
       //return to default state
-      if (default_radio_state==RADIO_STATE_READY_RX) {
-         radio_rxOn(default_channel);
-      } else {
-         radio_state=RADIO_STATE_STARTED;
-      }
+      radio_state=RADIO_STATE_STARTED;
+      radio_rfOff();
       break;
    }
 }
@@ -257,8 +254,8 @@ void isr_radio() {
 //=========================== turning radio off ===============================
 
 void radio_rfOff() {
+   DEBUG_PIN_RADIO_CLR;
    spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);  // turn radio off
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
    radio_state = RADIO_STATE_STARTED;
-   default_radio_state = radio_state;
 }

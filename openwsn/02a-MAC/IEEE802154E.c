@@ -20,7 +20,7 @@
 
 
 //for debugging and hardocing to test synchronization
-#define MOTE1_ADDRESS   0x98
+#define MOTE1_ADDRESS   0x87
 #define MOTE2_ADDRESS   0xb6
 
 //===================================== variables ==============================
@@ -72,9 +72,6 @@ void mac_init() {
    DEBUG_PIN_FRAME_OUT; //P1.1 0x02
    DEBUG_PIN_SLOT_OUT;  //P4.4 0x04
    DEBUG_PIN_FAST_OUT;  //P4.3 0x08
-   DEBUG_PIN_CPUON_OUT;
-   DEBUG_PIN_CPUON_ISR_OUT;
-   DEBUG_PIN_RADIO_ON_OUT;
    
    isSync          = 0; 
    dataFrameToSend = NULL;
@@ -134,13 +131,12 @@ void timer_mac_periodic_fired() {
    //increment the absolute slot number
    asn++;
    
-   //flip slot debug pin
-   DEBUG_PIN_FAST_TOGGLE;
+
    //set fast_alarm debug pin to 0 for easier debugging
-   P1OUT &= ~DEBUG_PIN_FRAME;
+   DEBUG_PIN_SLOT_TOGGLE;
    //flip frame debug pin
    if(asn%LENGTHCELLFRAME == 0) {
-      P4OUT ^= DEBUG_PIN_SLOT;
+      DEBUG_PIN_FRAME_TOGGLE;
    }
    
    openserial_stop();
@@ -180,7 +176,6 @@ void timer_mac_periodic_fired() {
    
    switch (cellUsageGet_getType(asn%LENGTHCELLFRAME)) {
    case CELLTYPE_TXRX:
-      P1OUT ^= DEBUG_PIN_FRAME;
       
       //start timer to deal with transmitting or receiving when backoff timer fires
       timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
@@ -347,8 +342,6 @@ void timer_mac_watchdog_fired(){
 //end wrapers
 
 void fast_alarm_fired() {
-   
-   P1OUT ^= DEBUG_PIN_FRAME;
    
    switch (state) {
       /*------------------- TX sequence ------------------------*/

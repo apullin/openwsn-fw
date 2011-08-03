@@ -18,45 +18,45 @@
 
 
 /**************defining debug pins*******************/
-#define DEBUG_PIN_FRAME 0x20 //p4.5 //black
-#define DEBUG_PIN_SLOT  0x01 //p4.1 //brown
-#define DEBUG_PIN_FAST  0x04 //p4.2 //red
-#define DEBUG_PIN_CPUON 0x08 //p4.3 //orange
-#define DEBUG_PIN_CPUON_ISR 0x10 //p4.4 //yellow
-#define DEBUG_PIN_RADIO_ON 0x01 //p1.1 //green
+#define DEBUG_PIN_FRAME     0x20   //p4.5 //black
+#define DEBUG_PIN_SLOT      0x02   //p4.1 //brown
+#define DEBUG_PIN_FAST      0x04   //p4.2 //red
+#define DEBUG_PIN_CPUON     0x08   //p4.3 //orange
+#define DEBUG_PIN_ISR 0x10   //p4.4 //yellow
+#define DEBUG_PIN_RADIO  0x02   //p1.1 //green
 
 //set them as outputs here:
-#define DEBUG_PIN_FRAME_OUT P4DIR |= DEBUG_PIN_FRAME
-#define DEBUG_PIN_SLOT_OUT P4DIR |= DEBUG_PIN_SLOT
-#define DEBUG_PIN_FAST_OUT P4DIR |= DEBUG_PIN_FAST
-#define DEBUG_PIN_CPUON_OUT P4DIR |= DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_ISR_OUT P4DIR |= DEBUG_PIN_CPUON_ISR
-#define DEBUG_PIN_RADIO_ON_OUT P1DIR |= DEBUG_PIN_RADIO_ON
+#define DEBUG_PIN_FRAME_OUT     P4DIR |= DEBUG_PIN_FRAME
+#define DEBUG_PIN_SLOT_OUT      P4DIR |= DEBUG_PIN_SLOT
+#define DEBUG_PIN_FAST_OUT      P4DIR |= DEBUG_PIN_FAST
+#define DEBUG_PIN_CPUON_OUT     P4DIR |= DEBUG_PIN_CPUON
+#define DEBUG_PIN_ISR_OUT P4DIR |= DEBUG_PIN_ISR
+#define DEBUG_PIN_RADIO_OUT  P1DIR |= DEBUG_PIN_RADIO
 
 //define functions assotiated with them.
-#define DEBUG_PIN_FRAME_TOGGLE P4OUT ^= DEBUG_PIN_FRAME
-#define DEBUG_PIN_FRAME_CLR P4OUT &= ~DEBUG_PIN_FRAME
-#define DEBUG_PIN_FRAME_SET P4OUT |= DEBUG_PIN_FRAME //toggle, clr and set
+#define DEBUG_PIN_FRAME_TOGGLE  P4OUT ^=  DEBUG_PIN_FRAME
+#define DEBUG_PIN_FRAME_CLR     P4OUT &= ~DEBUG_PIN_FRAME
+#define DEBUG_PIN_FRAME_SET     P4OUT |=  DEBUG_PIN_FRAME //toggle, clr and set
 
-#define DEBUG_PIN_SLOT_TOGGLE P4OUT ^= DEBUG_PIN_SLOT
-#define DEBUG_PIN_SLOT_CLR P4OUT &= ~DEBUG_PIN_SLOT
-#define DEBUG_PIN_SLOT_SET P4OUT |= DEBUG_PIN_SLOT //toggle, clr and set
+#define DEBUG_PIN_SLOT_TOGGLE   P4OUT ^=  DEBUG_PIN_SLOT
+#define DEBUG_PIN_SLOT_CLR      P4OUT &= ~DEBUG_PIN_SLOT
+#define DEBUG_PIN_SLOT_SET      P4OUT |=  DEBUG_PIN_SLOT //toggle, clr and set
 
-#define DEBUG_PIN_FAST_TOGGLE P4OUT ^= DEBUG_PIN_FAST
-#define DEBUG_PIN_FAST_CLR P4OUT &= ~DEBUG_PIN_FAST
-#define DEBUG_PIN_FAST_SET P4OUT |= DEBUG_PIN_FAST //toggle, clr and set
+#define DEBUG_PIN_FAST_TOGGLE   P4OUT ^=  DEBUG_PIN_FAST
+#define DEBUG_PIN_FAST_CLR      P4OUT &= ~DEBUG_PIN_FAST
+#define DEBUG_PIN_FAST_SET      P4OUT |=  DEBUG_PIN_FAST //toggle, clr and set
 
-#define DEBUG_PIN_CPUON_TOGGLE P4OUT ^= DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_CLR P4OUT &= ~DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_SET P4OUT |= DEBUG_PIN_CPUON //toggle, clr and set
+#define DEBUG_PIN_CPUON_TOGGLE  P4OUT ^=  DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_CLR     P4OUT &= ~DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_SET     P4OUT |=  DEBUG_PIN_CPUON //toggle, clr and set
 
-#define DEBUG_PIN_CPUON_ISR_TOGGLE P4OUT ^= DEBUG_PIN_CPUON_ISR
-#define DEBUG_PIN_CPUON_ISR_CLR P4OUT &= ~DEBUG_PIN_CPUON_ISR
-#define DEBUG_PIN_CPUON_ISR_SET P4OUT |= DEBUG_PIN_CPUON_ISR //toggle, clr and set
+#define DEBUG_PIN_ISR_TOGGLE P4OUT ^=  DEBUG_PIN_ISR
+#define DEBUG_PIN_ISR_CLR    P4OUT &= ~DEBUG_PIN_ISR
+#define DEBUG_PIN_ISR_SET    P4OUT |=  DEBUG_PIN_ISR //toggle, clr and set
 
-#define DEBUG_PIN_RADIO_ON_TOGGLE P1OUT ^= DEBUG_PIN_RADIO_ON
-#define DEBUG_PIN_RADIO_ON_CLR P1OUT &= ~DEBUG_PIN_RADIO_ON
-#define DEBUG_PIN_RADIO_ON_SET P1OUT |= DEBUG_PIN_RADIO_ON //toggle, clr and set
+#define DEBUG_PIN_RADIO_TOGGLE  P1OUT ^=  DEBUG_PIN_RADIO
+#define DEBUG_PIN_RADIO_CLR     P1OUT &= ~DEBUG_PIN_RADIO
+#define DEBUG_PIN_RADIO_SET     P1OUT |=  DEBUG_PIN_RADIO //toggle, clr and set
 
 
 /**************end debug pins*************8888******/
