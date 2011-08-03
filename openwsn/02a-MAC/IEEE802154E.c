@@ -4,6 +4,7 @@
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
  * Branko Kerkez   <bkerkeze@berkeley.edu>, March 2011
+ * Fabien Chraim   <chraim@eecs.berkeley.edu>, June 2011
  */
 #include "openwsn.h"
 #include "IEEE802154E.h"
@@ -20,8 +21,8 @@
 
 
 //for debugging and hardocing to test synchronization
-#define MOTE1_ADDRESS   0x5d
-#define MOTE2_ADDRESS   0xb6
+#define MOTE1_ADDRESS   0x8b
+#define MOTE2_ADDRESS   0x87
 
 //===================================== variables ==============================
 
@@ -29,9 +30,9 @@ uint16_t           fastAlarmStartSlotTimestamp;
 uint16_t           slotAlarmStartSlotTimestamp;
 uint8_t            state;
 asn_t              asn;              //uint16_t  
-OpenQueueEntry_t*  dataFrameToSend; //NULL at beginning and end
-OpenQueueEntry_t*  packetACK;       //NULL at beginning and end, free at end of slot
-OpenQueueEntry_t*  frameReceived;   //NULL at beginning and end
+OpenQueueEntry_t*  dataFrameToSend;  //NULL at beginning and end
+OpenQueueEntry_t*  packetACK;        //NULL at beginning and end, free at end of slot
+OpenQueueEntry_t*  frameReceived;    //NULL at beginning and end
 bool               isSync;
 uint8_t            dsn;
 uint8_t            frequencyChannel;

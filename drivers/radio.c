@@ -176,9 +176,9 @@ void radio_rxOn(uint8_t channel) {
    default_channel = channel;
    //put radio in reception mode
    spi_write_register(RG_TRX_STATE, CMD_RX_ON);
+   DEBUG_PIN_RADIO_SET;
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON); //busy wait until radio status is PLL_ON
    radio_state = RADIO_STATE_READY_RX;
-   
    CLEAR_TIMER_B5_OVERFLOW(); //used for timestamping incoming packets
 }
 
@@ -209,7 +209,6 @@ void isr_radio() {
             radioPacketReceived->payload += 2;
             // read 1B "footer" (LQI) and store that information
             radioPacketReceived->l1_lqi = radioPacketReceived->payload[radioPacketReceived->length];
-            
             if (radioPacketReceived->l1_crc==1) {
                // get a new space for receiving packet
                radioPacketReceived_new =  openqueue_getFreePacketBuffer();
@@ -232,7 +231,6 @@ void isr_radio() {
          } else {
             radio_state=RADIO_STATE_READY_RX;
          }
-        
       }
       break;
    case RADIO_STATE_TRANSMITTING:
