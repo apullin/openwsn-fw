@@ -20,7 +20,7 @@
 
 
 //for debugging and hardocing to test synchronization
-#define MOTE1_ADDRESS   0x87
+#define MOTE1_ADDRESS   0x5d
 #define MOTE2_ADDRESS   0xb6
 
 //===================================== variables ==============================
@@ -153,17 +153,12 @@ void timer_mac_periodic_fired() {
          return;
       }
    } else if (isSync==FALSE) {
-      //If I'm not in sync, enter/stay in S_SYNCHRONIZING
-      /*atomic if (asn%2==1) {
-      openserial_startOutput();
-   } else {
-      openserial_startInput();
-   }*///poipoi
-      if (state!=S_SYNCHRONIZING) {
-         change_state(S_SYNCHRONIZING);
-         radio_rxOn(18);
-      }
-      return;
+     //If I'm not in sync, enter/stay in S_SYNCHRONIZING
+     if (state!=S_SYNCHRONIZING) {
+       change_state(S_SYNCHRONIZING);
+       radio_rxOn(18);
+     }
+     return;
    }
    
    //----- state error
@@ -182,6 +177,7 @@ void timer_mac_periodic_fired() {
       
       // poipoipoi start =====================================
       OpenQueueEntry_t* packetADV;
+      open_addr_t destAddrADV;
       //get a packet out of the buffer (if any)
       if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(asn%LENGTHCELLFRAME)) {
          //hack add adv packet to queue
@@ -192,13 +188,16 @@ void timer_mac_periodic_fired() {
             } else {
                packetADV->creator       = COMPONENT_RES;
                packetADV->owner         = COMPONENT_MAC;
+               destAddrADV.type         = ADDR_16B;
+               destAddrADV.addr_16b[0]  = 0xff;
+               destAddrADV.addr_16b[1]  = 0xff;
                packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
                ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
                prependIEEE802154header(packetADV,
                                        IEEE154_TYPE_CMD,
                                        IEEE154_SEC_NO_SECURITY,
-                                       NULL,
-                                       NULL);
+                                       0,
+                                       &destAddrADV);
                dataFrameToSend = packetADV; 
             }
          }
@@ -254,7 +253,6 @@ void timer_mac_periodic_fired() {
             
             //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
          } else {                                                    // nothing to do, abort
-            openserial_startOutput();
             endSlot();
             return;
          }
@@ -884,9 +882,9 @@ bool mac_debugPrint() {
 //*********************************cellUsage functions*******************//
 
 uint8_t cellUsageGet_getType(uint16_t slotNum){
-   if(slotNum < 3) {
+   if        (slotNum == 0) {
       return CELLTYPE_TXRX;
-   } else if(slotNum == 4) {
+   } else if (slotNum == 1) {
       return CELLTYPE_RXSERIAL;
    } else {
       return CELLTYPE_OFF;
