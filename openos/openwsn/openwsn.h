@@ -16,50 +16,41 @@
 
 #define bool uint8_t
 
+#define DEBUG_PIN_FRAME           0x20           // P4.5
+#define DEBUG_PIN_FRAME_OUT       P4DIR |=  DEBUG_PIN_FRAME
+#define DEBUG_PIN_FRAME_TOGGLE    P4OUT ^=  DEBUG_PIN_FRAME
+#define DEBUG_PIN_FRAME_CLR       P4OUT &= ~DEBUG_PIN_FRAME
+#define DEBUG_PIN_FRAME_SET       P4OUT |=  DEBUG_PIN_FRAME
 
-/**************defining debug pins*******************/
-#define DEBUG_PIN_FRAME     0x20   //p4.5 //black
-#define DEBUG_PIN_SLOT      0x02   //p4.1 //brown
-#define DEBUG_PIN_FAST      0x04   //p4.2 //red
-#define DEBUG_PIN_CPUON     0x08   //p4.3 //orange
-#define DEBUG_PIN_ISR 0x10   //p4.4 //yellow
-#define DEBUG_PIN_RADIO  0x02   //p1.1 //green
+#define DEBUG_PIN_SLOT            0x02           // P4.1
+#define DEBUG_PIN_SLOT_OUT        P4DIR |=  DEBUG_PIN_SLOT
+#define DEBUG_PIN_SLOT_TOGGLE     P4OUT ^=  DEBUG_PIN_SLOT
+#define DEBUG_PIN_SLOT_CLR        P4OUT &= ~DEBUG_PIN_SLOT
+#define DEBUG_PIN_SLOT_SET        P4OUT |=  DEBUG_PIN_SLOT
 
-//set them as outputs here:
-#define DEBUG_PIN_FRAME_OUT     P4DIR |= DEBUG_PIN_FRAME
-#define DEBUG_PIN_SLOT_OUT      P4DIR |= DEBUG_PIN_SLOT
-#define DEBUG_PIN_FAST_OUT      P4DIR |= DEBUG_PIN_FAST
-#define DEBUG_PIN_CPUON_OUT     P4DIR |= DEBUG_PIN_CPUON
-#define DEBUG_PIN_ISR_OUT P4DIR |= DEBUG_PIN_ISR
-#define DEBUG_PIN_RADIO_OUT  P1DIR |= DEBUG_PIN_RADIO
+#define DEBUG_PIN_FAST            0x04           // P4.2
+#define DEBUG_PIN_FAST_OUT        P4DIR |=  DEBUG_PIN_FAST
+#define DEBUG_PIN_FAST_TOGGLE     P4OUT ^=  DEBUG_PIN_FAST
+#define DEBUG_PIN_FAST_CLR        P4OUT &= ~DEBUG_PIN_FAST
+#define DEBUG_PIN_FAST_SET        P4OUT |=  DEBUG_PIN_FAST
 
-//define functions assotiated with them.
-#define DEBUG_PIN_FRAME_TOGGLE  P4OUT ^=  DEBUG_PIN_FRAME
-#define DEBUG_PIN_FRAME_CLR     P4OUT &= ~DEBUG_PIN_FRAME
-#define DEBUG_PIN_FRAME_SET     P4OUT |=  DEBUG_PIN_FRAME //toggle, clr and set
+#define DEBUG_PIN_CPUON           0x08           // P4.3
+#define DEBUG_PIN_CPUON_OUT       P4DIR |=  DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_TOGGLE    P4OUT ^=  DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_CLR       P4OUT &= ~DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPUON_SET       P4OUT |=  DEBUG_PIN_CPUON
 
-#define DEBUG_PIN_SLOT_TOGGLE   P4OUT ^=  DEBUG_PIN_SLOT
-#define DEBUG_PIN_SLOT_CLR      P4OUT &= ~DEBUG_PIN_SLOT
-#define DEBUG_PIN_SLOT_SET      P4OUT |=  DEBUG_PIN_SLOT //toggle, clr and set
+#define DEBUG_PIN_ISR             0x10           // P4.4
+#define DEBUG_PIN_ISR_OUT         P4DIR |=  DEBUG_PIN_ISR
+#define DEBUG_PIN_ISR_TOGGLE      P4OUT ^=  DEBUG_PIN_ISR
+#define DEBUG_PIN_ISR_CLR         P4OUT &= ~DEBUG_PIN_ISR
+#define DEBUG_PIN_ISR_SET         P4OUT |=  DEBUG_PIN_ISR
 
-#define DEBUG_PIN_FAST_TOGGLE   P4OUT ^=  DEBUG_PIN_FAST
-#define DEBUG_PIN_FAST_CLR      P4OUT &= ~DEBUG_PIN_FAST
-#define DEBUG_PIN_FAST_SET      P4OUT |=  DEBUG_PIN_FAST //toggle, clr and set
-
-#define DEBUG_PIN_CPUON_TOGGLE  P4OUT ^=  DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_CLR     P4OUT &= ~DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_SET     P4OUT |=  DEBUG_PIN_CPUON //toggle, clr and set
-
-#define DEBUG_PIN_ISR_TOGGLE P4OUT ^=  DEBUG_PIN_ISR
-#define DEBUG_PIN_ISR_CLR    P4OUT &= ~DEBUG_PIN_ISR
-#define DEBUG_PIN_ISR_SET    P4OUT |=  DEBUG_PIN_ISR //toggle, clr and set
-
-#define DEBUG_PIN_RADIO_TOGGLE  P1OUT ^=  DEBUG_PIN_RADIO
-#define DEBUG_PIN_RADIO_CLR     P1OUT &= ~DEBUG_PIN_RADIO
-#define DEBUG_PIN_RADIO_SET     P1OUT |=  DEBUG_PIN_RADIO //toggle, clr and set
-
-
-/**************end debug pins*************8888******/
+#define DEBUG_PIN_RADIO           0x02           // P1.1
+#define DEBUG_PIN_RADIO_OUT       P1DIR |=  DEBUG_PIN_RADIO
+#define DEBUG_PIN_RADIO_TOGGLE    P1OUT ^=  DEBUG_PIN_RADIO
+#define DEBUG_PIN_RADIO_CLR       P1OUT &= ~DEBUG_PIN_RADIO
+#define DEBUG_PIN_RADIO_SET       P1OUT |=  DEBUG_PIN_RADIO
 
 __no_init volatile uint8_t eui64 @ 0x10ee;       // address is flash where the node's EUI64 identifier is stored
 
@@ -75,20 +66,20 @@ enum {
    MAXNUMNEIGHBORS = 10,
    DEFAULTCHANNEL  = 15,
    //delays
-   DELAY_LOSING_NEIGHBOR_32KHZ     = 327680,  //32kHz ticks = 10s (32768 ticks = 1s)
-   DELAY_LOSING_NEIGHBOR_1KHZ      =  10240,  // 1kHz ticks = 10s ( 1024 ticks = 1s)
-   DELAY_LOST_NEIGHBOR_32KHZ       = 655360,  //32kHz ticks = 20s (32768 ticks = 1s)
-   DELAY_LOST_NEIGHBOR_1KHZ        =  20480,  // 1kHz ticks = 20s ( 1024 ticks = 1s)
+   DELAY_LOSING_NEIGHBOR_32KHZ     = 327680,     //32kHz ticks = 10s (32768 ticks = 1s)
+   DELAY_LOSING_NEIGHBOR_1KHZ      =  10240,     // 1kHz ticks = 10s ( 1024 ticks = 1s)
+   DELAY_LOST_NEIGHBOR_32KHZ       = 655360,     //32kHz ticks = 20s (32768 ticks = 1s)
+   DELAY_LOST_NEIGHBOR_1KHZ        =  20480,     // 1kHz ticks = 20s ( 1024 ticks = 1s)
    TXRETRIES                       =      3,
    //state
    QUEUELENGTH                     =     10,
    SERIAL_OUTPUT_BUFFER_SIZE       =    300,
-   SERIAL_INPUT_BUFFER_SIZE        =    200, //not more than 255 (length encoded in 1B)
+   SERIAL_INPUT_BUFFER_SIZE        =    200,     //not more than 255 (length encoded in 1B)
    //misc
-   GOODNEIGHBORMINPOWER            =    219, //-80dBm in 8-bit 2's compl. (-80 -> -35 -> 36 -> 219)
-   BADNEIGHBORMAXPOWER             =    229, //-70dBm in 8-bit 2's compl. (-70 -> -25 -> 26 -> 0001 1010 -> 1110 0101-> 229)
+   GOODNEIGHBORMINPOWER            =    219,     //-80dBm in 8-bit 2's compl. (-80 -> -35 -> 36 -> 219)
+   BADNEIGHBORMAXPOWER             =    229,     //-70dBm in 8-bit 2's compl. (-70 -> -25 -> 26 -> 0001 1010 -> 1110 0101-> 229)
    SWITCHSTABILITYTHRESHOLD        =      3,
-   TX_POWER                        =     31, //1=-25dBm, 31=0dBm (max value)
+   TX_POWER                        =     31,     //1=-25dBm, 31=0dBm (max value)
    MAXPREFERENCE                   =      2,
    INVALID_TIMESTAMP               = 0x80000000L,
 };
@@ -132,7 +123,7 @@ enum {
   E_FAIL    =  1,
 };
 
-typedef struct open_addr_t {   //always written big endian, i.e. MSB in addr[0]
+typedef struct open_addr_t {                     //always written big endian, i.e. MSB in addr[0]
    uint8_t type;
    union {
       uint8_t addr_16b[2];
@@ -204,23 +195,23 @@ enum {
 //OpenQueue entry definition
 typedef struct OpenQueueEntry_t {
    //admin
-   uint8_t       creator;                    //the component which called getFreePacketBuffer()
-   uint8_t       owner;                      //the component which currently owns the entry
-   uint8_t*      payload;                    //pointer to the start of the payload within 'packet'
-   uint8_t       length;                     //length in bytes of the payload
+   uint8_t       creator;                        //the component which called getFreePacketBuffer()
+   uint8_t       owner;                          //the component which currently owns the entry
+   uint8_t*      payload;                        //pointer to the start of the payload within 'packet'
+   uint8_t       length;                         //length in bytes of the payload
    //l4
-   uint8_t       l4_protocol;                //l4 protocol to be used
-   uint16_t      l4_sourcePortORicmpv6Type;  //l4 source port
-   uint16_t      l4_destination_port;        //l4 destination port
-   uint8_t*      l4_payload;                 //pointer to the start of the payload of l4 (used for retransmits)
-   uint8_t       l4_length;                  //length of the payload of l4 (used for retransmits)
+   uint8_t       l4_protocol;                    //l4 protocol to be used
+   uint16_t      l4_sourcePortORicmpv6Type;      //l4 source port
+   uint16_t      l4_destination_port;            //l4 destination port
+   uint8_t*      l4_payload;                     //pointer to the start of the payload of l4 (used for retransmits)
+   uint8_t       l4_length;                      //length of the payload of l4 (used for retransmits)
    //l3
-   open_addr_t   l3_destinationORsource;     //128b IPv6 destination (down stack) or source address (up)
+   open_addr_t   l3_destinationORsource;         //128b IPv6 destination (down stack) or source address (up)
    //l2
-   open_addr_t   l2_nextORpreviousHop;       //64b IEEE802.15.4 next (down stack) or previous (up) hop address
-   uint8_t       l2_frameType;               //beacon, data, ack, cmd
+   open_addr_t   l2_nextORpreviousHop;           //64b IEEE802.15.4 next (down stack) or previous (up) hop address
+   uint8_t       l2_frameType;                   //beacon, data, ack, cmd
    uint8_t       l2_retriesLeft;
-   bool          l2_transmitInFirstSlot;     //for video transmission
+   bool          l2_transmitInFirstSlot;         //for video transmission
    //l1 (drivers)
    uint8_t       l1_txPower;
    uint8_t       l1_channel;
@@ -229,7 +220,7 @@ typedef struct OpenQueueEntry_t {
    bool          l1_crc;
    uint32_t      l1_rxTimestamp;
    //the packet
-   uint8_t       packet[1+1+125+2+1];         // 1B spi address, 1B length, 125B data, 2B CRC, 1B LQI
+   uint8_t       packet[1+1+125+2+1];            // 1B spi address, 1B length, 125B data, 2B CRC, 1B LQI
 } OpenQueueEntry_t;
 
 typedef struct slotChannel_t {
@@ -247,12 +238,12 @@ enum {
    COMPONENT_APPTCPINJECT     = 0x02,
    COMPONENT_APPTCPOHLONE     = 0x03,
    COMPONENT_APPTCPPRINT      = 0x04,
-   COMPONENT_APPUDPCHANNEL    = 0x05, //only exist on the GINA port
+   COMPONENT_APPUDPCHANNEL    = 0x05,
    COMPONENT_APPUDPECHO       = 0x06,
-   COMPONENT_APPUDPGINA       = 0x07, //only exist on the GINA port
-   COMPONENT_APPUDPHELI       = 0x08, //only exist on the GINA port
+   COMPONENT_APPUDPGINA       = 0x07,
+   COMPONENT_APPUDPHELI       = 0x08,
    COMPONENT_APPUDPINJECT     = 0x09,
-   COMPONENT_APPUDPLEDS       = 0x0a, //only exist on the GINA port
+   COMPONENT_APPUDPLEDS       = 0x0a,
    COMPONENT_APPUDPPRINT      = 0x0b,
    COMPONENT_APPUDPSENSOR     = 0x0c,
    COMPONENT_APPUDPWARPWING   = 0x80,
