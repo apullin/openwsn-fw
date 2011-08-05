@@ -17,37 +17,37 @@
 #define bool uint8_t
 
 #define DEBUG_PIN_FRAME           0x20           // P4.5
-#define DEBUG_PIN_FRAME_OUT       P4DIR |=  DEBUG_PIN_FRAME
+#define DEBUG_PIN_FRAME_INIT      P4DIR |=  DEBUG_PIN_FRAME
 #define DEBUG_PIN_FRAME_TOGGLE    P4OUT ^=  DEBUG_PIN_FRAME
 #define DEBUG_PIN_FRAME_CLR       P4OUT &= ~DEBUG_PIN_FRAME
 #define DEBUG_PIN_FRAME_SET       P4OUT |=  DEBUG_PIN_FRAME
 
 #define DEBUG_PIN_SLOT            0x02           // P4.1
-#define DEBUG_PIN_SLOT_OUT        P4DIR |=  DEBUG_PIN_SLOT
+#define DEBUG_PIN_SLOT_INIT       P4DIR |=  DEBUG_PIN_SLOT
 #define DEBUG_PIN_SLOT_TOGGLE     P4OUT ^=  DEBUG_PIN_SLOT
 #define DEBUG_PIN_SLOT_CLR        P4OUT &= ~DEBUG_PIN_SLOT
 #define DEBUG_PIN_SLOT_SET        P4OUT |=  DEBUG_PIN_SLOT
 
-#define DEBUG_PIN_FAST            0x04           // P4.2
-#define DEBUG_PIN_FAST_OUT        P4DIR |=  DEBUG_PIN_FAST
-#define DEBUG_PIN_FAST_TOGGLE     P4OUT ^=  DEBUG_PIN_FAST
-#define DEBUG_PIN_FAST_CLR        P4OUT &= ~DEBUG_PIN_FAST
-#define DEBUG_PIN_FAST_SET        P4OUT |=  DEBUG_PIN_FAST
+#define DEBUG_PIN_FSM             0x04           // P4.2
+#define DEBUG_PIN_FSM_INIT        P4DIR |=  DEBUG_PIN_FSM
+#define DEBUG_PIN_FSM_TOGGLE      P4OUT ^=  DEBUG_PIN_FSM
+#define DEBUG_PIN_FSM_CLR         P4OUT &= ~DEBUG_PIN_FSM
+#define DEBUG_PIN_FSM_SET         P4OUT |=  DEBUG_PIN_FSM
 
-#define DEBUG_PIN_CPUON           0x08           // P4.3
-#define DEBUG_PIN_CPUON_OUT       P4DIR |=  DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_TOGGLE    P4OUT ^=  DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_CLR       P4OUT &= ~DEBUG_PIN_CPUON
-#define DEBUG_PIN_CPUON_SET       P4OUT |=  DEBUG_PIN_CPUON
+#define DEBUG_PIN_CPU             0x08           // P4.3
+#define DEBUG_PIN_CPU_INIT        P4DIR |=  DEBUG_PIN_CPU
+#define DEBUG_PIN_CPU_TOGGLE      P4OUT ^=  DEBUG_PIN_CPU
+#define DEBUG_PIN_CPU_CLR         P4OUT &= ~DEBUG_PIN_CPU
+#define DEBUG_PIN_CPU_SET         P4OUT |=  DEBUG_PIN_CPU
 
 #define DEBUG_PIN_ISR             0x10           // P4.4
-#define DEBUG_PIN_ISR_OUT         P4DIR |=  DEBUG_PIN_ISR
+#define DEBUG_PIN_ISR_INIT        P4DIR |=  DEBUG_PIN_ISR
 #define DEBUG_PIN_ISR_TOGGLE      P4OUT ^=  DEBUG_PIN_ISR
 #define DEBUG_PIN_ISR_CLR         P4OUT &= ~DEBUG_PIN_ISR
 #define DEBUG_PIN_ISR_SET         P4OUT |=  DEBUG_PIN_ISR
 
 #define DEBUG_PIN_RADIO           0x02           // P1.1
-#define DEBUG_PIN_RADIO_OUT       P1DIR |=  DEBUG_PIN_RADIO
+#define DEBUG_PIN_RADIO_INIT      P1DIR |=  DEBUG_PIN_RADIO
 #define DEBUG_PIN_RADIO_TOGGLE    P1OUT ^=  DEBUG_PIN_RADIO
 #define DEBUG_PIN_RADIO_CLR       P1OUT &= ~DEBUG_PIN_RADIO
 #define DEBUG_PIN_RADIO_SET       P1OUT |=  DEBUG_PIN_RADIO
