@@ -57,9 +57,11 @@ void udp_sendDone(OpenQueueEntry_t* msg, error_t error) {
       case WKP_UDP_GINA:
          appudpgina_sendDone(msg,error);
          break;
+      /* remove heli application for now since we need TimerA for TSCH
       case WKP_UDP_HELI:
          appudpheli_sendDone(msg,error);
          break;
+      */
       case WKP_UDP_LEDS:
          appudpleds_sendDone(msg,error);
          break;
@@ -96,9 +98,11 @@ void udp_receive(OpenQueueEntry_t* msg) {
       case WKP_UDP_GINA:
          appudpgina_receive(msg);
          break;
+      /* remove heli application for now since we need TimerA for TSCH
       case WKP_UDP_HELI:
          appudpheli_receive(msg);
          break;
+      */
       case WKP_UDP_LEDS:
          appudpleds_receive(msg);
          break;

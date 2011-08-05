@@ -1,9 +1,22 @@
 /*
- * Driver for the timers.
+ * Driver for the general purpose timers.
  *
  * Authors:
  * Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+ *
+ * This file drives all timers off of TimerB clocked from the 32kHz crystal, in
+ * continuous mode.
+ *
+ * It's a really simple implementation, in which each module which needs a timer
+ * is assigned one of the 7 TimerB compare registers. This means that at most 7
+ * modules can be assigned a timer.
+ * 
+ * When we'll need more, we'll have implement some software fanciness which will
+ * run all timer off of a single compare register, offer dynamic timer creation,
+ * etc, etc.
+ *
+ * For now, KISS.
  */
 
 #include "msp430x26x.h"
@@ -25,7 +38,7 @@ void timer_init() {
       timer_start(i, 0, FALSE);
    }
    
-   BCSCTL3 |= LFXT1S_0;                          // ACLK sources from external 32kHz
+   BCSCTL3 |= LFXT1S_0;                          // source ACLK from 32kHz crystal
 
    //set CCRBx registers
    TBCCTL0  = 0;
@@ -45,19 +58,6 @@ void timer_init() {
 
    //start TimerB on 32kHz ACLK
    TBCTL    = MC_2+TBSSEL_1;                     // continuous mode, using ACLK
-
-#ifdef TIMER_A_ENABLED
-   //set CCRAx registers
-   TACCTL0  = 0;
-   TACCR0   = 0;
-   TACCTL1  = 0;
-   TACCR1   = 0;
-   TACCTL2  = 0;
-   TACCR2   = 0;
-   //start TimerA on 32kHz ACLK
-   TACTL    = MC_2+TBSSEL_1;                     // continuous mode, using ACLK
-#endif
-
 }
 
 void timer_startOneShot(uint8_t timer_id, uint16_t duration) {
@@ -100,35 +100,13 @@ void timer_stop(uint8_t timer_id) {
          TBCCR6   = 0;
          TBCCTL6 &= ~CCIE;
          break;
-#ifdef TIMER_A_ENABLED
-      case 10:
-         TACCR0   = 0;
-         TACCTL0 &= ~CCIE;
-         break;
-      case 11:
-         TACCR1   = 0;
-         TACCTL1 &= ~CCIE;
-         break;
-      case 12:
-         TACCR2   = 0;
-         TACCTL2 &= ~CCIE;
-         break;
-#endif
-   }
-}
-
-void enable_capture(uint8_t timer_id){
-   //poipoi expand to include other timer, we only do timer5 now for tsch
-   if(timer_id == 5)
-   {
-      TBCCTL5 = CAP|SCS|CCIS1|CM_3;
    }
 }
 
 //=========================== private =============================================
 
 void timer_start(uint8_t timer_id, uint16_t duration, bool continuous) {
-   timers_period[timer_id] = duration;
+   timers_period[timer_id]     = duration;
    timers_continuous[timer_id] = continuous;
    switch(timer_id) {
       case 0:
@@ -159,21 +137,6 @@ void timer_start(uint8_t timer_id, uint16_t duration, bool continuous) {
          TBCCR6   = TBR+timers_period[timer_id];
          TBCCTL6  = CCIE;
          break;
-         
-#ifdef TIMER_A_ENABLED
-      case 10:
-         TACCR0   = TAR+timers_period[timer_id];
-         TACCTL0  = CCIE;
-         break;
-      case 11:
-         TACCR1   = TAR+timers_period[timer_id];
-         TACCTL1  = CCIE;
-         break;
-      case 12:
-         TACCR2   = TAR+timers_period[timer_id];
-         TACCTL2  = CCIE;
-         break;
-#endif
    }
 }
 

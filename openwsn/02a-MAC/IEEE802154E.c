@@ -6,6 +6,7 @@
  * Branko Kerkez   <bkerkeze@berkeley.edu>, March 2011
  * Fabien Chraim   <chraim@eecs.berkeley.edu>, June 2011
  */
+
 #include "openwsn.h"
 #include "IEEE802154E.h"
 #include "IEEE802154.h"
@@ -14,7 +15,7 @@
 #include "idmanager.h"
 #include "openserial.h"
 #include "openqueue.h"
-#include "timers.h"
+#include "mac_timers.h"
 #include "packetfunctions.h"
 #include "neighbors.h"
 #include "nores.h"
@@ -85,9 +86,8 @@ void mac_init() {
       idmanager_setIsDAGroot(TRUE);
    }
    
-   //Timer B5 is used in capture mode to timestamp incoming radio packets
-   enable_capture(TIMER_B5);
-   timer_startPeriodic(TIMER_MAC_PERIODIC,PERIODICTIMERPERIOD);
+   //Initialze and stat the TSCH timer
+   mac_timer_init();
 }
 
 // a packet sent from the upper layer is simply stored into the OpenQueue buffer.
@@ -173,11 +173,12 @@ void timer_mac_periodic_fired() {
       case CELLTYPE_TXRX:
          
          //start timer to deal with transmitting or receiving when backoff timer fires
-         timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
+         //mac_timer_schedule(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
          
          // poipoipoi start =====================================
+         __no_operation();
          OpenQueueEntry_t* packetADV;
-         open_addr_t destAddrADV;
+         open_addr_t       destAddrADV;
          //get a packet out of the buffer (if any)
          if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(asn%LENGTHCELLFRAME)) {
             //hack add adv packet to queue
@@ -363,10 +364,11 @@ void fast_alarm_fired() {
                                   (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
             endSlot();
          } else {
-            //if we are sucessful start the timer to turn the radio on later to listen for th eack
+            //if we are sucessful start the timer to turn the radio on later to listen for the ack
             //no need to listen if we just sent an ADV (slot == 0)
-            if(asn%LENGTHCELLFRAME != 0)
-               timer_startOneShot(TIMER_MAC_WATCHDOG,GUARDTIME);
+            if(asn%LENGTHCELLFRAME != 0) {
+               //timer_startOneShot(TIMER_MAC_WATCHDOG,GUARDTIME);
+            }
          }
          break;
       case S_TX_RXACKREADY:                                       //[timer fired] transmitter
@@ -377,7 +379,7 @@ void fast_alarm_fired() {
          radio_rxOn(frequencyChannel);
          //start timer to listen only for a while
          //if we dont get packet by ACK_WAIT_TIME+, we kill the receiver
-         timer_startOneShot(TIMER_MAC_BACKOFF,ACK_WAIT_TIME+EXTRA_WAIT_TIME);
+         //timer_startOneShot(TIMER_MAC_BACKOFF,ACK_WAIT_TIME+EXTRA_WAIT_TIME);
          
          
          /*
@@ -663,7 +665,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
               error_t error = radio_prepare_send(packetACK);
               
               //now that we have an ACK packet we want to send it when ACK_WAIT_TIME fires
-              timer_startOneShot(TIMER_MAC_BACKOFF,ACK_WAIT_TIME);
+              //timer_startOneShot(TIMER_MAC_BACKOFF,ACK_WAIT_TIME);
               
               if (error!=E_SUCCESS) {
                  //abort

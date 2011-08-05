@@ -84,28 +84,6 @@ enum {
    INVALID_TIMESTAMP               = 0x80000000L,
 };
 
-//Slot Durations (standards compliant)
-/*enum {
-  TsTxOffset       =   69, //32kHz ticks =  2.106ms
-  TsRxOffset       =   37, //32kHz ticks =  1.129ms (<TsTxOffset)
-  TsRxWaitTime     =   66, //32kHz ticks =  2.014ms (both TsPacketWaitTime and TsAckWaitTime)
-  TsTxAckDelay     =   64, //32kHz ticks =  2.000ms
-  TsRxAckDelay     =   64, //32kHz ticks =  2.000ms (has to happen beofre TsTxAckDelay expires)
-  SLOT_TIME        =  640, //32kHz ticks = 20.000ms
-  radio_delay      =   21, //measured
-  };*/
-
-//Slot Durations (video transmission)
-enum {
-   TsTxOffset       =   197, //32kHz ticks =  6ms
-   TsRxOffset       =   131, //32kHz ticks =  4ms (<TsTxOffset)
-   TsRxWaitTime     =   131, //32kHz ticks =  4ms (both TsPacketWaitTime and TsAckWaitTime)
-   TsTxAckDelay     =    66, //32kHz ticks =  2ms
-   TsRxAckDelay     =   164, //32kHz ticks =  5ms (has to happen beofre TsTxAckDelay expires)
-   SLOT_TIME        =   983, //32kHz ticks = 30ms
-   radio_delay      =    19, //measured
-};
-
 typedef uint8_t   cellType_t;
 typedef uint16_t  slotOffset_t;
 typedef uint8_t   channelOffset_t;

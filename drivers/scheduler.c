@@ -17,6 +17,7 @@
 
 #include "scheduler.h"
 #include "timers.h"
+#include "mac_timers.h"
 #include "i2c.h"
 #include "openserial.h"
 
@@ -80,7 +81,7 @@ void scheduler_start() {
             task_list[ID_ISR_MAC_PERIODIC]--;
             num_tasks--;
 #ifdef OPENWSN_STACK
-            timer_mac_periodic_fired();
+            
 #endif
          } else if (task_list[ID_ISR_TCP_TIMEOUT]>0) {
             task_list[ID_ISR_TCP_TIMEOUT]--;
@@ -212,8 +213,8 @@ __interrupt void TIMERB0_ISR (void) {
 // TimerB CCR1-6 interrupt service routine
 #pragma vector = TIMERB1_VECTOR
 __interrupt void TIMERB1through6_ISR (void) {
-      CAPTURE_B5;
-      DEBUG_PIN_ISR_SET;
+   CAPTURE_B5;
+   DEBUG_PIN_ISR_SET;
 #ifdef ISR_TIMERS
    uint16_t tbiv_temp = TBIV;                    // read only once because accessing TBIV resets it
    switch (tbiv_temp) {
@@ -291,6 +292,15 @@ __interrupt void TIMERB1through6_ISR (void) {
 
 //=========================== interrupts handled in ISR =======================
 
+// TimerA CCR0 interrupt service routine
+#pragma vector = TIMERA0_VECTOR
+__interrupt void TIMERA0_ISR (void) {
+   CAPTURE_B5;
+   DEBUG_PIN_ISR_SET;
+   timer_mac_periodic_fired();
+   DEBUG_PIN_ISR_CLR;
+}
+
 /* 
  * The GINA board has three buses: I2C, SPI, UART. We handle the
  * related interrupts directly.
@@ -310,7 +320,6 @@ __interrupt void USCIAB1TX_ISR(void) {
       i2c_txInterrupt(1);                         // implemented in I2C driver
    }
 #endif
-
 #ifdef ISR_SERIAL
    if ( (UC1IFG & UCA1TXIFG) && (UC1IE & UCA1TXIE) ){
       openserial_txInterrupt();                  // implemented in serial driver
