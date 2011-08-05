@@ -14,40 +14,34 @@
 //timer ids
 enum {
 #ifdef OPENWSN_STACK
-   TIMER_MAC_PERIODIC = 0,                       // mapped onto timerB CCR0
-   TIMER_MAC_BACKOFF  = 1,                       // mapped onto timerB CCR1
-   TIMER_MAC_WATCHDOG = 2,                       // mapped onto timerB CCR2
-   TIMER_TCP_TIMEOUT  = 3,                       // mapped onto timerB CCR3
-   TIMER_RPL          = 4,                       // mapped onto timerB CCR4
-#endif
-   TIMER_B5 = 5,                                 // mapped onto timerB CCR5
-#ifdef TASK_APPLICATION
-   TIMER_TASK_APPLICATION = 6,                   // mapped onto timerB CCR6
+   TIMER_RPL                 = 0,                // mapped onto timerB CCR0
+   TIMER_TCP_TIMEOUT         = 1,                // mapped onto timerB CCR1
+   TIMER_TASK_APPLICATION    = 2,                // mapped onto timerB CCR2
 #else
-   TIMER_B6 = 6,                                 // mapped onto timerB CCR5
+   TIMER_B0                  = 0,                // mapped onto timerB CCR0
+   TIMER_B1                  = 1,                // mapped onto timerB CCR1
+   TIMER_B2                  = 2,                // mapped onto timerB CCR2
 #endif
+   TIMER_B3                  = 3,                // mapped onto timerB CCR3
+   TIMER_B4                  = 4,                // mapped onto timerB CCR4
+   TIMER_B5                  = 5,                // mapped onto timerB CCR5
+   TIMER_B6                  = 6,                // mapped onto timerB CCR6
 };
 
-#ifdef TIMER_A_ENABLED
-#define TIMER_COUNT 13
-#else
-#define TIMER_COUNT 7
-#endif
+#define TIMER_COUNT 7                            // number of available timers
 
 extern uint16_t timers_period[TIMER_COUNT];
 extern bool     timers_continuous[TIMER_COUNT];
 
-// initialize the timers
+// callable functions
 void timer_init();
-// read/write individual 8-bit registers
 void timer_start(uint8_t timer_id, uint16_t duration, bool continuous);
 void timer_startOneShot(uint8_t timer_id, uint16_t duration);
 void timer_startPeriodic(uint8_t timer_id, uint16_t duration);
 void timer_stop(uint8_t timer_id);
-void enable_capture(uint8_t timer_id);
+
 // functions to call when timer fires
 #ifdef OPENWSN_STACK
-void timer_mac_periodic_fired();
 void timer_mac_backoff_fired();
 void timer_mac_watchdog_fired();
 void timer_tcp_timeout_fired();

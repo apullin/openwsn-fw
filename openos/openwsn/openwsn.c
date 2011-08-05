@@ -89,7 +89,7 @@ void openwsn_init() {
    appudpchannel_init();
    appudpecho_init();
    appudpgina_init();
-   appudpheli_init();
+   //appudpheli_init(); remove heli application for now since we need TimerA for TSCH
    appudpinject_init();
    appudpleds_init();
    appudpprint_init();

@@ -88,6 +88,17 @@ enum {
    WAS_NOT_ACKED = FALSE,
 };
 
+//Slot Duration and guard time (standards compliant)
+enum {
+  TsTxOffset       =   69, //32kHz ticks =  2.106ms
+  TsRxOffset       =   37, //32kHz ticks =  1.129ms (<TsTxOffset)
+  TsRxWaitTime     =   66, //32kHz ticks =  2.014ms (both TsPacketWaitTime and TsAckWaitTime)
+  TsTxAckDelay     =   64, //32kHz ticks =  2.000ms
+  TsRxAckDelay     =   64, //32kHz ticks =  2.000ms (has to happen before TsTxAckDelay expires)
+  SLOT_TIME        =  640, //32kHz ticks = 20.000ms
+  radio_delay      =   21, //measured
+};
+
 //timer wait times (in 1/32768 seconds)
 //for now, we will use 40ms (10*4) slots
 enum {
@@ -104,9 +115,8 @@ enum {
 void    mac_init();
 error_t mac_send(OpenQueueEntry_t* msg);
 void    mac_sendDone(OpenQueueEntry_t* pkt, error_t error);
-void radio_packet_received(OpenQueueEntry_t* msg);
+void    radio_packet_received(OpenQueueEntry_t* msg);
 bool    mac_debugPrint();
-void radio_prepare_send_done();
-
+void    radio_prepare_send_done();
 
 #endif

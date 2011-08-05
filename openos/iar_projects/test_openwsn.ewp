@@ -1907,6 +1907,9 @@
       <name>$PROJ_DIR$\..\drivers\leds.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\drivers\mac_timers.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\drivers\magnetometer.c</name>
     </file>
     <file>
@@ -2000,9 +2003,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\openwsn\07-App\appudpgina.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\openwsn\07-App\appudpheli.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\openwsn\07-App\appudpinject.c</name>
