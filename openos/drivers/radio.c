@@ -21,7 +21,7 @@ uint8_t            radio_corrupted_packet_buffer[RADIO_CORRUPTED_PACKET_BUFFER_L
 //=========================== initialize the radio ============================
 
 void radio_init() {
-  DEBUG_PIN_RADIO_OUT;
+   DEBUG_PIN_RADIO_INIT;
    radio_state = RADIO_STATE_STOPPED;
    // initialize radio-specific variables
    radioPacketReceived =  openqueue_getFreePacketBuffer();

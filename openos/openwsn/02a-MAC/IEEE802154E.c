@@ -1,5 +1,5 @@
 /*
- * TSCH on OpenWSN
+ * IEEE802.15.4e TSCH
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
@@ -18,7 +18,6 @@
 #include "packetfunctions.h"
 #include "neighbors.h"
 #include "nores.h"
-
 
 //for debugging and hardocing to test synchronization
 #define MOTE1_ADDRESS   0x8b
@@ -69,10 +68,10 @@ void prepareADVPacket();
 //===================================== public from upper layer ===============
 
 void mac_init() {    
-   //set debug pins as outputs
-   DEBUG_PIN_FRAME_OUT; //P1.1 0x02
-   DEBUG_PIN_SLOT_OUT;  //P4.4 0x04
-   DEBUG_PIN_FAST_OUT;  //P4.3 0x08
+   //initilize debug pins
+   DEBUG_PIN_FRAME_INIT;
+   DEBUG_PIN_SLOT_INIT;
+   DEBUG_PIN_FSM_INIT;
    
    isSync          = 0; 
    dataFrameToSend = NULL;
@@ -86,7 +85,7 @@ void mac_init() {
       idmanager_setIsDAGroot(TRUE);
    }
    
-   //Timer B5 is used in capture mode to timestemp incoming radio packets
+   //Timer B5 is used in capture mode to timestamp incoming radio packets
    enable_capture(TIMER_B5);
    timer_startPeriodic(TIMER_MAC_PERIODIC,PERIODICTIMERPERIOD);
 }
@@ -106,7 +105,7 @@ error_t mac_send(OpenQueueEntry_t* msg) {
                            IEEE154_SEC_NO_SECURITY,
                            dsn++,
                            &(msg->l2_nextORpreviousHop)
-                              );
+                           );
    // space for 2-byte CRC
    packetfunctions_reserveFooterSize(msg,2);
    return E_SUCCESS;
@@ -119,7 +118,8 @@ void timer_mac_periodic_fired() {
    ieee802154_header_iht   transmitted_ieee154_header;
    uint8_t                 channelOffset;
    
-   /*This is an example for a 10ms timeslot
+   /*
+   This is an example for a 10ms timeslot
    After the slot fires, we start a backoff timer
    if we are a transmitter, we have already loaded a packet into the radio buffer, and we simply tranmitt when the timer fires (say 2ms)
    as a receiver, we want to extend the timer (by 1ms, for exmaple) so we can listen to an incoming packet,
@@ -132,7 +132,6 @@ void timer_mac_periodic_fired() {
    //increment the absolute slot number
    asn++;
    
-
    //set fast_alarm debug pin to 0 for easier debugging
    DEBUG_PIN_SLOT_TOGGLE;
    //flip frame debug pin
@@ -171,114 +170,114 @@ void timer_mac_periodic_fired() {
    }
    
    switch (cellUsageGet_getType(asn%LENGTHCELLFRAME)) {
-   case CELLTYPE_TXRX:
-      
-      //start timer to deal with transmitting or receiving when backoff timer fires
-      timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
-      
-      // poipoipoi start =====================================
-      OpenQueueEntry_t* packetADV;
-      open_addr_t destAddrADV;
-      //get a packet out of the buffer (if any)
-      if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(asn%LENGTHCELLFRAME)) {
-         //hack add adv packet to queue
-         if(cellUsageGet_isADV(asn%LENGTHCELLFRAME)){
-            packetADV = openqueue_getFreePacketBuffer();
-            if (packetADV==NULL) {
-               P1OUT |= 0x04;
-            } else {
-               packetADV->creator       = COMPONENT_RES;
-               packetADV->owner         = COMPONENT_MAC;
-               destAddrADV.type         = ADDR_16B;
-               destAddrADV.addr_16b[0]  = 0xff;
-               destAddrADV.addr_16b[1]  = 0xff;
-               packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
-               ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
-               prependIEEE802154header(packetADV,
-                                       IEEE154_TYPE_CMD,
-                                       IEEE154_SEC_NO_SECURITY,
-                                       0,
-                                       &destAddrADV);
-               dataFrameToSend = packetADV; 
+      case CELLTYPE_TXRX:
+         
+         //start timer to deal with transmitting or receiving when backoff timer fires
+         timer_startOneShot(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
+         
+         // poipoipoi start =====================================
+         OpenQueueEntry_t* packetADV;
+         open_addr_t destAddrADV;
+         //get a packet out of the buffer (if any)
+         if (cellUsageGet_isTX(asn%LENGTHCELLFRAME)){//poipoi || cellUsageGet_isSH_TX(asn%LENGTHCELLFRAME)) {
+            //hack add adv packet to queue
+            if(cellUsageGet_isADV(asn%LENGTHCELLFRAME)){
+               packetADV = openqueue_getFreePacketBuffer();
+               if (packetADV==NULL) {
+                  P1OUT |= 0x04;
+               } else {
+                  packetADV->creator       = COMPONENT_RES;
+                  packetADV->owner         = COMPONENT_MAC;
+                  destAddrADV.type         = ADDR_16B;
+                  destAddrADV.addr_16b[0]  = 0xff;
+                  destAddrADV.addr_16b[1]  = 0xff;
+                  packetfunctions_reserveHeaderSize(packetADV,sizeof(IEEE802154E_ADV_t));
+                  ((IEEE802154E_ADV_t*)(packetADV->payload))->commandFrameId=IEEE154E_ADV;
+                  prependIEEE802154header(packetADV,
+                                          IEEE154_TYPE_CMD,
+                                          IEEE154_SEC_NO_SECURITY,
+                                          0,
+                                          &destAddrADV);
+                  dataFrameToSend = packetADV; 
+               }
             }
          }
-      }
-      // poipoipoi stop ======================================
-      
-      channelOffset = cellUsageGet_getChannelOffset(asn%LENGTHCELLFRAME);
-      if (HOPPING_ENABLED) {
-         frequencyChannel = ((asn+channelOffset)%16)+11;
-      } else {
-         frequencyChannel = ((    channelOffset)%16)+11;
-      }
-      
-      frequencyChannel=18; //poipoi change
-      
-      if (dataFrameToSend!=NULL) {                                   // start the TX sequence
-         dataFrameToSend->owner      = COMPONENT_MAC;
-         dataFrameToSend->l1_channel = frequencyChannel;
-         transmitted_ieee154_header  = retrieveIEEE802154header(dataFrameToSend);
-         if (cellUsageGet_isADV(asn%LENGTHCELLFRAME)) {
-            //I will be sending an ADV frame
-            ((IEEE802154E_ADV_t*)((dataFrameToSend->payload)+transmitted_ieee154_header.headerLength))->timingInformation=asn;// (globalTime.getASN());//poipoi implement
+         // poipoipoi stop ======================================
+         
+         channelOffset = cellUsageGet_getChannelOffset(asn%LENGTHCELLFRAME);
+         if (HOPPING_ENABLED) {
+            frequencyChannel = ((asn+channelOffset)%16)+11;
+         } else {
+            frequencyChannel = ((    channelOffset)%16)+11;
          }
-         change_state(S_TX_TXDATAPREPARE);
-         if (radio_prepare_send(dataFrameToSend)!=E_SUCCESS) {
-            //retry sending the packet later
-            dataFrameToSend->l2_retriesLeft--;
-            if (dataFrameToSend->l2_retriesLeft==0) {
-               notifySendDone(dataFrameToSend,FAIL);
+         
+         frequencyChannel=18; //poipoi change
+         
+         if (dataFrameToSend!=NULL) {                                   // start the TX sequence
+            dataFrameToSend->owner      = COMPONENT_MAC;
+            dataFrameToSend->l1_channel = frequencyChannel;
+            transmitted_ieee154_header  = retrieveIEEE802154header(dataFrameToSend);
+            if (cellUsageGet_isADV(asn%LENGTHCELLFRAME)) {
+               //I will be sending an ADV frame
+               ((IEEE802154E_ADV_t*)((dataFrameToSend->payload)+transmitted_ieee154_header.headerLength))->timingInformation=asn;// (globalTime.getASN());//poipoi implement
             }
-            openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
-                                  (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
-            endSlot();
-         };
-         //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsTxOffset);//watchdog timer
-      } else {
-         if (cellUsageGet_isRX(asn%LENGTHCELLFRAME)) {        //start the RX sequence
-            change_state(S_RX_RXDATAPREPARE);
-            radio_rxOn(frequencyChannel);
-            /*
-            if (radio_rxOn(frequencyChannel)!=E_SUCCES) {
-            //abort
-            openserial_printError(COMPONENT_MAC,ERR_PREPARERECEIVE_FAILED,
-            (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
-            endSlot();
+            change_state(S_TX_TXDATAPREPARE);
+            if (radio_prepare_send(dataFrameToSend)!=E_SUCCESS) {
+               //retry sending the packet later
+               dataFrameToSend->l2_retriesLeft--;
+               if (dataFrameToSend->l2_retriesLeft==0) {
+                  notifySendDone(dataFrameToSend,FAIL);
+               }
+               openserial_printError(COMPONENT_MAC,ERR_PREPARESEND_FAILED,
+                                     (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
+               endSlot();
             };
-            */
-            
-            //add some time to extend wait period for incoming packet to allow for a little overlap
-            //TBCCR1 is used by TIMER_MAC_BACKOFF
-            TBCCR1   = TBCCR1+EXTRA_WAIT_TIME;   //add one extra guardtime to wait for incoming packet
-            TBCCTL1  = CCIE;                     //enable interupt
-            
-            //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
-         } else {                                                    // nothing to do, abort
-            endSlot();
-            return;
+            //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsTxOffset);//watchdog timer
+         } else {
+            if (cellUsageGet_isRX(asn%LENGTHCELLFRAME)) {        //start the RX sequence
+               change_state(S_RX_RXDATAPREPARE);
+               radio_rxOn(frequencyChannel);
+               /*
+               if (radio_rxOn(frequencyChannel)!=E_SUCCES) {
+               //abort
+               openserial_printError(COMPONENT_MAC,ERR_PREPARERECEIVE_FAILED,
+               (errorparameter_t)asn%LENGTHCELLFRAME,(errorparameter_t)0);
+               endSlot();
+               };
+               */
+               
+               //add some time to extend wait period for incoming packet to allow for a little overlap
+               //TBCCR1 is used by TIMER_MAC_BACKOFF
+               TBCCR1   = TBCCR1+EXTRA_WAIT_TIME;   //add one extra guardtime to wait for incoming packet
+               TBCCTL1  = CCIE;                     //enable interupt
+               
+               //fastAlarm_startAt(fastAlarmStartSlotTimestamp,TsRxOffset);
+            } else {                                                    // nothing to do, abort
+               endSlot();
+               return;
+            }
          }
-      }
-      break;
-      
-   case CELLTYPE_RXSERIAL:
-      openserial_startInput();
-      endSlot();
-      return;
-      
-   case CELLTYPE_OFF:
-      openserial_startOutput();
-      endSlot();
-      return;
-      
-   default:
-      openserial_printError(COMPONENT_MAC,ERR_WRONG_CELLTYPE,
-                            cellUsageGet_getType(asn%LENGTHCELLFRAME),0);
-      endSlot();
-      return;
+         break;
+         
+      case CELLTYPE_RXSERIAL:
+         openserial_startInput();
+         endSlot();
+         return;
+         
+      case CELLTYPE_OFF:
+         openserial_startOutput();
+         endSlot();
+         return;
+         
+      default:
+         openserial_printError(COMPONENT_MAC,ERR_WRONG_CELLTYPE,
+                               cellUsageGet_getType(asn%LENGTHCELLFRAME),0);
+         endSlot();
+         return;
    }
 }
 
-void radio_prepare_send_done(){//poipoi implememnt in phys layer
+void radio_prepare_send_done(){ //poipoi implememnt in phys layer
    switch (state) {
    case S_TX_TXDATAPREPARE:
       change_state(S_TX_TXDATAREADY);//bk added
@@ -436,7 +435,7 @@ void fast_alarm_fired() {
                                (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
          endSlot();
          break;
-      }
+   }
 }
 
 //call in mac, not from radio, if no interupt by now, turn radio off
