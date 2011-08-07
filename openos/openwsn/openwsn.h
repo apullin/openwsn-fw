@@ -314,7 +314,7 @@ enum {
    ERR_SEND_IMPOSSIBLE_PACKET_ADDRESS            = 45, //Send with an impossible packet address                    [OpenQueueP]   arg1=code_location arg2=requested_address
    ERR_NOT_RES_MSG_THROUGH_SENDRES               = 46, //should receive only RES through SendRES                   [OpenQueueC]   arg1=message type
    ERR_NOT_ADV_MSG_THROUGH_SENDADV               = 47, //should receive only ADV through SendADV                   [OpenQueueC]   arg1=message type
-   ERR_DEQUEUEDONE_WHILE_BUSY_INFORMING_REQUESTER =48, //Dequeue.done while busy==TRUE                            [OpenQueueC]
+   ERR_DEQUEUEDONE_WHILE_BUSY_INFORMING_REQUESTER =48, //Dequeue.done while busy==TRUE                             [OpenQueueC]
    ERR_DEQUEUEDONE_FOR_MSG_I_DID_NOT_SEND        = 49, //DeQueue.done for packet I didn't send                     [OpenQueueC]
    ERR_ACQUIRED_SYNC                             = 50, //Acquired synchronization                                  [GlobalTimeP]
    ERR_LOSING_SYNC                               = 51, //Losing synchronization                                    [GlobalTimeP]
@@ -333,7 +333,7 @@ enum {
    ERR_INCONSISTENT_TXCOMMAND                    = 65, //inconsistent TXCOMMAND received from neighbor             [ReservationP] arg1=neighbor arg2=slotOffset
    ERR_INVALID_GLOBALSLOTOFFSET_TIMESTAMP        = 66, //invalid globalSlotOffset timestamp                        [GlobalTimeP,NeighborsP] arg1=source of message arg2=code locator
    ERR_INVALID_LOCALTIME_TIMESTAMP               = 67, //invalid localTime timestamp                               [GlobalTimeP,NeighborsP] arg1=source of message arg2=code locator
-   ERR_REMOVE_ALL_CELLS                          = 68, //remove all celltype=arg1 with neighbor=arg2                               [CellUsageP] arg1=celltype arg2=neighbor
+   ERR_REMOVE_ALL_CELLS                          = 68, //remove all celltype=arg1 with neighbor=arg2               [CellUsageP] arg1=celltype arg2=neighbor
    ERR_INCONSISTENT_RXCOMMAND                    = 69, //inconsistent RXCOMMAND received from neighbor             [ReservationP] arg1=neighbor arg2=slotOffset
    ERR_FAILRESERVATION                           = 70, //reservation fails after todo=arg1                         [ReservationP] arg1=todo
    ERR_DETECTED_FROZEN                           = 71, //frozen reservation type=arg1 neighbor=arg2                [ReservationP] arg1=type arg2=neighbor
