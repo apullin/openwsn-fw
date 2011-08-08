@@ -1907,9 +1907,6 @@
       <name>$PROJ_DIR$\..\drivers\leds.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\drivers\mac_timers.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\drivers\magnetometer.c</name>
     </file>
     <file>
@@ -1926,6 +1923,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\drivers\timers.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\drivers\tsch_timer.c</name>
     </file>
   </group>
   <group>
