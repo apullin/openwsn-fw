@@ -23,7 +23,6 @@
 #include "appudpinject.h"
 #include "appudpprint.h"
 #include "appudpsensor.h"
-#include "appudpwarpwing.h"
 //l4
 #include "tcp.h"
 #include "udp.h"
@@ -94,7 +93,6 @@ void openwsn_init() {
    appudpleds_init();
    appudpprint_init();
    appudpsensor_init();
-   appudpwarpwing_init();
 #endif
 }
 

@@ -17,7 +17,7 @@
 
 #include "scheduler.h"
 #include "timers.h"
-#include "mac_timers.h"
+#include "tsch_timer.h"
 #include "i2c.h"
 #include "openserial.h"
 
@@ -46,7 +46,7 @@ void scheduler_init() {
    uint8_t task_counter;
    index_first_task = 0;
    num_tasks = 0;
-   DEBUG_PIN_CPU_INIT;
+   DEBUG_PIN_TASK_INIT;
    DEBUG_PIN_ISR_INIT;
    for (task_counter=0;task_counter<MAX_NUM_TASKS;task_counter++) {
       task_list[task_counter] = 0;
@@ -123,9 +123,9 @@ void scheduler_start() {
          openserial_startInput();
       }
 #endif
-      DEBUG_PIN_CPU_CLR;
+      DEBUG_PIN_TASK_CLR;
       __bis_SR_register(GIE+LPM3_bits);          // sleep, but leave interrupts and ACLK on 
-      DEBUG_PIN_CPU_SET;
+      DEBUG_PIN_TASK_SET;
    }
 }
 

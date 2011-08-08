@@ -15,7 +15,7 @@
 #include "idmanager.h"
 #include "openserial.h"
 #include "openqueue.h"
-#include "mac_timers.h"
+#include "tsch_timers.h"
 #include "packetfunctions.h"
 #include "neighbors.h"
 #include "nores.h"
@@ -87,7 +87,7 @@ void mac_init() {
    }
    
    //Initialze and stat the TSCH timer
-   mac_timer_init();
+   tsch_timer_init();
 }
 
 // a packet sent from the upper layer is simply stored into the OpenQueue buffer.
@@ -173,7 +173,7 @@ void timer_mac_periodic_fired() {
       case CELLTYPE_TXRX:
          
          //start timer to deal with transmitting or receiving when backoff timer fires
-         //mac_timer_schedule(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
+         //tsch_timer_schedule(TIMER_MAC_BACKOFF,MINBACKOFF);//set timer to deal with TXRX in this slot
          
          // poipoipoi start =====================================
          __no_operation();
@@ -354,7 +354,7 @@ void fast_alarm_fired() {
       case S_TX_TXDATAREADY:                                      //[timer fired] transmitter
          //I'm a transmitter, Tx data now
          change_state(S_TX_TXDATA);
-         if ((radio_send_now())!=E_SUCCESS) {
+         if ((radio_sendNow())!=E_SUCCESS) {
             //retry later
             dataFrameToSend->l2_retriesLeft--;
             if (dataFrameToSend->l2_retriesLeft==0) {
@@ -421,9 +421,9 @@ void fast_alarm_fired() {
       case S_RX_TXACKREADY:                                       //[timer fired] receiver
          //I'm a receiver, TX ACK now
          change_state(S_RX_TXACK);
-         radio_send_now();
+         radio_sendNow();
          /*
-         if ((radio_send_now()) {
+         if ((radio_sendNow()) {
          //abort
          openserial_printError(COMPONENT_MAC,ERR_SENDNOW_FAILED,
          (errorparameter_t)state,(errorparameter_t)asn%LENGTHCELLFRAME);
@@ -472,7 +472,7 @@ void radioControl_receivedNothing(error_t error){
    } 
 }
 
-void radio_send_now_done(error_t error) {//poipoi call from phy layer   
+void radio_sendNowDone(error_t error) {
    switch (state) {
       case S_TX_TXDATA:                                           //[sendNowDone] transmitter
          //I'm a transmitter, finished sending data
