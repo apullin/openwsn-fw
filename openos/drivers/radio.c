@@ -6,27 +6,29 @@
 
 //===================================== variables =============================
 
-void               radio_send_now_done(error_t error);
 uint8_t            radio_state;
 uint8_t            default_channel;
 OpenQueueEntry_t*  radioPacketReceived;
 OpenQueueEntry_t*  radioPacketToSend;
-#ifdef HYBRID_ARQ
-#define RADIO_CORRUPTED_PACKET_BUFFER_LENGTH 1
-uint8_t            temp_byte_corruption_index;
-uint8_t            radio_corrupted_packet_counter;
-uint8_t            radio_corrupted_packet_buffer[RADIO_CORRUPTED_PACKET_BUFFER_LENGTH][128];
-#endif
+
+//=========================== prototypes ==========================================
+
+void               radio_sendNowDone(error_t error);
 
 //=========================== initialize the radio ============================
 
 void radio_init() {
-   DEBUG_PIN_RADIO_INIT;
-   radio_state = RADIO_STATE_STOPPED;
+   
    // initialize radio-specific variables
-   radioPacketReceived =  openqueue_getFreePacketBuffer();
+   radioPacketReceived          =  openqueue_getFreePacketBuffer();
    radioPacketReceived->creator = COMPONENT_RADIODRIVER;
    radioPacketReceived->owner   = COMPONENT_RADIODRIVER;
+  
+   // set the radio debug pin as output
+   DEBUG_PIN_RADIO_INIT;
+   
+   // initialize radio state
+   radio_state = RADIO_STATE_STOPPED;
    
    // initialize communication between MSP430 and radio
    //-- 4-wire SPI
@@ -46,28 +48,12 @@ void radio_init() {
    spi_read_register(RG_IRQ_STATUS);                     // deassert the interrupt pin (P1.6) in case high
    spi_write_register(RG_ANT_DIV, USE_CHIP_ANTENNA);     // always use chip antenna
 #define RG_TRX_CTRL_1 0x04
-#ifdef HYBRID_ARQ
-   spi_write_register(RG_TRX_CTRL_1, 0x00);              // do not calculate CRC
-   temp_byte_corruption_index = 0;
-#else
    spi_write_register(RG_TRX_CTRL_1, 0x20);              // calculate CRC
-#endif
    
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
    radio_state = RADIO_STATE_STARTED;
    
    radioPacketToSend = NULL;
-#ifdef HYBRID_ARQ
-   radio_corrupted_packet_counter=0;
-#endif
-}
-
-void radio_sleep() {
-   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
-   P4DIR   |=   0x80; //set P4.7 as output
-   P4OUT   &=  ~0x80; //set P4.7 low
-   P4OUT   |=   0x80; //set P4.7 high to enable sleep mode
-   //P4OUT   &=  ~0x80; //set P4.7 low again
 }
 
 //=========================== sending a packet ================================
@@ -87,14 +73,6 @@ error_t radio_send(OpenQueueEntry_t* packet) {
    //add 1B length
    packetfunctions_reserveHeaderSize(packet,1);
    packet->payload[0] = packet->length-1;   // length (not counting length field)
-#ifdef HYBRID_ARQ
-   //calculate CRC
-   packetfunctions_calculateCRC(packet);
-   temp_byte_corruption_index = (temp_byte_corruption_index+1)%5;
-   if (temp_byte_corruption_index==1 || temp_byte_corruption_index==3){
-      *(packet->payload+temp_byte_corruption_index)=0xff;
-   }
-#endif
    //add 1B SPI address
    packetfunctions_reserveHeaderSize(packet,1);
    packet->payload[0] = 0x60;
@@ -130,14 +108,6 @@ error_t radio_prepare_send(OpenQueueEntry_t* packet) {
    //add 1B length
    packetfunctions_reserveHeaderSize(packet,1);
    packet->payload[0] = packet->length-1;   // length (not counting length field)
-#ifdef HYBRID_ARQ
-   //calculate CRC
-   packetfunctions_calculateCRC(packet);
-   temp_byte_corruption_index = (temp_byte_corruption_index+1)%5;
-   if (temp_byte_corruption_index==1 || temp_byte_corruption_index==3){
-      *(packet->payload+temp_byte_corruption_index)=0xff;
-   }
-#endif
    //add 1B SPI address
    packetfunctions_reserveHeaderSize(packet,1);
    packet->payload[0] = 0x60;
@@ -156,17 +126,18 @@ error_t radio_prepare_send(OpenQueueEntry_t* packet) {
    return E_SUCCESS;
 }
 
-error_t radio_send_now(){
+error_t radio_sendNow(){
    //send packet
    P4OUT |=  0x80;
    P4OUT &= ~0x80;
-   //radio_send_now_done(E_SUCCESS);
+   //radio_sendNowDone(E_SUCCESS);
    return E_SUCCESS;
 }
 
 //=========================== receiving a packet ==============================
 
 void radio_rxOn(uint8_t channel) {
+   
    //set channel
    radio_state = RADIO_STATE_SETTING_CHANNEL;
    if (channel < 11 || channel > 26){
@@ -174,6 +145,7 @@ void radio_rxOn(uint8_t channel) {
    }
    spi_write_register(RG_PHY_CC_CCA,0x20+channel);
    default_channel = channel;
+   
    //put radio in reception mode
    spi_write_register(RG_TRX_STATE, CMD_RX_ON);
    DEBUG_PIN_RADIO_SET;
@@ -239,7 +211,7 @@ void isr_radio() {
       //remove 1B length field
       packetfunctions_tossHeader(radioPacketToSend,1);
       //signal sendDone to upper layer
-      radio_send_now_done(E_SUCCESS);
+      radio_sendNowDone(E_SUCCESS);
       //mac_sendDone(radioPacketToSend,E_SUCCESS);//older implementation
       radioPacketToSend = NULL;
       //return to default state
@@ -256,4 +228,12 @@ void radio_rfOff() {
    spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);  // turn radio off
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
    radio_state = RADIO_STATE_STARTED;
+}
+
+void radio_sleep() {
+   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
+   P4DIR   |=   0x80; //set P4.7 as output
+   P4OUT   &=  ~0x80; //set P4.7 low
+   P4OUT   |=   0x80; //set P4.7 high to enable sleep mode
+   //P4OUT   &=  ~0x80; //set P4.7 low again
 }

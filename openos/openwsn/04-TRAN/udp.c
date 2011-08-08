@@ -21,7 +21,6 @@
 #include "appudpleds.h"
 #include "appudpprint.h"
 #include "appudpsensor.h"
-#include "appudpwarpwing.h"
 
 //===================================== variables =============================
 
@@ -74,9 +73,6 @@ void udp_sendDone(OpenQueueEntry_t* msg, error_t error) {
       case WKP_UDP_SENSOR:
          appudpsensor_sendDone(msg,error);
          break;
-      case WKP_UDP_WARPWING:
-         appudpwarpwing_sendDone(msg,error);
-         break;
       default:
          openserial_printError(COMPONENT_UDP,ERR_UNSUPPORTED_PORT_NUMBER,msg->l4_sourcePortORicmpv6Type,0);
          openqueue_freePacketBuffer(msg);         
@@ -114,9 +110,6 @@ void udp_receive(OpenQueueEntry_t* msg) {
          break;
       case WKP_UDP_SENSOR:
          appudpsensor_receive(msg);
-         break;
-      case WKP_UDP_WARPWING:
-         appudpwarpwing_receive(msg);
          break;
       default:
          openserial_printError(COMPONENT_UDP,ERR_UNSUPPORTED_PORT_NUMBER,msg->l4_destination_port,1);

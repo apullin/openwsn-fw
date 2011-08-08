@@ -16,41 +16,35 @@
 
 #define bool uint8_t
 
-#define DEBUG_PIN_FRAME           0x20           // P4.5
-#define DEBUG_PIN_FRAME_INIT      P4DIR |=  DEBUG_PIN_FRAME
-#define DEBUG_PIN_FRAME_TOGGLE    P4OUT ^=  DEBUG_PIN_FRAME
-#define DEBUG_PIN_FRAME_CLR       P4OUT &= ~DEBUG_PIN_FRAME
-#define DEBUG_PIN_FRAME_SET       P4OUT |=  DEBUG_PIN_FRAME
+#define DEBUG_PIN_FRAME_INIT      P4DIR |=  0x20 // P4.5
+#define DEBUG_PIN_FRAME_TOGGLE    P4OUT ^=  0x20
+#define DEBUG_PIN_FRAME_CLR       P4OUT &= ~0x20
+#define DEBUG_PIN_FRAME_SET       P4OUT |=  0x20
 
-#define DEBUG_PIN_SLOT            0x02           // P4.1
-#define DEBUG_PIN_SLOT_INIT       P4DIR |=  DEBUG_PIN_SLOT
-#define DEBUG_PIN_SLOT_TOGGLE     P4OUT ^=  DEBUG_PIN_SLOT
-#define DEBUG_PIN_SLOT_CLR        P4OUT &= ~DEBUG_PIN_SLOT
-#define DEBUG_PIN_SLOT_SET        P4OUT |=  DEBUG_PIN_SLOT
+#define DEBUG_PIN_SLOT_INIT       P4DIR |=  0x02 // P4.1
+#define DEBUG_PIN_SLOT_TOGGLE     P4OUT ^=  0x02
+#define DEBUG_PIN_SLOT_CLR        P4OUT &= ~0x02
+#define DEBUG_PIN_SLOT_SET        P4OUT |=  0x02
 
-#define DEBUG_PIN_FSM             0x04           // P4.2
-#define DEBUG_PIN_FSM_INIT        P4DIR |=  DEBUG_PIN_FSM
-#define DEBUG_PIN_FSM_TOGGLE      P4OUT ^=  DEBUG_PIN_FSM
-#define DEBUG_PIN_FSM_CLR         P4OUT &= ~DEBUG_PIN_FSM
-#define DEBUG_PIN_FSM_SET         P4OUT |=  DEBUG_PIN_FSM
+#define DEBUG_PIN_FSM_INIT        P4DIR |=  0x04 // P4.2
+#define DEBUG_PIN_FSM_TOGGLE      P4OUT ^=  0x04
+#define DEBUG_PIN_FSM_CLR         P4OUT &= ~0x04
+#define DEBUG_PIN_FSM_SET         P4OUT |=  0x04
 
-#define DEBUG_PIN_CPU             0x08           // P4.3
-#define DEBUG_PIN_CPU_INIT        P4DIR |=  DEBUG_PIN_CPU
-#define DEBUG_PIN_CPU_TOGGLE      P4OUT ^=  DEBUG_PIN_CPU
-#define DEBUG_PIN_CPU_CLR         P4OUT &= ~DEBUG_PIN_CPU
-#define DEBUG_PIN_CPU_SET         P4OUT |=  DEBUG_PIN_CPU
+#define DEBUG_PIN_TASK_INIT       P4DIR |=  0x08 // P4.3
+#define DEBUG_PIN_TASK_TOGGLE     P4OUT ^=  0x08
+#define DEBUG_PIN_TASK_CLR        P4OUT &= ~0x08
+#define DEBUG_PIN_TASK_SET        P4OUT |=  0x08
 
-#define DEBUG_PIN_ISR             0x10           // P4.4
-#define DEBUG_PIN_ISR_INIT        P4DIR |=  DEBUG_PIN_ISR
-#define DEBUG_PIN_ISR_TOGGLE      P4OUT ^=  DEBUG_PIN_ISR
-#define DEBUG_PIN_ISR_CLR         P4OUT &= ~DEBUG_PIN_ISR
-#define DEBUG_PIN_ISR_SET         P4OUT |=  DEBUG_PIN_ISR
+#define DEBUG_PIN_ISR_INIT        P4DIR |=  0x10 // P4.4
+#define DEBUG_PIN_ISR_TOGGLE      P4OUT ^=  0x10
+#define DEBUG_PIN_ISR_CLR         P4OUT &= ~0x10
+#define DEBUG_PIN_ISR_SET         P4OUT |=  0x10
 
-#define DEBUG_PIN_RADIO           0x02           // P1.1
-#define DEBUG_PIN_RADIO_INIT      P1DIR |=  DEBUG_PIN_RADIO
-#define DEBUG_PIN_RADIO_TOGGLE    P1OUT ^=  DEBUG_PIN_RADIO
-#define DEBUG_PIN_RADIO_CLR       P1OUT &= ~DEBUG_PIN_RADIO
-#define DEBUG_PIN_RADIO_SET       P1OUT |=  DEBUG_PIN_RADIO
+#define DEBUG_PIN_RADIO_INIT      P1DIR |=  0x02 // P1.1
+#define DEBUG_PIN_RADIO_TOGGLE    P1OUT ^=  0x02
+#define DEBUG_PIN_RADIO_CLR       P1OUT &= ~0x02
+#define DEBUG_PIN_RADIO_SET       P1OUT |=  0x02
 
 __no_init volatile uint8_t eui64 @ 0x10ee;       // address is flash where the node's EUI64 identifier is stored
 
@@ -224,7 +218,6 @@ enum {
    COMPONENT_APPUDPLEDS       = 0x0a,
    COMPONENT_APPUDPPRINT      = 0x0b,
    COMPONENT_APPUDPSENSOR     = 0x0c,
-   COMPONENT_APPUDPWARPWING   = 0x80,
    //l4
    COMPONENT_TCP              = 0x0d,             
    COMPONENT_UDP              = 0x0e,

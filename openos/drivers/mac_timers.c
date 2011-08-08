@@ -16,7 +16,7 @@
  */
 
 #include "msp430x26x.h"
-#include "mac_timers.h"
+#include "tsch_timer.h"
 #include "IEEE802154e.h"
 
 //=========================== variables ===========================================
@@ -25,7 +25,7 @@
 
 //=========================== public ==============================================
 
-void mac_timer_init() {
+void tsch_timer_init() {
    
    BCSCTL3 |= LFXT1S_0;                          // source ACLK from 32kHz crystal
    
@@ -48,12 +48,12 @@ void mac_timer_init() {
    TACTL    =  MC_1+TBSSEL_1;                    // up mode, clocked from ACLK
 }
 
-void mac_timer_schedule(uint16_t offset) {
+void tsch_timer_schedule(uint16_t offset) {
    TACCR1   =  offset;                           // offset when to fire
    TACCTL1  =  CCIE;                             // enable CCR1 interrupt
 }
 
-void mac_timer_cancel() {
+void tsch_timer_cancel() {
    TACCR1   =  0;                                // reset CCR1 value (not really necessary)
    TACCTL1 &= ~CCIE;                             // disable CCR1 interrupt
 }

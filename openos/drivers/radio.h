@@ -26,15 +26,14 @@
 //===================================== prototypes ============================
 
 void    radio_init();                      // configures both MSP and radio chip
+error_t radio_prepare_send(OpenQueueEntry_t* packet);
+error_t radio_sendNow();
 error_t radio_send(OpenQueueEntry_t* packet);    // send a packet
-void    radio_sleep();
+
 void    radio_rxOn(uint8_t channel);             // set the radio in reception mode
-void    isr_radio();
 void    radio_packet_received(OpenQueueEntry_t* packetReceived); // called when a packet is completely received
 void    radio_rfOff();                           // switch radio off
+void    radio_sleep();
 
-//bk april 2011
-error_t radio_prepare_send(OpenQueueEntry_t* packet);
-error_t radio_send_now();
-
+void    isr_radio();
 #endif
