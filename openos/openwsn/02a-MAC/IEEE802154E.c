@@ -15,7 +15,7 @@
 #include "idmanager.h"
 #include "openserial.h"
 #include "openqueue.h"
-#include "tsch_timers.h"
+#include "tsch_timer.h"
 #include "packetfunctions.h"
 #include "neighbors.h"
 #include "nores.h"
