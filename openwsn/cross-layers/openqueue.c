@@ -8,6 +8,7 @@
 #include "openwsn.h"
 #include "openqueue.h"
 #include "openserial.h"
+#include "packetfunctions.h"
 
 //===================================== variables =============================
 
@@ -42,6 +43,17 @@ error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
       }
    }
    return E_FAIL;
+}
+
+OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t toNeighbor) {
+   uint8_t i;
+   for (i=0;i<QUEUELENGTH;i++) {
+      if (queue[i].owner==COMPONENT_MAC &&
+         packetfunctions_sameAddress(&toNeighbor,&queue[i].l2_nextORpreviousHop)) {
+         return &queue[i];
+      }
+   }
+   return NULL;
 }
 
 OpenQueueEntry_t* openqueue_inQueue(bool isADV) {

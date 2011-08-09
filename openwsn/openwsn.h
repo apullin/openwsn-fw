@@ -170,7 +170,6 @@ typedef struct OpenQueueEntry_t {
    bool          l2_transmitInFirstSlot;         //for video transmission
    //l1 (drivers)
    uint8_t       l1_txPower;
-   uint8_t       l1_channel;
    uint8_t       l1_rssi;
    uint8_t       l1_lqi;
    bool          l1_crc;
@@ -214,7 +213,7 @@ enum {
    //l2a
    COMPONENT_MAC              = 0x19,
    //phy
-   COMPONENT_RADIODRIVER      = 0x1a,
+   COMPONENT_RADIO            = 0x1a,
    //cross-layer
    COMPONENT_IDMANAGER        = 0x1e,
    COMPONENT_OPENQUEUE        = 0x1f,
@@ -356,6 +355,14 @@ enum {
    ERR_DATAFRAMETOSEND_ERROR                     =119, //dataFrameToSend is/is not NULL when it should be          [stupidMAC] arg1=code_location
    ERR_BUSY_RECEIVING                            =120, //busy receiving                                            [stupidMAC]
    ERR_BUSY_SENDDONE                             =121, //busy in SenDone                                           [IEEE802154E] arg1=state arg2=slotOffset
+   ERR_MAXTXDATAPREPARE_OVERFLOW                 =122, //maxTxDataPrepare overflows in state=arg1 and slotOffset=arg2
+   ERR_WDRADIO_OVERFLOW                          =123, //wdRadio overflows in state=arg1 and slotOffset=arg2
+   ERR_WDDATADURATION_OVERFLOWS                  =124, //wdDataDuration overflows in state=arg1 and slotOffset=arg2
+   ERR_MAXRXACKPREPARE_OVERFLOWS                 =125, //maxRxAckPrepapre overflows in state=arg1 and slotOffset=arg2
+   ERR_MAXRXDATAPREPARE_OVERFLOWS                =126, //maxRxDataPrepapre overflows in state=arg1 and slotOffset=arg2
+   ERR_MAXTXACKPREPARE_OVERFLOWS                 =127, //maxTxAckPrepapre overflows in state=arg1 and slotOffset=arg2
+   ERR_WDRADIOTX_OVERFLOWS                       =128, //wdRadioTx overflows in state=arg1 and slotOffset=arg2
+   ERR_WDACKDURATION_OVERFLOWS                   =128, //wdAckDuration overflows in state=arg1 and slotOffset=arg2
 };
 
 //=========================== global variable =================================

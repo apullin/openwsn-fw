@@ -45,46 +45,40 @@ void scheduler_init() {
 void scheduler_start() {
    while (1) {                                   // IAR should halt here if nothing to do
       while(num_tasks>0) {
-         if (task_list[ID_ISR_RADIO]>0) {
-            task_list[ID_ISR_RADIO]--;
-            num_tasks--;
-#ifdef ISR_RADIO
-            isr_radio();
-#endif
-         } else if (task_list[ID_ISR_RPL]>0) {
-            task_list[ID_ISR_RPL]--;
+         if (task_list[TASKID_RPL]>0) {
+            task_list[TASKID_RPL]--;
             num_tasks--;
 #ifdef OPENWSN_STACK
             timer_rpl_fired();
 #endif
-         } else if (task_list[ID_ISR_TCP_TIMEOUT]>0) {
-            task_list[ID_ISR_TCP_TIMEOUT]--;
+         } else if (task_list[TASKID_TCP_TIMEOUT]>0) {
+            task_list[TASKID_TCP_TIMEOUT]--;
             num_tasks--;
 #ifdef OPENWSN_STACK
             timer_tcp_timeout_fired();
 #endif
-         } else if (task_list[ID_ISR_TIMERB2]>0) {
-            task_list[ID_ISR_TIMERB2]--;
+         } else if (task_list[TASKID_TIMERB2]>0) {
+            task_list[TASKID_TIMERB2]--;
             num_tasks--;
             // timer available, put your function here
-         } else if (task_list[ID_ISR_TIMERB3]>0) {
-            task_list[ID_ISR_TIMERB3]--;
+         } else if (task_list[TASKID_TIMERB3]>0) {
+            task_list[TASKID_TIMERB3]--;
             num_tasks--;
             // timer available, put your function here
-         } else if (task_list[ID_ISR_TIMERB4]>0) {
-            task_list[ID_ISR_TIMERB4]--;
+         } else if (task_list[TASKID_TIMERB4]>0) {
+            task_list[TASKID_TIMERB4]--;
             num_tasks--;
             // timer available, put your function here
-         } else if (task_list[ID_ISR_TIMERB5]>0) {
-            task_list[ID_ISR_TIMERB5]--;
+         } else if (task_list[TASKID_TIMERB5]>0) {
+            task_list[TASKID_TIMERB5]--;
             num_tasks--;
             // timer available, put your function here
-         } else if (task_list[ID_ISR_TIMERB6]>0) {
-            task_list[ID_ISR_TIMERB6]--;
+         } else if (task_list[TASKID_TIMERB6]>0) {
+            task_list[TASKID_TIMERB6]--;
             num_tasks--;
             // timer available, put your function here
-         } else if (task_list[ID_ISR_BUTTON]>0) {
-            task_list[ID_ISR_BUTTON]--;
+         } else if (task_list[TASKID_BUTTON]>0) {
+            task_list[TASKID_BUTTON]--;
             num_tasks--;
 #ifdef ISR_BUTTON
             isr_button();
@@ -104,21 +98,6 @@ void scheduler_push_task(int8_t task_id) {
 }
 
 //=========================== interrupts handled as tasks =====================
-
-#pragma vector = PORT1_VECTOR
-__interrupt void PORT1_ISR (void) {
-    CAPTURE_TIME;
-    DEBUG_PIN_ISR_SET();
-#ifdef ISR_RADIO
-   //interrupt from radio through IRQ_RF connected to P1.6
-   if ((P1IFG & 0x40)!=0) {
-      P1IFG &= ~0x40;                            // clear interrupt flag
-      scheduler_push_task(ID_ISR_RADIO);         // post task
-      __bic_SR_register_on_exit(CPUOFF);         // restart CPU
-   }
-#endif
-   DEBUG_PIN_ISR_CLR();
-}
 
 #pragma vector = PORT2_VECTOR
 __interrupt void PORT2_ISR (void) {
@@ -147,7 +126,7 @@ __interrupt void TIMERB0_ISR (void) {
       TBCCTL0 = 0;                               // stop the timer
       TBCCR0  = 0;
    }
-   scheduler_push_task(ID_ISR_RPL);              // post the corresponding task
+   scheduler_push_task(TASKID_RPL);              // post the corresponding task
    __bic_SR_register_on_exit(CPUOFF);            // restart CPU
 #endif
    DEBUG_PIN_ISR_CLR();
@@ -168,7 +147,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL1 = 0;                         // stop the timer
             TBCCR1  = 0;
          }
-         scheduler_push_task(ID_ISR_TCP_TIMEOUT);// post the corresponding task
+         scheduler_push_task(TASKID_TCP_TIMEOUT);// post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0004: // timerB CCR2
@@ -178,7 +157,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL2 = 0;                         // stop the timer
             TBCCR2  = 0;
          }
-         scheduler_push_task(ID_ISR_TIMERB2);    // post the corresponding task
+         scheduler_push_task(TASKID_TIMERB2);    // post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0006: // timerB CCR3
@@ -188,7 +167,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL3 = 0;                         // stop the timer
             TBCCR3  = 0;
          }
-         scheduler_push_task(ID_ISR_TIMERB3);    // post the corresponding task
+         scheduler_push_task(TASKID_TIMERB3);    // post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0008: // timerB CCR4
@@ -198,7 +177,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL4 = 0;                         // stop the timer
             TBCCR4  = 0;
          }
-         scheduler_push_task(ID_ISR_TIMERB4);    // post the corresponding task
+         scheduler_push_task(TASKID_TIMERB4);    // post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x000A: // timerB CCR5
@@ -208,7 +187,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL5 = 0;                         // stop the timer
             TBCCR5  = 0;
          }
-         scheduler_push_task(ID_ISR_TIMERB5);    // post the corresponding task
+         scheduler_push_task(TASKID_TIMERB5);    // post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x000C: // timerB CCR6
@@ -218,7 +197,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL6 = 0;                         // stop the timer
             TBCCR6  = 0;
          }
-         scheduler_push_task(ID_ISR_TIMERB6);    // post the corresponding task
+         scheduler_push_task(TASKID_TIMERB6);    // post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       default:
@@ -229,6 +208,20 @@ __interrupt void TIMERB1through6_ISR (void) {
 }
 
 //=========================== interrupts handled in ISR mode ===================
+
+#pragma vector = PORT1_VECTOR
+__interrupt void PORT1_ISR (void) {
+    CAPTURE_TIME;
+    DEBUG_PIN_ISR_SET();
+#ifdef ISR_RADIO
+   //interrupt from radio through IRQ_RF connected to P1.6
+   if ((P1IFG & 0x40)!=0) {
+      P1IFG &= ~0x40;                            // clear interrupt flag
+      isr_radio();
+   }
+#endif
+   DEBUG_PIN_ISR_CLR();
+}
 
 // TimerA CCR0 interrupt service routine
 #pragma vector = TIMERA0_VECTOR

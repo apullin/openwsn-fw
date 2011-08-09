@@ -61,8 +61,10 @@ Calling this function cancels all running timers
                    time, in 32-kHz ticks.
 */
 void tsch_timer_schedule(uint16_t offset) {
-   TACCR1   =  offset;                           // offset when to fire
-   TACCTL1  =  CCIE;                             // enable CCR1 interrupt
+   // offset when to fire
+   TACCR1   =  offset;
+   // enable CCR1 interrupt (this also cancels any pending interrupts)
+   TACCTL1  =  CCIE;
 }
 
 /**
@@ -90,7 +92,7 @@ is valid.
 \param [out] timestampToWrite Variable in which this function returns the
                               timestamp.
 */
-void read_capture(timestamp_t* timestampToWrite) {
+void tsch_timer_getCapturedTime(timestamp_t* timestampToWrite) {
    uint8_t overflown;
    overflown = (TACCTL2 & 0x02) >> 1;
  

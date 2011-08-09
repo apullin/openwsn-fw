@@ -23,7 +23,7 @@ typedef struct timestamp_t {
 void tsch_timer_init();
 void tsch_timer_schedule(uint16_t offset);
 void tsch_timer_cancel();
-void read_capture(timestamp_t* timestampToWrite);
+void tsch_timer_getCapturedTime(timestamp_t* timestampToWrite);
 
 // functions to call when timer fires
 #ifdef OPENWSN_STACK

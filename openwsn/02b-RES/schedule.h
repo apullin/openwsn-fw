@@ -36,9 +36,9 @@ typedef struct debugCellUsageInformation_t {
 } debugCellUsageInformation_t;
 
 void            schedule_init();
-cellType_t      schedule_getType(slotOffset_t slotOffset);
-channelOffset_t schedule_getChannelOffset(slotOffset_t slotOffset);
-open_addr_t     schedule_getNeighbor(slotOffset_t slotOffset);
+cellType_t      schedule_getType(asn_t asn_param);
+channelOffset_t schedule_getChannelOffset(asn_t asn_param);
+open_addr_t     schedule_getNeighbor(asn_t asn_param);
 bool            schedule_debugPrint();
 
 #endif

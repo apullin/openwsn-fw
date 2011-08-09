@@ -103,6 +103,7 @@ enum {
    TsShortGT	        =  16, //   500us
    TsSlotDuration	= 328, // 10000us
    maxTxDataPrepare	=  66, //  2000us (TBC)
+   maxRxAckPrepare	=  66, //  2000us (TBC)
    delayTx	        =   0, //     0us (TBC)
    wdRadioTx	        =  33, //  1000us
    wdDataDuration	= 164, //  5000us
@@ -143,12 +144,12 @@ enum {
    EXTRA_WAIT_TIME       =    32*5, //1 ms    //this is used to add 1ms to the receiver for overlap
 };
 
-
 void    mac_init();
 error_t mac_send(OpenQueueEntry_t* msg);
 void    mac_sendDone(OpenQueueEntry_t* pkt, error_t error);
-void    radio_packet_received(OpenQueueEntry_t* msg);
 bool    mac_debugPrint();
-void    radio_prepareTxDone();
+
+void    tsch_startOfFrame();
+void    tsch_endOfFrame();
 
 #endif
