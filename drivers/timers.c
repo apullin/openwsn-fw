@@ -73,31 +73,31 @@ void timer_stop(uint8_t timer_id) {
    timers_continuous[timer_id] = 0;
    switch(timer_id) {
       case 0:
-         TBCCR0   = 0;
+         TBCCR0   =  0;
          TBCCTL0 &= ~CCIE;
          break;
       case 1:
-         TBCCR1   = 0;
+         TBCCR1   =  0;
          TBCCTL1 &= ~CCIE;
          break;
       case 2:
-         TBCCR2   = 0;
+         TBCCR2   =  0;
          TBCCTL2 &= ~CCIE;
          break;
       case 3:
-         TBCCR3   = 0;
+         TBCCR3   =  0;
          TBCCTL3 &= ~CCIE;
          break;
       case 4:
-         TBCCR4   = 0;
+         TBCCR4   =  0;
          TBCCTL4 &= ~CCIE;
          break;
       case 5:
-         TBCCR5   = 0;
+         TBCCR5   =  0;
          TBCCTL5 &= ~CCIE;
          break;
       case 6:
-         TBCCR6   = 0;
+         TBCCR6   =  0;
          TBCCTL6 &= ~CCIE;
          break;
    }

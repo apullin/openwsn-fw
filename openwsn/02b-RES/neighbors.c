@@ -2,7 +2,7 @@
  * Implementation of neighbors
  *
  * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+ * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
  */
 
 #include "openwsn.h"
@@ -21,7 +21,6 @@ uint8_t          neighbors_debugRow;
 
 //===================================== prototypes ============================
 
-void handleLoosingNeighbors();
 void registerNewNeighbor(open_addr_t* neighborID,dagrank_t hisDAGrank);
 bool isNeighbor(open_addr_t* neighbor);
 void removeNeighbor(uint8_t neighborIndex);
@@ -396,34 +395,5 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
       }
    } else {
       neighbors_myDAGrank=0;
-   }
-}
-
-void handleLoosingNeighbors() {
-   timervalue_t timeSinceLastHeard;
-   open_addr_t* temp_neighborid;
-   uint8_t i;
-   i=0;
-   while (i<MAXNUMNEIGHBORS){
-      if (neighbors[i].used==TRUE) {
-         //timeSinceLastHeard = (call GlobalTime.getLocalTime())-neighbors[i].timestamp;
-         timeSinceLastHeard = 0;//poipoi implement timing
-         temp_neighborid = &(neighbors[i].addr_64b);
-         if (timeSinceLastHeard>DELAY_LOST_NEIGHBOR_32KHZ) {
-            openserial_printError(COMPONENT_NEIGHBORS,ERR_LOST_NEIGHBOR,
-                  (errorparameter_t)(temp_neighborid->addr_64b[6]<<8|temp_neighborid->addr_64b[7]),
-                  (errorparameter_t)0);
-            //call OpenQueue.removeAllPacketsToNeighbor(temp_neighborid);poipoi
-            removeNeighbor(i);
-            break;
-         } else if (timeSinceLastHeard>DELAY_LOSING_NEIGHBOR_32KHZ) {
-            openserial_printError(COMPONENT_NEIGHBORS,ERR_LOSING_NEIGHBOR,
-                  (errorparameter_t)(temp_neighborid->addr_64b[6]<<8|temp_neighborid->addr_64b[7]),
-                  (errorparameter_t)0);
-            //memcpy(&KAdestination,temp_neighborid,sizeof(open_addr_t));
-            break;
-         }
-      }
-      i++;
    }
 }

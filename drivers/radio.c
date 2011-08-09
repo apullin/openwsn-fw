@@ -7,7 +7,6 @@
 //===================================== variables =============================
 
 uint8_t            radio_state;
-uint8_t            default_channel;
 OpenQueueEntry_t*  radioPacketReceived;
 OpenQueueEntry_t*  radioPacketToSend;
 
@@ -25,7 +24,7 @@ void radio_init() {
    radioPacketReceived->owner   = COMPONENT_RADIODRIVER;
   
    // set the radio debug pin as output
-   DEBUG_PIN_RADIO_INIT;
+   DEBUG_PIN_RADIO_INIT();
    
    // initialize radio state
    radio_state = RADIO_STATE_STOPPED;
@@ -48,7 +47,7 @@ void radio_init() {
    spi_read_register(RG_IRQ_STATUS);                     // deassert the interrupt pin (P1.6) in case high
    spi_write_register(RG_ANT_DIV, USE_CHIP_ANTENNA);     // always use chip antenna
 #define RG_TRX_CTRL_1 0x04
-   spi_write_register(RG_TRX_CTRL_1, 0x20);              // calculate CRC
+   spi_write_register(RG_TRX_CTRL_1, 0x20);              // have the radio calculate CRC
    
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
    radio_state = RADIO_STATE_STARTED;
@@ -58,100 +57,67 @@ void radio_init() {
 
 //=========================== sending a packet ================================
 
-error_t radio_send(OpenQueueEntry_t* packet) {
-   if (radioPacketToSend!=NULL) {
-      return E_FAIL;
-   }
+void radio_txPrepare(OpenQueueEntry_t* packet) {
+   
    radioPacketToSend = packet;
    //radioPacketToSend->owner = COMPONENT_RADIODRIVER; don't do for resend
-   //set channel
+   
+   // set channel
    radio_state = RADIO_STATE_SETTING_CHANNEL;
    if (packet->l1_channel < 11 || packet->l1_channel > 26){
       packet->l1_channel = 26;
    }
    spi_write_register(RG_PHY_CC_CCA,0x20+packet->l1_channel);
-   //add 1B length
+   
+   // add 1B length
    packetfunctions_reserveHeaderSize(packet,1);
    packet->payload[0] = packet->length-1;   // length (not counting length field)
-   //add 1B SPI address
+   
+   // add 1B SPI address
    packetfunctions_reserveHeaderSize(packet,1);
    packet->payload[0] = 0x60;
-   //load packet in TXFIFO
+   
+   // load packet in TXFIFO
    radio_state = RADIO_STATE_LOADING_PACKET;
    spi_write_buffer(radioPacketToSend);
    radio_state = RADIO_STATE_READY_TX;
-   //turn on radio's PLL
-   DEBUG_PIN_RADIO_SET;
+   
+   // turn on radio's PLL
+   DEBUG_PIN_RADIO_SET();
    radio_state = RADIO_STATE_TRANSMITTING;
    spi_write_register(RG_TRX_STATE, CMD_PLL_ON);
-   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON); //busy wait until radio status is PLL_ON
-   //send packet
-   P4OUT |=  0x80;
-   P4OUT &= ~0x80;
-   return E_SUCCESS;
+   
+   // busy wait until radio status is PLL_ON
+   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON);
 }
 
-//============================branko kerkez march 30 2011===========
-//============separate send function to load buffer and send later
-error_t radio_prepare_send(OpenQueueEntry_t* packet) {
-   if (radioPacketToSend!=NULL) {
-      return E_FAIL;
-   }
-   radioPacketToSend = packet;
-   //radioPacketToSend->owner = COMPONENT_RADIODRIVER; don't do for resend
-   //set channel
-   radio_state = RADIO_STATE_SETTING_CHANNEL;
-   if (packet->l1_channel < 11 || packet->l1_channel > 26){
-      packet->l1_channel = 26;
-   }
-   spi_write_register(RG_PHY_CC_CCA,0x20+packet->l1_channel);
-   //add 1B length
-   packetfunctions_reserveHeaderSize(packet,1);
-   packet->payload[0] = packet->length-1;   // length (not counting length field)
-   //add 1B SPI address
-   packetfunctions_reserveHeaderSize(packet,1);
-   packet->payload[0] = 0x60;
-   //load packet in TXFIFO
-   radio_state = RADIO_STATE_LOADING_PACKET;
-   spi_write_buffer(radioPacketToSend);
-   radio_state = RADIO_STATE_READY_TX;
-   //turn on radio's PLL
-   DEBUG_PIN_RADIO_SET;
-   radio_state = RADIO_STATE_TRANSMITTING;
-   spi_write_register(RG_TRX_STATE, CMD_PLL_ON);
-   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON); //busy wait until radio status is PLL_ON
-   
-   radio_prepare_send_done();//calls mac
-   
-   return E_SUCCESS;
-}
-
-error_t radio_sendNow(){
-   //send packet
+void radio_txNow(){
+   //send packet by pulsing the RF_SLP_TR_CNTL pin
    P4OUT |=  0x80;
    P4OUT &= ~0x80;
-   //radio_sendNowDone(E_SUCCESS);
-   return E_SUCCESS;
 }
 
 //=========================== receiving a packet ==============================
 
 void radio_rxOn(uint8_t channel) {
    
-   //set channel
+   // set channel
    radio_state = RADIO_STATE_SETTING_CHANNEL;
    if (channel < 11 || channel > 26){
       channel = 26;
    }
    spi_write_register(RG_PHY_CC_CCA,0x20+channel);
-   default_channel = channel;
    
-   //put radio in reception mode
+   // put radio in reception mode
    spi_write_register(RG_TRX_STATE, CMD_RX_ON);
-   DEBUG_PIN_RADIO_SET;
-   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON); //busy wait until radio status is PLL_ON
+   DEBUG_PIN_RADIO_SET();
+   
+   //busy wait until radio status is PLL_ON
+   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON);
    radio_state = RADIO_STATE_READY_RX;
-   CLEAR_TIMER_B5_OVERFLOW(); //used for timestamping incoming packets
+   
+   // clear timestamp overflow bit (used for timestamping incoming packets)
+   CLEAR_TIMER_OVERFLOW();
 }
 
 void isr_radio() {
@@ -211,8 +177,7 @@ void isr_radio() {
       //remove 1B length field
       packetfunctions_tossHeader(radioPacketToSend,1);
       //signal sendDone to upper layer
-      radio_sendNowDone(E_SUCCESS);
-      //mac_sendDone(radioPacketToSend,E_SUCCESS);//older implementation
+      
       radioPacketToSend = NULL;
       //return to default state
       radio_state=RADIO_STATE_STARTED;
@@ -224,16 +189,14 @@ void isr_radio() {
 //=========================== turning radio off ===============================
 
 void radio_rfOff() {
-   DEBUG_PIN_RADIO_CLR;
-   spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);  // turn radio off
-   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
+   DEBUG_PIN_RADIO_CLR();
+   
+   // turn radio off
+   spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);
+   
+   // busy wait until radio status is TRX_OFF
+   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF);
+   
+   // write local variable
    radio_state = RADIO_STATE_STARTED;
-}
-
-void radio_sleep() {
-   while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
-   P4DIR   |=   0x80; //set P4.7 as output
-   P4OUT   &=  ~0x80; //set P4.7 low
-   P4OUT   |=   0x80; //set P4.7 high to enable sleep mode
-   //P4OUT   &=  ~0x80; //set P4.7 low again
 }

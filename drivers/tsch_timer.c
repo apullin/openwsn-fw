@@ -25,13 +25,17 @@
 
 //=========================== public ==============================================
 
+/**
+\brief Initialize the TSCH timer.
+*/
 void tsch_timer_init() {
    
-   BCSCTL3 |= LFXT1S_0;                          // source ACLK from 32kHz crystal
+   // source ACLK from 32kHz crystal
+   BCSCTL3 |= LFXT1S_0;
    
    // CCR0 contains max value of counter (slot length)
    TACCTL0  =  CCIE;
-   TACCR0   =  SLOT_TIME;
+   TACCR0   =  TsSlotDuration;
    
    // CCR1 in compare mode
    TACCTL1  =  0;
@@ -48,24 +52,56 @@ void tsch_timer_init() {
    TACTL    =  MC_1+TBSSEL_1;                    // up mode, clocked from ACLK
 }
 
+/**
+\brief Schedule the timer to fire in the future.
+
+Calling this function cancels all running timers
+
+\param [in] offset The time at which to fire, relative to the current slot start
+                   time, in 32-kHz ticks.
+*/
 void tsch_timer_schedule(uint16_t offset) {
    TACCR1   =  offset;                           // offset when to fire
    TACCTL1  =  CCIE;                             // enable CCR1 interrupt
 }
 
+/**
+\brief Cancel a timer.
+
+This function has no effect if no timer is running.
+*/
 void tsch_timer_cancel() {
-   TACCR1   =  0;                                // reset CCR1 value (not really necessary)
+   TACCR1   =  0;                                // reset CCR1 value (also resets interrupt flag)
    TACCTL1 &= ~CCIE;                             // disable CCR1 interrupt
 }
 
+/**
+\brief Read the last captured time.
 
+This function puts the last captured timestemp in the timestampToWrite structure
+passed as a parameter. This structure contains a field which indicates whether
+the timestamp is valid.
 
+It is not valid if the overflow flag is set in the hardware timer.
 
-void enable_capture(uint8_t timer_id){
-   //poipoi expand to include other timer, we only do timer5 now for tsch
-   if(timer_id == 5)
-   {
-      TBCCTL5 = CAP|SCS|CCIS1|CM_3;
+This function returns the value of the captured time regardless of whether it
+is valid.
+
+\param [out] timestampToWrite Variable in which this function returns the
+                              timestamp.
+*/
+void read_capture(timestamp_t* timestampToWrite) {
+   uint8_t overflown;
+   overflown = (TACCTL2 & 0x02) >> 1;
+ 
+   // determine whether this timestampe is valid
+   if (overflown==1) {
+      timestampToWrite->valid   = 0;
+   } else {
+      timestampToWrite->valid   = 1;
    }
+   
+   // the actual timestamp
+   timestampToWrite->timestamp = TACCR2;
 }
 

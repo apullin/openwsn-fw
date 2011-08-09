@@ -25,7 +25,7 @@ typedef struct neighborEntry_t {
 } neighborEntry_t;
 
 typedef struct debugNeighborEntry_t {
-   slotOffset_t row;
+   slotOffset_t    row;
    neighborEntry_t neighborEntry;
 } debugNeighborEntry_t;
 
