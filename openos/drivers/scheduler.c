@@ -17,7 +17,7 @@
 
 #include "scheduler.h"
 #include "timers.h"
-#include "tsch_timer.h"
+#include "ieee154e_timer.h"
 #include "i2c.h"
 #include "openserial.h"
 
@@ -229,7 +229,7 @@ __interrupt void TIMERA0_ISR (void) {
    CAPTURE_TIME;
    DEBUG_PIN_ISR_SET();
 #ifdef OPENWSN_STACK
-   tsch_newSlot();
+   ieee154e_newSlot();
 #endif
    DEBUG_PIN_ISR_CLR();
 }
@@ -243,7 +243,7 @@ __interrupt void TIMERA1and2_ISR (void) {
    uint16_t taiv_temp = TAIV;                    // read only once because accessing TAIV resets it
    switch (taiv_temp) {
       case 0x0002: // timerA CCR1
-         tsch_timerFires();
+         ieee154e_timerFires();
          break;
       default:
          while(1);                               // this should not happen

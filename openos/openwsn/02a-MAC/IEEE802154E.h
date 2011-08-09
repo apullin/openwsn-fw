@@ -149,7 +149,7 @@ error_t mac_send(OpenQueueEntry_t* msg);
 void    mac_sendDone(OpenQueueEntry_t* pkt, error_t error);
 bool    mac_debugPrint();
 
-void    tsch_startOfFrame();
-void    tsch_endOfFrame();
+void    ieee154e_startOfFrame();
+void    ieee154e_endOfFrame();
 
 #endif

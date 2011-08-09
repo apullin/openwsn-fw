@@ -11,7 +11,7 @@ This driver can be used in two modes:
   the USCI_A0 module with next next byte.
   Because the driver itself expects interrupts, you can not call any of these
   functions in interrupt mode, since you can not get interrupted in that mode.
-  If you're very concerned about timing (e.g. you're using TSCH), I recommend
+  If you're very concerned about timing (e.g. you're using 15.4e), I recommend
   you use the second mode.
 - When ISR_SPI is *not* defined, this driver does not use interrupts. Instead,
   after putting a byte in the TX buffer, the driver busy waits (i.e. the CPU
@@ -21,7 +21,7 @@ This driver can be used in two modes:
   While this means the CPU is active throughout the transmission and can not do
   anything else, it also means the execution is perfectly deterministic if the 
   initial function is called from ISR. Hence the recommended use of that mode
-  when using TSCH.
+  when using IEEE802.15.4e.
 */
 
 #include "msp430x26x.h"
