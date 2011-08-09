@@ -56,23 +56,12 @@ OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t toNeighbor) {
    return NULL;
 }
 
-OpenQueueEntry_t* openqueue_inQueue(bool isADV) {
+OpenQueueEntry_t* openqueue_getAdvPacket() {
    uint8_t i;
-   switch(isADV) {
-      case IS_ADV:
-         for (i=0;i<QUEUELENGTH;i++){
-            if (queue[i].owner==COMPONENT_MAC && queue[i].creator==COMPONENT_RES) {
-               return &queue[i];
-            }
-         }
-         break;
-      case IS_NOT_ADV:
-         for (i=0;i<QUEUELENGTH;i++) {
-            if (queue[i].owner==COMPONENT_MAC && queue[i].creator!=COMPONENT_RES) {
-               return &queue[i];
-            }
-         }
-         break;
+   for (i=0;i<QUEUELENGTH;i++) {
+      if (queue[i].owner==COMPONENT_MAC && queue[i].creator==COMPONENT_RES) {
+         return &queue[i];
+      }
    }
    return NULL;
 }

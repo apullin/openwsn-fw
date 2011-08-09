@@ -16,8 +16,8 @@
 
 //===================================== variables =============================
 
-uint16_t nores_periodDIO;
-uint8_t  nores_delayDIO;
+uint16_t res_periodDIO;
+uint8_t  res_delayDIO;
 __no_init volatile uint8_t random_uint8 @ 0x10c0;
 open_addr_t all_routers_multicast;
 
@@ -32,8 +32,8 @@ void sendDIO();
 
 void icmpv6rpl_init() {
    icmpv6rpl_busySending = FALSE;
-   nores_periodDIO = 40000+(64*(*(&random_uint8)));       // pseudo-random
-   timer_startPeriodic(TIMER_RPL,nores_periodDIO);
+   res_periodDIO = 40000+(64*(*(&random_uint8)));       // pseudo-random
+   timer_startPeriodic(TIMER_RPL,res_periodDIO);
    all_routers_multicast.type = ADDR_128B;
    all_routers_multicast.addr_128b[0]  = 0xff;
    all_routers_multicast.addr_128b[1]  = 0x02;
@@ -94,12 +94,12 @@ bool icmpv6rpl_debugPrint() {
 //===================================== RPL timer fires =======================
 
 void timer_rpl_fired() {
-   nores_delayDIO = (nores_delayDIO+1)%5; //send on average every 10s
-   if (nores_delayDIO==0) {
+   res_delayDIO = (res_delayDIO+1)%5; //send on average every 10s
+   if (res_delayDIO==0) {
       sendDIO();
       //set a new random periodDIO
-      nores_periodDIO = 30000+(128*(*(&random_uint8)));       // pseudo-random
-      timer_startPeriodic(TIMER_RPL,nores_periodDIO);
+      res_periodDIO = 30000+(128*(*(&random_uint8)));       // pseudo-random
+      timer_startPeriodic(TIMER_RPL,res_periodDIO);
    }
 }
 

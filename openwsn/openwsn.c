@@ -36,7 +36,7 @@
 #include "openbridge.h"
 //l2b
 #include "neighbors.h"
-#include "nores.h"
+#include "res.h"
 #include "schedule.h"
 //l2a
 #include "IEEE802154E.h"
@@ -77,7 +77,7 @@ void openwsn_init() {
    mac_init();
    // 02b-RES
    schedule_init();
-   nores_init();
+   res_init();
    neighbors_init();
    // 03a-IPHC
    openbridge_init();

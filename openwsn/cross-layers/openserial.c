@@ -9,7 +9,7 @@
 #include "openserial.h"
 #include "IEEE802154E.h"
 #include "neighbors.h"
-#include "nores.h"
+#include "res.h"
 #include "iphc.h"
 #include "forwarding.h"
 #include "icmpv6.h"
@@ -192,7 +192,7 @@ void openserial_startOutput() {
    switch (temp_openserial_debugPrintCounter) {
       case  0: if(mac_debugPrint()          == TRUE) {break;};
       case  1: if(neighbors_debugPrint()    == TRUE) {break;};
-      case  2: if(nores_debugPrint()        == TRUE) {break;};
+      case  2: if(res_debugPrint()          == TRUE) {break;};
       case  3: if(iphc_debugPrint()         == TRUE) {break;};
       case  4: if(forwarding_debugPrint()   == TRUE) {break;};
       case  5: if(icmpv6_debugPrint()       == TRUE) {break;};

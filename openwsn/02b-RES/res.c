@@ -1,12 +1,12 @@
 /*
- * Implementation of noRES
+ * Implementation of the TSCH RES layer
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
  */
 
 #include "openwsn.h"
-#include "nores.h"
+#include "res.h"
 #include "idmanager.h"
 #include "openserial.h"
 #include "IEEE802154.h"
@@ -23,12 +23,12 @@
 
 //===================================== public ================================
 
-void nores_init() {
+void res_init() {
 }
 
 //===================================== public with upper =====================
 
-error_t nores_send(OpenQueueEntry_t *msg) {
+error_t res_send(OpenQueueEntry_t *msg) {
    msg->owner = COMPONENT_RES;
    msg->l2_frameType = IEEE154_TYPE_DATA;
    return mac_send(msg);
@@ -36,12 +36,12 @@ error_t nores_send(OpenQueueEntry_t *msg) {
 
 //===================================== public with lower =====================
 
-void nores_sendDone(OpenQueueEntry_t* msg, error_t error) {
+void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_RES;
    iphc_sendDone(msg,error);
 }
 
-void nores_receive(OpenQueueEntry_t* msg) {
+void res_receive(OpenQueueEntry_t* msg) {
    msg->owner = COMPONENT_RES;
    switch (msg->l2_frameType) {
       case IEEE154_TYPE_DATA:
@@ -54,7 +54,7 @@ void nores_receive(OpenQueueEntry_t* msg) {
    }
 }
 
-bool nores_debugPrint() {
+bool res_debugPrint() {
    uint16_t output=0;
    output = neighbors_getMyDAGrank();
    openserial_printStatus(STATUS_RES_DAGRANK,(uint8_t*)&output,1);

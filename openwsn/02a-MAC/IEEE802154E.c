@@ -19,7 +19,7 @@
 #include "tsch_timer.h"
 #include "packetfunctions.h"
 #include "neighbors.h"
-#include "nores.h"
+#include "res.h"
 
 //===================================== variables ==============================
 
@@ -268,7 +268,6 @@ inline void activity_ti1ORri1() {
                             ERR_WRONG_STATE_IN_STARTSLOT,
                             state,
                             asn%SCHEDULELENGTH);
-      
       // abort
       endSlot();
       return;
@@ -281,6 +280,21 @@ inline void activity_ti1ORri1() {
          // abort
          endSlot();
          break;
+      case CELLTYPE_ADV:
+         dataToSend = openqueue_getAdvPacket();
+         if (dataToSend==NULL) {
+            // I will be listening for an ADV
+            // change state
+            change_state(S_RXDATAOFFSET);
+            // arm rt1
+            tsch_timer_schedule(DURATION_rt1);
+         } else {
+            // I will be sending an ADV
+            // change state
+            change_state(S_TXDATAOFFSET);
+            // arm tt1
+            tsch_timer_schedule(DURATION_tt1);
+         }
       case CELLTYPE_TX:
          dataToSend = openqueue_getDataPacket(schedule_getNeighbor(asn));
          if (dataToSend!=NULL) {
@@ -289,6 +303,9 @@ inline void activity_ti1ORri1() {
             change_state(S_TXDATAOFFSET);
             // arm tt1
             tsch_timer_schedule(DURATION_tt1);
+         } else {
+            // abort
+            endSlot();
          }
          break;
       case CELLTYPE_RX:
@@ -405,7 +422,7 @@ inline void activity_ti5() {
       tsch_timer_schedule(DURATION_tt5);
    } else {
       // indicate that the packet was sent successfully
-      nores_sendDone(dataToSend,E_SUCCESS);
+      res_sendDone(dataToSend,E_SUCCESS);
       // reset local variable
       dataToSend = NULL;
       // abort
@@ -460,7 +477,7 @@ inline void activity_tie5() {
 
    // indicate tx fail if no more retries left
    if (dataToSend->l2_retriesLeft==0) {
-      nores_sendDone(dataToSend,E_FAIL);
+      res_sendDone(dataToSend,E_FAIL);
    }
 
    // reset local variable
@@ -516,7 +533,7 @@ inline void activity_ti9() {
 
    // if packet sent successfully, inform upper layer
    if (validAck==TRUE) {
-      nores_sendDone(dataToSend,E_SUCCESS);
+      res_sendDone(dataToSend,E_SUCCESS);
       dataToSend = NULL;
    }
 
@@ -632,7 +649,7 @@ inline void activity_ri5() {
       tsch_timer_schedule(DURATION_rt5);
    } else {
       // indicate reception to upper layer
-      nores_receive(dataReceived);
+      res_receive(dataReceived);
       // reset local variable
       dataReceived = NULL;
       // abort
@@ -650,7 +667,7 @@ inline void activity_ri6() {
    ackToSend = openqueue_getFreePacketBuffer();
    if (ackToSend==NULL) {
       // indicate we received a packet (we don't want to loose any)
-      nores_receive(dataReceived);
+      res_receive(dataReceived);
       // free local variable
       dataReceived = NULL;
       // abort
@@ -748,7 +765,7 @@ inline void activity_ri9() {
    tsch_timer_getCapturedTime(&capturedTime);
 
    // inform upper layer of reception
-   nores_receive(dataReceived);
+   res_receive(dataReceived);
 
    // clear local variable
    dataReceived = NULL;
@@ -862,7 +879,7 @@ void endSlot() {
       dataToSend->l2_retriesLeft--;
       // indicate tx fail if counnter 
       if (dataToSend->l2_retriesLeft==0) {
-         nores_sendDone(dataToSend,E_FAIL);
+         res_sendDone(dataToSend,E_FAIL);
       }
       // reset local variable
       dataToSend = NULL;
@@ -872,7 +889,7 @@ void endSlot() {
    if (dataReceived!=NULL) {
       // assume something went wrong. If everything went well, dataReceived would have been set to NULL in ri9.
       // indicate  "received packet" to upper layer; we don't want to loose packets
-      nores_receive(dataReceived);
+      res_receive(dataReceived);
       // reset local variable
       dataReceived = NULL;
    }
