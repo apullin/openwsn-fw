@@ -5,8 +5,8 @@
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
  */
 
-#ifndef __CELLUSAGE_H
-#define __CELLUSAGE_H
+#ifndef __SCHEDULE_H
+#define __SCHEDULE_H
 
 #include "openwsn.h"
 
@@ -35,10 +35,10 @@ typedef struct debugCellUsageInformation_t {
    cellUsageInformation_t cellUsage;
 } debugCellUsageInformation_t;
 
-void            cellUsage_init();
-cellType_t      cellUsage_getType(slotOffset_t slotOffset);
-channelOffset_t cellUsage_getChannelOffset(slotOffset_t slotOffset);
-open_addr_t     cellUsage_getNeighbor(slotOffset_t slotOffset);
-bool            cellUsage_debugPrint();
+void            schedule_init();
+cellType_t      schedule_getType(slotOffset_t slotOffset);
+channelOffset_t schedule_getChannelOffset(slotOffset_t slotOffset);
+open_addr_t     schedule_getNeighbor(slotOffset_t slotOffset);
+bool            schedule_debugPrint();
 
 #endif

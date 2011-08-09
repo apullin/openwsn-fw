@@ -86,17 +86,17 @@ enum {
    E_FAIL         =  1,
 };
 
-typedef enum {
+enum {
    ADDR_NONE   = 0,
    ADDR_16B    = 1,
    ADDR_64B    = 2,
    ADDR_128B   = 3,
    ADDR_PANID  = 4,
    ADDR_PREFIX = 5,
-} addr_type_t ;
+};
 
 typedef struct open_addr_t {                     //always written big endian, i.e. MSB in addr[0]
-   addr_type_t type;
+   uint8_t type;
    union {
       uint8_t addr_16b[2];
       uint8_t addr_64b[8];
@@ -210,8 +210,8 @@ enum {
    //l2b
    COMPONENT_RES              = 0x16,
    COMPONENT_NEIGHBORS        = 0x17,
+   COMPONENT_SCHEDULE         = 0x18,
    //l2a
-   COMPONENT_CELLUSAGE        = 0x18,
    COMPONENT_MAC              = 0x19,
    //phy
    COMPONENT_RADIODRIVER      = 0x1a,
@@ -226,28 +226,27 @@ enum {
 
 //status elements
 enum {
-   STATUS_ADVERTISEP_DAGRANK             =0,
-   STATUS_CELLUSAGEP_CELLTABLE           =1,
-   STATUS_NEIGHBORSP_NEIGHBORS           =2,
-   STATUS_SERIALIOP_OUTPUTBUFFERINDEXES  =3,
-   STATUS_OPENQUEUEP_QUEUE               =4,
-   STATUS_IEEE802154EP_SYNCRAND          =5,
-   STATUS_IDMANAGER_ID                   =6,
+   STATUS_RES_DAGRANK                    = 0,
+   STATUS_SCHEDULE_CELLTABLE             = 1,
+   STATUS_NEIGHBORS_NEIGHBORS            = 2,
+   STATUS_OPENSERIAL_OUTPUTBUFFERINDEXES = 3,
+   STATUS_OPENQUEUE_QUEUE                = 4,
+   STATUS_IDMANAGER_ID                   = 5,
 };
 
 //error codes
 enum {
-   ERR_BOOTED                                    =  0, //main program booted                                       [AppP] 
-   ERR_RES_READY                                 =  1, //reservation is ready                                      [AppP]        arg1=neighbor
-   ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND           =  2, //send.sendDone for packet I didn't send                    [AppP,AdvertiseP,KeepAliveC,ReservationP]
-   ERR_NO_NEXTHOP                                =  3, //no nextHop                                                [RPLP]
+   ERR_BOOTED                                    =  0, //main program booted                                       [App] 
+   ERR_RES_READY                                 =  1, //reservation is ready                                      [App]        arg1=neighbor
+   ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND           =  2, //send.sendDone for packet I didn't send                    [App,Advertise,KeepAlive,Reservation]
+   ERR_NO_NEXTHOP                                =  3, //no nextHop                                                [RPL]
    ERR_NO_FREE_PACKET_BUFFER                     =  4, //no free Queuepkt Cell                                     [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
-   ERR_OVER_255_CELLS_SAME_TYPE_NEIGHBOR         =  5, //over 255 cells of same type and same neighbor             [CellUsageP]   arg1=type,        arg2=neighbor
-   ERR_WRONG_CELLTYPE                            =  6, //wrong celltype                                            [CellUsageP,IEEE802154EP,OpenQueueP] arg1=type
-   ERR_RES_NOT_ON_RESSLOTOFFSET                  =  7, //CELLTYPE_RES not on SlotOffset RESSLOTOFFSET              [CellUsageP]   arg1=slotOffset,  arg2=channelOffset
-   ERR_ILLEGAL_TYPE_TRANSITION                   =  8, //illegal type transition arg1->arg2                        [CellUsageP]   arg1=old_type,  arg2=old_type
-   ERR_MODIFYING_OVERHEAD_SLOTS                  =  9, //modifying overhead slots                                  [CellUsageP]   arg1=slotOffset,  arg2=channelOffset
-   ERR_SETUSAGE_NOT_FOR_RES_ADV                  = 10, //CellUsageSet.setUsage does not set RES and ADV slots      [CellUsageP]   arg1=slotOffset,  arg2=channelOffset
+   ERR_OVER_255_CELLS_SAME_TYPE_NEIGHBOR         =  5, //over 255 cells of same type and same neighbor             [Schedule]   arg1=type,        arg2=neighbor
+   ERR_WRONG_CELLTYPE                            =  6, //wrong celltype                                            [Schedule,IEEE802154EP,OpenQueueP] arg1=type
+   ERR_RES_NOT_ON_RESSLOTOFFSET                  =  7, //CELLTYPE_RES not on SlotOffset RESSLOTOFFSET              [Schedule]   arg1=slotOffset,  arg2=channelOffset
+   ERR_ILLEGAL_TYPE_TRANSITION                   =  8, //illegal type transition arg1->arg2                        [Schedule]   arg1=old_type,  arg2=old_type
+   ERR_MODIFYING_OVERHEAD_SLOTS                  =  9, //modifying overhead slots                                  [Schedule]   arg1=slotOffset,  arg2=channelOffset
+   ERR_SETUSAGE_NOT_FOR_RES_ADV                  = 10, //CellUsageSet.setUsage does not set RES and ADV slots      [Schedule]   arg1=slotOffset,  arg2=channelOffset
    ERR_BUSY_SENDING                              = 11, //busy sending a packet                                     [RPLP,TCPP] arg1=location
    ERR_LOST_SYNC                                 = 12, //lost synchronization                                      [GlobalTimeP]
    ERR_SENDDONE_WHILE_NOT_BUSY                   = 13, //SimpleSend.sendDone while busy==FALSE                     [KeepAliveC,AdvertiseP]

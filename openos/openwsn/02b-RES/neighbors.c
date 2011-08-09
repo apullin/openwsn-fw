@@ -209,7 +209,7 @@ bool neighbors_debugPrint() {
    if (num_iterations<MAXNUMNEIGHBORS+1) {
       temp.row=neighbors_debugRow;
       temp.neighborEntry=neighbors[neighbors_debugRow];
-      openserial_printStatus(STATUS_NEIGHBORSP_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
+      openserial_printStatus(STATUS_NEIGHBORS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
       return TRUE;
    }
    return FALSE;
@@ -218,7 +218,7 @@ bool neighbors_debugPrint() {
      neighbors_debugRow=(neighbors_debugRow+1)%MAXNUMNEIGHBORS;
      temp.row=neighbors_debugRow;
      temp.neighborEntry=neighbors[neighbors_debugRow];
-     openserial_printStatus(STATUS_NEIGHBORSP_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
+     openserial_printStatus(STATUS_NEIGHBORS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
      return TRUE;*/
 }
 

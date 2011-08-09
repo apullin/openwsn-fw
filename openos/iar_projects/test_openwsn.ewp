@@ -1939,13 +1939,13 @@
     <group>
       <name>02b-RES</name>
       <file>
-        <name>$PROJ_DIR$\..\openwsn\02b-RES\cellUsage.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\openwsn\02b-RES\neighbors.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\openwsn\02b-RES\nores.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\openwsn\02b-RES\schedule.c</name>
       </file>
     </group>
     <group>

@@ -57,6 +57,6 @@ void nores_receive(OpenQueueEntry_t* msg) {
 bool nores_debugPrint() {
    uint16_t output=0;
    output = neighbors_getMyDAGrank();
-   openserial_printStatus(STATUS_ADVERTISEP_DAGRANK,(uint8_t*)&output,1);
+   openserial_printStatus(STATUS_RES_DAGRANK,(uint8_t*)&output,1);
    return TRUE;
 }
