@@ -56,8 +56,8 @@ void activity_ti9();
 void activity_ri2();
 void activity_rie1();
 void activity_ri3();
-void activity_ri4();
 void activity_rie2();
+void activity_ri4();
 void activity_rie3();
 void activity_ri5();
 void activity_ri6();
@@ -142,7 +142,7 @@ void tsch_timerFires() {
          activity_ti3();
          break;
       case S_TXDATADELAY:
-         activity_ti4();
+         activity_tie2();
          break;
       case S_TXDATA:
          activity_tie3();
@@ -204,12 +204,44 @@ void tsch_timerFires() {
 
 // start of frame event
 void tsch_startOfFrame() {
-   
+   switch (state) {
+      case S_TXDATADELAY:
+         activity_ti4();
+         break;
+      case S_RXACKLISTEN:
+         activity_ti8();
+         break;
+      case S_RXDATALISTEN:
+         activity_ri4();
+         break;
+      case S_TXACKDELAY:
+         activity_ri8();
+         break;
+      default:
+         // poipoi
+         break;
+   }
 }
 
 // end of frame event
 void tsch_endOfFrame() {
-   
+   switch (state) {
+      case S_TXDATA:
+         activity_ti5();
+         break;
+      case S_RXACK:
+         activity_ti9();
+         break;
+      case S_RXDATA:
+         activity_ri5();
+         break;
+      case S_TXACK:
+         activity_ri9();
+         break;
+      default:
+         // poipoi
+         break;
+   }
 }
 
 //===================================== TX =====================================
@@ -220,10 +252,10 @@ inline void activity_ti1ORri1() {
    if (asn%SCHEDULELENGTH==0) {
       DEBUG_PIN_FRAME_TOGGLE();
    }
-   
+
    // increment ASN
    asn++;
-   
+
    // if the previous slot took too long, we will not be in the right state
    if (state!=S_SLEEP) {
       // log the error
@@ -236,15 +268,15 @@ inline void activity_ti1ORri1() {
       endSlot();
       return;
    }
-   
+
    // check the schedule to see what type of slot this is
-   switch (schedule_getType(asn)) {
-      case CELLTYPE_OFF:
+   switch (schedule_getSlotType(asn)) {
+      case OFF:
          // I have nothing to do
          // abort
          endSlot();
          break;
-      case CELLTYPE_TX:
+      case TX:
          dataToSend = queue_getPacket(schedule_getNeighbor(ASN));
          if (dataToSend!=NULL) {
             // I have a packet to send
@@ -254,7 +286,7 @@ inline void activity_ti1ORri1() {
             tsch_timer_schedule(DURATION_tt1);
          }
          break;
-      case CELLTYPE_RX:
+      case RX:
          // I need to listen for packet
          // change state
          change_state(S_RXDATAOFFSET);
@@ -264,125 +296,421 @@ inline void activity_ti1ORri1() {
    }
 }
 
-inline void activity_ti1() {
-   // TODO
-}
-
 inline void activity_ti2() {
-   // change state
-   change_state(S_SLEEP);
+      // change state
+   change_state(S_TXDATAPREPARE);
 
-   // TODO
+   // calculate the frequency to transmit on
+   frequency = calculateFrequency(asn, schedule_getChannelOffset(asn) );
+
+   // configure the radio for that frequency
+   radio_setFrequency(frequency);
+
+   // copy the packet to send to the radio
+   radio_loadPacket(dataToSend);
+
+   // enable the radio in Tx mode. This does not send that packet.
+   radio_txEnable();
+
+   // arm tt2
+   tsch_timer_schedule(DURATION_tt2);
+
+   // change state
+   change_state(S_TXDATAREADY);
 }
 
 inline void activity_tie1() {
-   // TODO
+   // log the error
+   log_error(MAXTXDATAPREPAREOVERFLOW);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ti3() {
-   // TODO
+   // change state
+   change_state(S_TXDATADELAY);
+
+   // give the 'go' to transmit
+   radio_txNow();
+
+   // arm tt3
+   tsch_timer_schedule(DURATION_tt3);
 }
 
 inline void activity_tie2() {
-   // TODO
+   // log the error
+   log_error(WDRADIOTX);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ti4() {
-   // TODO
+   // change state
+   change_state(S_TXDATA);
+
+   // cancel the radio watchdog timer
+   tsch_timer_cancel();
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // arm tt4
+   tsch_timer_schedule(DURATION_tt4);
 }
 
 inline void activity_tie3() {
-   // TODO
+   // log the error
+   log_error(WDDATADURATION);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ti5() {
-   // TODO
+   // update state
+   state = RXACKOFFSET;
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // decides whether to listen for an ACK
+   if (dataToSend->destination!=0xff) {
+      listenForAck = TRUE;
+   } else {
+      listenForAck = FALSE;
+   }
+
+   if (listenForAck===TRUE) {
+      // arm tt5
+      tsch_timer_schedule(DURATION_tt5);
+   } else {
+      // indicate that the packet was sent successfully
+      upperlater_txDone(dataToSend,SUCCESS);
+      // reset local variable
+      dataToSend = NULL;
+      // abort
+      endSlot();
+   }
 }
 
 inline void activity_ti6() {
-   // TODO
+   // change state
+   change_state(S_RXACKREADY);
+
+   // calculate the frequency to transmit on
+   frequency = calculateFrequency(asn, schedule_getChannelOffset(asn));
+
+   // configure the radio for that frequency
+   radio_setFrequency(frequency);
+
+   // enable the radio in Rx mode. The radio is not actively listening yet.
+   radio_rxEnable();
+
+   // arm tt6
+   tsch_timer_schedule(DURATION_tt6);
 }
 
 inline void activity_tie4() {
-   // TODO
+   // log the error
+   log_error(MAXRXACKPREPAREOVERFLOW);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ti7() {
-   // TODO
+   // change state
+   change_state(S_RXACKLISTEN);
+
+   // start listening
+   radio_rxNow();
+
+   // arm tt7
+   tsch_timer_schedule(DURATION_tt7);
 }
 
 inline void activity_tie5() {
-   // TODO
+   // transmit failed, decrement transmits left counter
+   dataToSend->transmitsLeft--;
+
+   // indicate tx fail if no more retries left
+   if (dataToSend->transmitsLeft===0) {
+      upperlayer_txDone(dataToSend,FAIL);
+   }
+
+   // reset local variable
+   dataToSend = NULL;
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ti8() {
-   // TODO
+   // change state
+   change_state(S_TXACK);
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // cancel tt7
+   tsch_timer_cancel();
+
+   // arm tt8
+   tsch_timer_schedule(DURATION_tt8);
 }
 
 inline void activity_tie6() {
-   // TODO
+   // abort
+   endSlot();
 }
 
 inline void activity_ti9() {
-   // TODO
+   // update state
+   state = TXPROC
+
+   // cancel tt8
+   tsch_timer_cancel();
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // retrieve the ACK frame
+   get_getReceivedFrame(ackReceived);
+
+   // check that ACK frame is valid
+   if (isAckValid(ackReceived)) {
+      validAck = TRUE;
+   } else {
+      validAck = FALSE;
+   }
+
+   // free the received frame so corresponding RAM memory can be recycled
+   free(ackReceived);
+
+   // if packet sent successfully, inform upper layer
+   if (validAck===TRUE) {
+      upperlayer_txDone(dataToSend,SUCCESS);
+      dataToSend = NULL;
+   }
+
+   // official end of Tx slot
+   endSlot();
 }
 
 //===================================== TX =====================================
 
 inline void activity_ri2() {
-   // TODO
+   // change state
+   change_state(S_RXDATAPREPARE);
+
+   // calculate the frequency to transmit on
+   frequency = calculateFrequency(asn, schedule_getChannelOffset(asn) );
+
+   // configure the radio for that frequency
+   radio_setFrequency(frequency);
+
+   // enable the radio in Rx mode. The radio does not actively listen yet.
+   radio_rxEnable();
+
+   // arm rt2
+   tsch_timer_schedule(DURATION_rt2);
+
+   // change state
+   change_state(S_RXDATAREADY);
 }
 
 inline void activity_rie1() {
-   // TODO
+   // log the error
+   log_error(MAXRXDATAPREPAREOVERFLOW);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ri3() {
-   // TODO
-}
+   // change state
+   change_state(S_RXDATALISTEN);
 
-inline void activity_ri4() {
-   // TODO
+   // give the 'go' to receive
+   radio_rxNow();
+
+   // arm rt3
+   tsch_timer_schedule(DURATION_rt3);
 }
 
 inline void activity_rie2() {
-   // TODO
+   // abort
+   endSlot();
+}
+
+inline void activity_ri4() {
+   // change state
+   change_state(S_RXDATA);
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // cancel rt3
+   tsch_timer_cancel();
+
+   // arm rt4
+   tsch_timer_schedule(DURATION_rt4);
 }
 
 inline void activity_rie3() {
-   // TODO
+   // log the error
+   log_error(WDDATADURATION);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ri5() {
-   // TODO
+   // update state
+   state = TXACK OFFSET
+
+   // cancel rt4
+   tsch_timer_cancel();
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // retrieve the ACK frame
+   get_getReceivedFrame(dataReceived);
+
+   // if data frame invalid, stop
+   if (isDataValid(dataReceived)==FALSE) {
+      // free the buffer
+      free(dataReceived);
+      
+      // clear local variable
+      dataReceived = NULL;
+
+      // abort
+      endSlot();
+      return;
+   }
+
+   // check if ack requested
+   if (ackRequested(dataReceived)==TRUE) {
+      // arm rt5
+      tsch_timer_schedule(DURATION_rt5);
+   } else {
+      // indicate reception to upper layer
+      upperlayer_receive(dataReceived);
+      // reset local variable
+      dataReceived = NULL;
+      // abort
+      endSlot();
+   }
 }
 
 inline void activity_ri6() {
-   // TODO
+   // change state
+   change_state(S_TXACKPREPARE);
+
+   // get a buffer to put the ack in
+   ackToSend = getFreeBuffer();
+   if (ackToSend==NULL) {
+      // indicate we received a packet ()
+      upperlayer_receive(dataReceived);
+      // free local variable
+      dataReceived = NULL;
+      // abort
+      endSlot();
+   }
+
+   // create the ACK
+   createAck(ackToSend);
+
+   // calculate the frequency to transmit on
+   frequency = calculateFrequency(asn, schedule_getChannelOffset(asn) );
+
+   // configure the radio for that frequency
+   radio_setFrequency(frequency);
+
+   // copy the packet to send to the radio
+   radio_loadPacket(ackToSend);
+
+   // enable the radio in Tx mode. This does not send that packet.
+   radio_txEnable();
+
+   // arm rt6
+   tsch_timer_schedule(DURATION_rt6);
+
+   // change state
+   change_state(S_TXACKREADY);
 }
 
 inline void activity_rie4() {
-   // TODO
+   // log the error
+   log_error(MAXTXACKPREPAREOVERFLOW);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ri7() {
-   // TODO
+   // change state
+   change_state(S_TXACKDELAY);
+
+   // give the 'go' to transmit
+   radio_txNow();
+
+   // arm rt7
+   tsch_timer_schedule(DURATION_rt7);
 }
 
 inline void activity_rie5() {
-   // TODO
+   // log the error
+   log_error(WDRADIOTX);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ri8() {
-   // TODO
+   // change state
+   change_state(S_TXACK);
+
+   // cancel rt7
+   tsch_timer_cancel();
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // arm rt8
+   tsch_timer_schedule(DURATION_rt8);
 }
 
 inline void activity_rie6() {
-   // TODO
+   // log the error
+   log_error(WDACKDURATION);
+
+   // abort
+   endSlot();
 }
 
 inline void activity_ri9() {
-   // TODO
+   // update state
+   state = RXPROC
+
+   // cancel rt8
+   tsch_timer_cancel();
+
+   // record the captured time
+   capturedTime = getCapturedTime();
+
+   // inform upper layer of reception
+   upperlayer_receive(dataReceive);
+
+   // clear local variable
+   dataReceive== NULL;
+
+   // official end of Rx slot
+   endSlot();
 }
 
 void change_state(uint8_t newstate) {
@@ -422,13 +750,52 @@ void change_state(uint8_t newstate) {
 }
 
 void endSlot() {
-   // TODO
+   // turn off the radio
+   radio_rfOff();
+
+   // reset capturedTime
+   capturedTime = 0;
+
+   // clean up dataToSend
+   if (dataToSend!=NULL) {
+      // if everything went well, dataToSend was set to NULL in ti9
+      // transmit failed, decrement transmits left counter
+      dataToSend->transmitsLeft--;
+      // indicate tx fail if counnter 
+      if (dataToSend->transmitsLeft===0) {
+         upperlayer_txDone(dataToSend,FAIL);
+      }
+      // reset local variable
+      dataToSend = NULL;
+   }
+
+   // clean up dataReceived
+   if (dataReceived!=NULL) {
+      // assume something went wrong. If everything went well, dataReceived would have been set to NULL in ri9.
+      // indicate  "received packet" to upper layer; we don't want to loose packets
+      upperlayer_receive(dataReceived);
+      // reset local variable
+      dataReceived = NULL;
+   }
+
+   // clean up ackToSend
+   if (ackToSend!=NULL) {
+      // free ackToSend
+      free(ackToSend);
+      // reset local variable
+      ackToSend = NULL;
+   }
+
+   // clean up ackReceived
+   if (ackReceived!=NULL) {
+      // free ackReceived
+      free(ackReceived);
+      // reset local variable
+      ackReceived = NULL;
+   }
 }
 
 void radio_packet_received(OpenQueueEntry_t* msg) {
-}
-
-void notifyReceive() {
 }
 
 bool mac_debugPrint() {
