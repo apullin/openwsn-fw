@@ -4,29 +4,19 @@
 #include "openqueue.h"
 #include "IEEE802154E.h"
 
-//===================================== variables =============================
+//===================================== variables ==============================
 
-uint8_t            radio_state;
-OpenQueueEntry_t*  radioPacketReceived;
-OpenQueueEntry_t*  radioPacketToSend;
-bool               isStartOfFrameEvent;
+uint8_t radio_state;
+bool    isStartOfFrameEvent;
 
-//=========================== prototypes ==========================================
+//=========================== prototypes =======================================
 
-void               radio_sendNowDone(error_t error);
-
-//=========================== initialize the radio ============================
-
+//=========================== initialize the radio =============================
 
 /**
 \brief Initialize the radio.
 */
 void radio_init() {
-   // initialize radio-specific variables
-   radioPacketReceived          = openqueue_getFreePacketBuffer();
-   radioPacketReceived->creator = COMPONENT_RADIO;
-   radioPacketReceived->owner   = COMPONENT_RADIO;
-  
    // set the radio debug pin as output
    DEBUG_PIN_RADIO_INIT();
    
@@ -58,8 +48,6 @@ void radio_init() {
    
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF); //busy wait until radio status is TRX_OFF
    radio_state = RADIO_STATE_STARTED;
-   
-   radioPacketToSend = NULL;
 }
 
 //=========================== sending a packet ================================
@@ -73,8 +61,7 @@ void radio_setFrequency(uint8_t frequency) {
 }
 
 void radio_loadPacket(OpenQueueEntry_t* packet) {
-   radioPacketToSend = packet;
-   //radioPacketToSend->owner = COMPONENT_RADIO; don't do for resend
+   // don't declare radio as owner or else MAC will not be able to retransmit
    
    // add 1B length at the beginning (PHY header)
    packetfunctions_reserveHeaderSize(packet,1);
@@ -86,7 +73,7 @@ void radio_loadPacket(OpenQueueEntry_t* packet) {
    
    // load packet in TXFIFO
    radio_state = RADIO_STATE_LOADING_PACKET;
-   spi_write_buffer(radioPacketToSend);
+   spi_write_buffer(packet);
    radio_state = RADIO_STATE_READY_TX;
 }
 
@@ -136,7 +123,7 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
    writeToBuffer->l1_crc  = (temp_crc_reg_value & 0x80)>>7;  // msb is whether packet passed CRC
    // copy packet from rx buffer in radio over SPI
    // first read only 2 bytes to receive the length
-   spi_read_buffer(radioPacketReceived,2);
+   spi_read_buffer(writeToBuffer,2);
    writeToBuffer->length = writeToBuffer->payload[1];
    if (writeToBuffer->length<=127) {
       // then retrieve whole packet (including 1B SPI address, 1B length, 1B LQI)
@@ -145,16 +132,6 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
       writeToBuffer->payload += 2;
       // read 1B "footer" (LQI) and store that information
       writeToBuffer->l1_lqi = writeToBuffer->payload[writeToBuffer->length];
-   }
-}
-
-void isr_radio() {
-   if (isStartOfFrameEvent==TRUE) {
-      isStartOfFrameEvent = FALSE;
-       ieee154e_startOfFrame();
-   } else {
-      isStartOfFrameEvent = TRUE;
-       ieee154e_endOfFrame();
    }
 }
 
@@ -172,4 +149,16 @@ void radio_rfOff() {
    
    // write local variable
    radio_state = RADIO_STATE_STARTED;
+}
+
+//=========================== interrupt handler ================================
+
+void isr_radio() {
+   if (isStartOfFrameEvent==TRUE) {
+      isStartOfFrameEvent = FALSE;
+       ieee154e_startOfFrame();
+   } else {
+      isStartOfFrameEvent = TRUE;
+       ieee154e_endOfFrame();
+   }
 }

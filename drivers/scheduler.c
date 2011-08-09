@@ -45,7 +45,13 @@ void scheduler_init() {
 void scheduler_start() {
    while (1) {                                   // IAR should halt here if nothing to do
       while(num_tasks>0) {
-         if (task_list[TASKID_RPL]>0) {
+         if (task_list[TASKID_RES]>0) {
+            task_list[TASKID_RES]--;
+            num_tasks--;
+#ifdef OPENWSN_STACK
+            timer_res_fired();
+#endif
+         } else if (task_list[TASKID_RPL]>0) {
             task_list[TASKID_RPL]--;
             num_tasks--;
 #ifdef OPENWSN_STACK
@@ -57,10 +63,6 @@ void scheduler_start() {
 #ifdef OPENWSN_STACK
             timer_tcp_timeout_fired();
 #endif
-         } else if (task_list[TASKID_TIMERB2]>0) {
-            task_list[TASKID_TIMERB2]--;
-            num_tasks--;
-            // timer available, put your function here
          } else if (task_list[TASKID_TIMERB3]>0) {
             task_list[TASKID_TIMERB3]--;
             num_tasks--;
@@ -126,7 +128,7 @@ __interrupt void TIMERB0_ISR (void) {
       TBCCTL0 = 0;                               // stop the timer
       TBCCR0  = 0;
    }
-   scheduler_push_task(TASKID_RPL);              // post the corresponding task
+   scheduler_push_task(TASKID_RES);              // post the corresponding task
    __bic_SR_register_on_exit(CPUOFF);            // restart CPU
 #endif
    DEBUG_PIN_ISR_CLR();
@@ -147,7 +149,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL1 = 0;                         // stop the timer
             TBCCR1  = 0;
          }
-         scheduler_push_task(TASKID_TCP_TIMEOUT);// post the corresponding task
+         scheduler_push_task(TASKID_RPL);        // post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0004: // timerB CCR2
@@ -157,7 +159,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL2 = 0;                         // stop the timer
             TBCCR2  = 0;
          }
-         scheduler_push_task(TASKID_TIMERB2);    // post the corresponding task
+         scheduler_push_task(TASKID_TCP_TIMEOUT);// post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0006: // timerB CCR3
@@ -244,6 +246,8 @@ __interrupt void TIMERA1and2_ISR (void) {
    switch (taiv_temp) {
       case 0x0002: // timerA CCR1
          ieee154e_timerFires();
+         break;
+      case 0x000A: // timer overflow
          break;
       default:
          while(1);                               // this should not happen

@@ -14,13 +14,14 @@
 //timer ids
 enum {
 #ifdef OPENWSN_STACK
-   TIMER_RPL                 = 0,                // mapped onto timerB CCR0
-   TIMER_TCP_TIMEOUT         = 1,                // mapped onto timerB CCR1
+   TIMER_RES                 = 0,                // mapped onto timerB CCR0
+   TIMER_RPL                 = 1,                // mapped onto timerB CCR1
+   TIMER_TCP_TIMEOUT         = 2,                // mapped onto timerB CCR2
 #else
    TIMER_B0                  = 0,                // mapped onto timerB CCR0
    TIMER_B1                  = 1,                // mapped onto timerB CCR1
-#endif
    TIMER_B2                  = 2,                // mapped onto timerB CCR2
+#endif
    TIMER_B3                  = 3,                // mapped onto timerB CCR3
    TIMER_B4                  = 4,                // mapped onto timerB CCR4
    TIMER_B5                  = 5,                // mapped onto timerB CCR5
@@ -40,6 +41,7 @@ void timer_stop(uint8_t timer_id);
 
 // functions to call when timer fires
 #ifdef OPENWSN_STACK
+void timer_res_fired();
 void timer_rpl_fired();
 void timer_tcp_timeout_fired();
 #endif

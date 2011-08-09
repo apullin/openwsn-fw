@@ -24,7 +24,7 @@
 //===================================== variables ==============================
 
 asn_t              asn;
-uint8_t            state;
+uint8_t            ieee154e_state;
 uint8_t            dsn;
 OpenQueueEntry_t*  dataToSend;
 OpenQueueEntry_t*  dataReceived;
@@ -87,7 +87,7 @@ void mac_init() {
    
    // initialize variables
    asn                       = 0;
-   state                     = SLEEP;
+   ieee154e_state            = S_SLEEP;
    dsn                       = 0;
    dataToSend                = NULL;
    dataReceived              = NULL;
@@ -124,9 +124,6 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 
 //===================================== public from lower layer ================
 
-void mac_sendDone(OpenQueueEntry_t* pkt, error_t error) {
-}
-
 //===================================== events =================================
 
 //new slot event
@@ -136,7 +133,7 @@ void ieee154e_newSlot() {
 
 //timer fires event
 void ieee154e_timerFires() {
-   switch (state) {
+   switch (ieee154e_state) {
       case S_TXDATAOFFSET:
          activity_ti2();
          break;
@@ -197,19 +194,21 @@ void ieee154e_timerFires() {
       case S_TXACK:
          activity_rie6();
          break;
-      case S_SLEEP:
-      case S_SYNCHRONIZING:
-      case S_TXPROC:
-      case S_RXPROC:
       default:
-         // poipoi
+         // log the error
+         openserial_printError(COMPONENT_MAC,
+                               ERR_WRONG_STATE_IN_TIMERFIRES,
+                               ieee154e_state,
+                               asn%SCHEDULELENGTH);
+         // abort
+         endSlot();
          break;
    }
 }
 
 // start of frame event
 void ieee154e_startOfFrame() {
-   switch (state) {
+   switch (ieee154e_state) {
       case S_TXDATADELAY:
          activity_ti4();
          break;
@@ -223,14 +222,20 @@ void ieee154e_startOfFrame() {
          activity_ri8();
          break;
       default:
-         // poipoi
+         // log the error
+         openserial_printError(COMPONENT_MAC,
+                               ERR_WRONG_STATE_IN_STARTOFFRAME,
+                               ieee154e_state,
+                               asn%SCHEDULELENGTH);
+         // abort
+         endSlot();
          break;
    }
 }
 
 // end of frame event
 void ieee154e_endOfFrame() {
-   switch (state) {
+   switch (ieee154e_state) {
       case S_TXDATA:
          activity_ti5();
          break;
@@ -244,7 +249,13 @@ void ieee154e_endOfFrame() {
          activity_ri9();
          break;
       default:
-         // poipoi
+         // log the error
+         openserial_printError(COMPONENT_MAC,
+                               ERR_WRONG_STATE_IN_ENDOFFRAME,
+                               ieee154e_state,
+                               asn%SCHEDULELENGTH);
+         // abort
+         endSlot();
          break;
    }
 }
@@ -252,21 +263,21 @@ void ieee154e_endOfFrame() {
 //===================================== TX =====================================
 
 inline void activity_ti1ORri1() {
+   // increment ASN (do this first so debug pins are in sync)
+   asn++;
+   
    // wiggle debug pins
    DEBUG_PIN_SLOT_TOGGLE();
    if (asn%SCHEDULELENGTH==0) {
       DEBUG_PIN_FRAME_TOGGLE();
    }
 
-   // increment ASN
-   asn++;
-
    // if the previous slot took too long, we will not be in the right state
-   if (state!=S_SLEEP) {
+   if (ieee154e_state!=S_SLEEP) {
       // log the error
       openserial_printError(COMPONENT_MAC,
                             ERR_WRONG_STATE_IN_STARTSLOT,
-                            state,
+                            ieee154e_state,
                             asn%SCHEDULELENGTH);
       // abort
       endSlot();
@@ -295,6 +306,7 @@ inline void activity_ti1ORri1() {
             // arm tt1
             ieee154e_timer_schedule(DURATION_tt1);
          }
+         break;
       case CELLTYPE_TX:
          dataToSend = openqueue_getDataPacket(schedule_getNeighbor(asn));
          if (dataToSend!=NULL) {
@@ -314,6 +326,15 @@ inline void activity_ti1ORri1() {
          change_state(S_RXDATAOFFSET);
          // arm rt1
          ieee154e_timer_schedule(DURATION_rt1);
+         break;
+      default:
+         // log the error
+         openserial_printError(COMPONENT_MAC,
+                               ERR_WRONG_CELLTYPE,
+                               ieee154e_state,
+                               asn%SCHEDULELENGTH);
+         // abort
+         endSlot();
          break;
    }
 }
@@ -347,7 +368,7 @@ inline void activity_tie1() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_MAXTXDATAPREPARE_OVERFLOW,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -369,7 +390,7 @@ inline void activity_tie2() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_WDRADIO_OVERFLOW,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -394,7 +415,7 @@ inline void activity_tie3() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_WDDATADURATION_OVERFLOWS,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -404,8 +425,8 @@ inline void activity_tie3() {
 inline void activity_ti5() {
    bool listenForAck;
    
-   // update state
-   state = S_RXACKOFFSET;
+   // change state
+   change_state(S_RXACKOFFSET);
 
    // record the captured time
    ieee154e_timer_getCapturedTime(&capturedTime);
@@ -453,7 +474,7 @@ inline void activity_tie4() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_MAXRXACKPREPARE_OVERFLOWS,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -509,8 +530,8 @@ inline void activity_tie6() {
 inline void activity_ti9() {
    bool validAck;
    
-   // update state
-   state = S_TXPROC;
+   // change state
+   change_state(S_TXPROC);
 
    // cancel tt8
    ieee154e_timer_cancel();
@@ -569,7 +590,7 @@ inline void activity_rie1() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_MAXRXDATAPREPARE_OVERFLOWS,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -610,7 +631,7 @@ inline void activity_rie3() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_WDDATADURATION_OVERFLOWS,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
    
    // abort
@@ -618,8 +639,8 @@ inline void activity_rie3() {
 }
 
 inline void activity_ri5() {
-   // update state
-   state = S_TXACKOFFSET;
+   // change state
+   change_state(S_TXACKOFFSET);
 
    // cancel rt4
    ieee154e_timer_cancel();
@@ -700,7 +721,7 @@ inline void activity_rie4() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_MAXTXACKPREPARE_OVERFLOWS,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -722,7 +743,7 @@ inline void activity_rie5() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_WDRADIOTX_OVERFLOWS,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -747,7 +768,7 @@ inline void activity_rie6() {
    // log the error
    openserial_printError(COMPONENT_MAC,
                          ERR_WDACKDURATION_OVERFLOWS,
-                         state,
+                         ieee154e_state,
                          asn%SCHEDULELENGTH);
 
    // abort
@@ -755,8 +776,8 @@ inline void activity_rie6() {
 }
 
 inline void activity_ri9() {
-   // update state
-   state = S_RXPROC;
+   // change state
+   change_state(S_RXPROC);
 
    // cancel rt8
    ieee154e_timer_cancel();
@@ -784,7 +805,8 @@ absolute slot number and the channel offset of the requested slot.
 \returns The calculated frequency channel, between 11 and 26.
 */
 inline uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset) {
-   return 11+(asn+channelOffset)%16;
+   //return 11+(asn+channelOffset)%16;
+   return 26;//poipoi
 }
 
 /**
@@ -829,8 +851,10 @@ void createAck(OpenQueueEntry_t* frame) {
 }
 
 void change_state(uint8_t newstate) {
-   state = newstate;
-   switch (state) {
+   // update the state
+   ieee154e_state = newstate;
+   // wiggle the FSM debug pin
+   switch (ieee154e_state) {
       case S_SLEEP:
       case S_RXDATAOFFSET:
          DEBUG_PIN_FSM_CLR();
@@ -867,6 +891,9 @@ void change_state(uint8_t newstate) {
 void endSlot() {
    // turn off the radio
    radio_rfOff();
+   
+   // clear any pending timer
+   ieee154e_timer_cancel();
 
    // reset capturedTime
    capturedTime.valid     = TRUE;
@@ -909,6 +936,9 @@ void endSlot() {
       // reset local variable
       ackReceived = NULL;
    }
+   
+   // change state
+   change_state(S_SLEEP);
 }
 
 bool mac_debugPrint() {
