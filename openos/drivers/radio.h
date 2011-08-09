@@ -21,19 +21,16 @@
 #define USE_WIRE_ANTENNA               0x06
 #define USE_CHIP_ANTENNA               0x05
 
-#define CLEAR_TIMER_B5_OVERFLOW() TBCCTL5 &= ~(CCIFG|COV)
+#define CLEAR_TIMER_OVERFLOW() TBCCTL5 &= ~(CCIFG|COV)
 
 //===================================== prototypes ============================
 
-void    radio_init();                      // configures both MSP and radio chip
-error_t radio_prepare_send(OpenQueueEntry_t* packet);
-error_t radio_sendNow();
-error_t radio_send(OpenQueueEntry_t* packet);    // send a packet
-
-void    radio_rxOn(uint8_t channel);             // set the radio in reception mode
-void    radio_packet_received(OpenQueueEntry_t* packetReceived); // called when a packet is completely received
-void    radio_rfOff();                           // switch radio off
-void    radio_sleep();
+void  radio_init();                              // configures both MSP and radio chip
+void  radio_txPrepare(OpenQueueEntry_t* packet);
+void  radio_txNow();
+void  radio_rxOn(uint8_t channel);               // set the radio in reception mode
+void  radio_packet_received(OpenQueueEntry_t* packetReceived); // called when a packet is completely received
+void  radio_rfOff();                             // switch radio off
 
 void    isr_radio();
 #endif

@@ -190,7 +190,7 @@ void openserial_startOutput() {
    temp_openserial_debugPrintCounter = openserial_debugPrintCounter;
    __enable_interrupt();
    switch (temp_openserial_debugPrintCounter) {
-      case  0: if(mac_debugPrint()    == TRUE) {break;};
+      case  0: if(mac_debugPrint()          == TRUE) {break;};
       case  1: if(neighbors_debugPrint()    == TRUE) {break;};
       case  2: if(nores_debugPrint()        == TRUE) {break;};
       case  3: if(iphc_debugPrint()         == TRUE) {break;};

@@ -16,35 +16,35 @@
 
 #define bool uint8_t
 
-#define DEBUG_PIN_FRAME_INIT      P4DIR |=  0x20 // P4.5
-#define DEBUG_PIN_FRAME_TOGGLE    P4OUT ^=  0x20
-#define DEBUG_PIN_FRAME_CLR       P4OUT &= ~0x20
-#define DEBUG_PIN_FRAME_SET       P4OUT |=  0x20
+#define DEBUG_PIN_FRAME_INIT()    P4DIR |=  0x20 // P4.5
+#define DEBUG_PIN_FRAME_TOGGLE()  P4OUT ^=  0x20
+#define DEBUG_PIN_FRAME_CLR()     P4OUT &= ~0x20
+#define DEBUG_PIN_FRAME_SET()     P4OUT |=  0x20
 
-#define DEBUG_PIN_SLOT_INIT       P4DIR |=  0x02 // P4.1
-#define DEBUG_PIN_SLOT_TOGGLE     P4OUT ^=  0x02
-#define DEBUG_PIN_SLOT_CLR        P4OUT &= ~0x02
-#define DEBUG_PIN_SLOT_SET        P4OUT |=  0x02
+#define DEBUG_PIN_SLOT_INIT()     P4DIR |=  0x02 // P4.1
+#define DEBUG_PIN_SLOT_TOGGLE()   P4OUT ^=  0x02
+#define DEBUG_PIN_SLOT_CLR()      P4OUT &= ~0x02
+#define DEBUG_PIN_SLOT_SET()      P4OUT |=  0x02
 
-#define DEBUG_PIN_FSM_INIT        P4DIR |=  0x04 // P4.2
-#define DEBUG_PIN_FSM_TOGGLE      P4OUT ^=  0x04
-#define DEBUG_PIN_FSM_CLR         P4OUT &= ~0x04
-#define DEBUG_PIN_FSM_SET         P4OUT |=  0x04
+#define DEBUG_PIN_FSM_INIT()      P4DIR |=  0x04 // P4.2
+#define DEBUG_PIN_FSM_TOGGLE()    P4OUT ^=  0x04
+#define DEBUG_PIN_FSM_CLR()       P4OUT &= ~0x04
+#define DEBUG_PIN_FSM_SET()       P4OUT |=  0x04
 
-#define DEBUG_PIN_TASK_INIT       P4DIR |=  0x08 // P4.3
-#define DEBUG_PIN_TASK_TOGGLE     P4OUT ^=  0x08
-#define DEBUG_PIN_TASK_CLR        P4OUT &= ~0x08
-#define DEBUG_PIN_TASK_SET        P4OUT |=  0x08
+#define DEBUG_PIN_TASK_INIT()     P4DIR |=  0x08 // P4.3
+#define DEBUG_PIN_TASK_TOGGLE()   P4OUT ^=  0x08
+#define DEBUG_PIN_TASK_CLR()      P4OUT &= ~0x08
+#define DEBUG_PIN_TASK_SET()      P4OUT |=  0x08
 
-#define DEBUG_PIN_ISR_INIT        P4DIR |=  0x10 // P4.4
-#define DEBUG_PIN_ISR_TOGGLE      P4OUT ^=  0x10
-#define DEBUG_PIN_ISR_CLR         P4OUT &= ~0x10
-#define DEBUG_PIN_ISR_SET         P4OUT |=  0x10
+#define DEBUG_PIN_ISR_INIT()      P4DIR |=  0x10 // P4.4
+#define DEBUG_PIN_ISR_TOGGLE()    P4OUT ^=  0x10
+#define DEBUG_PIN_ISR_CLR()       P4OUT &= ~0x10
+#define DEBUG_PIN_ISR_SET()       P4OUT |=  0x10
 
-#define DEBUG_PIN_RADIO_INIT      P1DIR |=  0x02 // P1.1
-#define DEBUG_PIN_RADIO_TOGGLE    P1OUT ^=  0x02
-#define DEBUG_PIN_RADIO_CLR       P1OUT &= ~0x02
-#define DEBUG_PIN_RADIO_SET       P1OUT |=  0x02
+#define DEBUG_PIN_RADIO_INIT()    P1DIR |=  0x02 // P1.1
+#define DEBUG_PIN_RADIO_TOGGLE()  P1OUT ^=  0x02
+#define DEBUG_PIN_RADIO_CLR()     P1OUT &= ~0x02
+#define DEBUG_PIN_RADIO_SET()     P1OUT |=  0x02
 
 __no_init volatile uint8_t eui64 @ 0x10ee;       // address is flash where the node's EUI64 identifier is stored
 
@@ -54,16 +54,10 @@ enum {
 };
 
 enum {
-   MYID = 1,
-   HOPPING_ENABLED = FALSE,
-   LENGTHCELLFRAME = 5,
-   MAXNUMNEIGHBORS = 10,
-   DEFAULTCHANNEL  = 15,
-   //delays
-   DELAY_LOSING_NEIGHBOR_32KHZ     = 327680,     //32kHz ticks = 10s (32768 ticks = 1s)
-   DELAY_LOSING_NEIGHBOR_1KHZ      =  10240,     // 1kHz ticks = 10s ( 1024 ticks = 1s)
-   DELAY_LOST_NEIGHBOR_32KHZ       = 655360,     //32kHz ticks = 20s (32768 ticks = 1s)
-   DELAY_LOST_NEIGHBOR_1KHZ        =  20480,     // 1kHz ticks = 20s ( 1024 ticks = 1s)
+   HOPPING_ENABLED                 =  FALSE,
+   SCHEDULELENGTH                  =      5,
+   MAXNUMNEIGHBORS                 =     10,
+   DEFAULTCHANNEL                  =     15,
    TXRETRIES                       =      3,
    //state
    QUEUELENGTH                     =     10,
@@ -75,12 +69,9 @@ enum {
    SWITCHSTABILITYTHRESHOLD        =      3,
    TX_POWER                        =     31,     //1=-25dBm, 31=0dBm (max value)
    MAXPREFERENCE                   =      2,
-   INVALID_TIMESTAMP               = 0x80000000L,
 };
 
-typedef uint8_t   cellType_t;
 typedef uint16_t  slotOffset_t;
-typedef uint8_t   channelOffset_t;
 typedef uint16_t  shortnodeid_t;
 typedef uint64_t  longnodeid_t;
 typedef uint32_t  timervalue_t;
@@ -91,12 +82,21 @@ typedef uint16_t  asn_t;
 typedef uint8_t   error_t;
 
 enum {
-  E_SUCCESS =  0,          
-  E_FAIL    =  1,
+   E_SUCCESS      =  0,          
+   E_FAIL         =  1,
 };
 
+typedef enum {
+   ADDR_NONE   = 0,
+   ADDR_16B    = 1,
+   ADDR_64B    = 2,
+   ADDR_128B   = 3,
+   ADDR_PANID  = 4,
+   ADDR_PREFIX = 5,
+} addr_type_t ;
+
 typedef struct open_addr_t {                     //always written big endian, i.e. MSB in addr[0]
-   uint8_t type;
+   addr_type_t type;
    union {
       uint8_t addr_16b[2];
       uint8_t addr_64b[8];
@@ -105,22 +105,6 @@ typedef struct open_addr_t {                     //always written big endian, i.
       uint8_t prefix[8];
    };
 } open_addr_t;
-
-
-enum {
-   ADDR_NONE   = 0,
-   ADDR_16B    = 1,
-   ADDR_64B    = 2,
-   ADDR_128B   = 3,
-   ADDR_PANID  = 4,
-   ADDR_PREFIX = 5,
-};
-
-enum {
-   CELLTYPE_OFF      =0,
-   CELLTYPE_TXRX     =1,
-   CELLTYPE_RXSERIAL =2
-};
 
 enum {
    LITTLE_ENDIAN = TRUE,
@@ -194,13 +178,6 @@ typedef struct OpenQueueEntry_t {
    //the packet
    uint8_t       packet[1+1+125+2+1];            // 1B spi address, 1B length, 125B data, 2B CRC, 1B LQI
 } OpenQueueEntry_t;
-
-typedef struct slotChannel_t {
-   bool exists;
-   bool primary;
-   slotOffset_t slotOffset;
-   channelOffset_t channelOffset;
-} slotChannel_t;
 
 //component identifiers
 enum {

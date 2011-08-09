@@ -9,35 +9,35 @@
 #include "openwsn.h"
 #include "scheduler.h"
 #ifdef OPENWSN_STACK
-//l7 TCP applications
-#include "apptcpecho.h"
-#include "apptcpinject.h"
-#include "apptcpohlone.h"
-#include "apptcpprint.h"
-//l7 UDP applications
-#include "appudpchannel.h"
-#include "appudpecho.h"
-#include "appudpgina.h"
-#include "appudpheli.h"
+//l7
+#include "appudpsensor.h"
+#include "appudpprint.h"
 #include "appudpleds.h"
 #include "appudpinject.h"
-#include "appudpprint.h"
-#include "appudpsensor.h"
+#include "appudpgina.h"
+#include "appudpheli.h"
+#include "appudpecho.h"
+#include "appudpchannel.h"
+#include "apptcpprint.h"
+#include "apptcpohlone.h"
+#include "apptcpinject.h"
+#include "apptcpecho.h"
 //l4
-#include "tcp.h"
 #include "udp.h"
+#include "tcp.h"
 //l3b
-#include "forwarding.h"
-#include "icmpv6.h"
-#include "icmpv6echo.h"
-#include "icmpv6router.h"
 #include "icmpv6rpl.h"
+#include "icmpv6router.h"
+#include "icmpv6echo.h"
+#include "icmpv6.h"
+#include "forwarding.h"
 //l3a
-#include "openbridge.h"
 #include "iphc.h"
+#include "openbridge.h"
 //l2b
-#include "nores.h"
 #include "neighbors.h"
+#include "nores.h"
+#include "cellUsage.h"
 //l2a
 #include "IEEE802154E.h"
 //l1
@@ -47,6 +47,7 @@
 #include "openqueue.h"
 #include "openserial.h"
 //misc
+#include "tsch_timer.h"
 #include "timers.h"
 #endif
 
@@ -65,30 +66,40 @@ void openwsn_init() {
    scheduler_init();
 #ifdef OPENWSN_STACK
    timer_init();
+   tsch_timer_init();
+   // cross-layer
    idmanager_init();
    openqueue_init();
-   radio_init();
    openserial_init();
+   // 01-PHY
+   radio_init();
+   // 02a-TSCH
    mac_init();
-   neighbors_init();
+   // 02b-RES
+   cellUsage_init();
    nores_init();
-   forwarding_init();
+   neighbors_init();
+   // 03a-IPHC
    openbridge_init();
    iphc_init();
+   // 03b-IPv6
+   forwarding_init();
    icmpv6_init();
    icmpv6echo_init();
    icmpv6router_init();
    icmpv6rpl_init();
+   // 04-TRAN
    tcp_init();
    udp_init();
+   // 07-App
    apptcpecho_init();
    apptcpinject_init();
    apptcpohlone_init();
    apptcpprint_init();
    appudpchannel_init();
    appudpecho_init();
-   appudpgina_init();
    //appudpheli_init(); remove heli application for now since we need TimerA for TSCH
+   appudpgina_init();
    appudpinject_init();
    appudpleds_init();
    appudpprint_init();

@@ -1,5 +1,5 @@
 /*
- * The component which managing the buffer of packet
+ * The component which manages the pool of packet buffers.
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
