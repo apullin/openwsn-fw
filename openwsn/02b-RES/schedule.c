@@ -6,7 +6,7 @@
  */
 
 #include "OpenWSN.h"
-#include "cellUsage.h"
+#include "schedule.h"
 #include "openserial.h"
 
 //===================================== variables ==============================
@@ -16,7 +16,7 @@ slotOffset_t           debugPrintSlotOffset;
 
 //===================================== prototypes =============================
 
-void cellUsage_init() {
+void schedule_init() {
    uint8_t slotCounter;
    //all slots OFF
    for (slotCounter=0;slotCounter<SCHEDULELENGTH;slotCounter++){
@@ -36,18 +36,18 @@ void cellUsage_init() {
    debugPrintSlotOffset                    = 0;
 }
 
-cellType_t cellUsage_getType(slotOffset_t slotOffset) {
+cellType_t schedule_getType(slotOffset_t slotOffset) {
    return cellTable[slotOffset].type;
 }
-channelOffset_t cellUsage_getChannelOffset(slotOffset_t slotOffset) {
+channelOffset_t schedule_getChannelOffset(slotOffset_t slotOffset) {
    return cellTable[slotOffset].channelOffset;
 }
-open_addr_t cellUsage_getNeighbor(slotOffset_t slotOffset) {
+open_addr_t schedule_getNeighbor(slotOffset_t slotOffset) {
    return cellTable[slotOffset].neighbor;
 }
 
 
-void cellUsage_indicateUse(asn_t asn, bool ack){
+void schedule_indicateUse(asn_t asn, bool ack){
    uint16_t slotOffset;
    
    slotOffset = asn%SCHEDULELENGTH;
@@ -62,13 +62,13 @@ void cellUsage_indicateUse(asn_t asn, bool ack){
    cellTable[slotOffset].timestamp=asn;
 }
 
-bool cellUsage_debugPrint() {
+bool schedule_debugPrint() {
    debugCellUsageInformation_t temp;
    debugPrintSlotOffset = (debugPrintSlotOffset+1)%SCHEDULELENGTH;
    temp.row        = debugPrintSlotOffset;
    temp.cellUsage  = cellTable[debugPrintSlotOffset];
-   openserial_printStatus(STATUS_CELLUSAGEP_CELLTABLE,
+   openserial_printStatus(STATUS_SCHEDULE_CELLTABLE,
                           (uint8_t*)&temp,
-                           sizeof(debugCellUsageInformation_t));
+                          sizeof(debugCellUsageInformation_t));
    return TRUE;
 }

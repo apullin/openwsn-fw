@@ -37,7 +37,7 @@
 //l2b
 #include "neighbors.h"
 #include "nores.h"
-#include "cellUsage.h"
+#include "schedule.h"
 //l2a
 #include "IEEE802154E.h"
 //l1
@@ -76,7 +76,7 @@ void openwsn_init() {
    // 02a-TSCH
    mac_init();
    // 02b-RES
-   cellUsage_init();
+   schedule_init();
    nores_init();
    neighbors_init();
    // 03a-IPHC
