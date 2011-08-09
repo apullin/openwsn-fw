@@ -15,6 +15,7 @@
 #include "idmanager.h"
 #include "openserial.h"
 #include "openqueue.h"
+#include "schedule.h"
 #include "tsch_timer.h"
 #include "packetfunctions.h"
 #include "neighbors.h"
@@ -25,8 +26,8 @@
 asn_t              asn;
 uint8_t            state;
 uint8_t            dsn;
-OpenQueueEntry_t*  dataFrameToSend;
-OpenQueueEntry_t*  dataFrameReceived;
+OpenQueueEntry_t*  dataToSend;
+OpenQueueEntry_t*  dataReceived;
 OpenQueueEntry_t*  ackToSend;
 OpenQueueEntry_t*  ackReceived;
 timestamp_t        capturedTime;
@@ -83,8 +84,8 @@ void mac_init() {
    asn                       = 0;
    state                     = SLEEP;
    dsn                       = 0;
-   dataFrameToSend           = NULL;
-   dataFrameReceived         = NULL;
+   dataToSend                = NULL;
+   dataReceived              = NULL;
    ackToSend                 = NULL;
    ackReceived               = NULL;
    capturedTime.valid        = TRUE;
@@ -223,12 +224,44 @@ inline void activity_ti1ORri1() {
    // increment ASN
    asn++;
    
-   // change state
-   change_state(S_TXDATAOFFSET);
-   // arm tt1
-   tsch_timer_schedule(DURATION_tt1);
+   // if the previous slot took too long, we will not be in the right state
+   if (state!=S_SLEEP) {
+      // log the error
+      openserial_printError(COMPONENT_MAC,
+                            ERR_WRONG_STATE_IN_STARTSLOT,
+                            state,
+                            asn%SCHEDULELENGTH);
+      
+      // abort
+      endSlot();
+      return;
+   }
    
-   // TODO
+   // check the schedule to see what type of slot this is
+   switch (schedule_getType(asn)) {
+      case CELLTYPE_OFF:
+         // I have nothing to do
+         // abort
+         endSlot();
+         break;
+      case CELLTYPE_TX:
+         dataToSend = queue_getPacket(schedule_getNeighbor(ASN));
+         if (dataToSend!=NULL) {
+            // I have a packet to send
+            // change state
+            change_state(S_TXDATAOFFSET);
+            // arm tt1
+            tsch_timer_schedule(DURATION_tt1);
+         }
+         break;
+      case CELLTYPE_RX:
+         // I need to listen for packet
+         // change state
+         change_state(S_RXDATAOFFSET);
+         // arm rt1
+         tsch_timer_schedule(DURATION_rt1);
+         break;
+   }
 }
 
 inline void activity_ti1() {

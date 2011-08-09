@@ -277,7 +277,7 @@ void openserial_stop() {
    }
 }
 
-bool openserial_debugPrint(){
+bool openserial_debugPrint() {
    uint16_t temp_buffer[2];
    __disable_interrupt();
    temp_buffer[0] = openserial_output_buffer_index_write;
