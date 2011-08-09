@@ -1942,7 +1942,7 @@
         <name>$PROJ_DIR$\..\openwsn\02b-RES\neighbors.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\openwsn\02b-RES\nores.c</name>
+        <name>$PROJ_DIR$\..\openwsn\02b-RES\res.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\openwsn\02b-RES\schedule.c</name>

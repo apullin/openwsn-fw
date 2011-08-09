@@ -10,7 +10,7 @@
 #include "packetfunctions.h"
 #include "idmanager.h"
 #include "openserial.h"
-#include "nores.h"
+#include "res.h"
 #include "forwarding.h"
 #include "neighbors.h"
 #include "openbridge.h"
@@ -90,7 +90,7 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg) {
             )==E_FAIL) {
       return E_FAIL;
    }
-   return nores_send(msg);
+   return res_send(msg);
 }
 
 //send from bridge: 6LoWPAN header already added by OpenLBR, send as is
@@ -100,7 +100,7 @@ error_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
       openserial_printError(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,1,0);
       return E_FAIL;
    }
-   return nores_send(msg);
+   return res_send(msg);
 }
 
 void iphc_sendDone(OpenQueueEntry_t* msg, error_t error) {
