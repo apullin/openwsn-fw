@@ -167,7 +167,6 @@ typedef struct OpenQueueEntry_t {
    open_addr_t   l2_nextORpreviousHop;           //64b IEEE802.15.4 next (down stack) or previous (up) hop address
    uint8_t       l2_frameType;                   //beacon, data, ack, cmd
    uint8_t       l2_retriesLeft;
-   bool          l2_transmitInFirstSlot;         //for video transmission
    //l1 (drivers)
    uint8_t       l1_txPower;
    uint8_t       l1_rssi;
@@ -362,7 +361,10 @@ enum {
    ERR_MAXRXDATAPREPARE_OVERFLOWS                =126, //maxRxDataPrepapre overflows in state=arg1 and slotOffset=arg2
    ERR_MAXTXACKPREPARE_OVERFLOWS                 =127, //maxTxAckPrepapre overflows in state=arg1 and slotOffset=arg2
    ERR_WDRADIOTX_OVERFLOWS                       =128, //wdRadioTx overflows in state=arg1 and slotOffset=arg2
-   ERR_WDACKDURATION_OVERFLOWS                   =128, //wdAckDuration overflows in state=arg1 and slotOffset=arg2
+   ERR_WDACKDURATION_OVERFLOWS                   =129, //wdAckDuration overflows in state=arg1 and slotOffset=arg2
+   ERR_WRONG_STATE_IN_TIMERFIRES                 =130, //wrong state=arg1 in timer fires in slotOffset=arg2
+   ERR_WRONG_STATE_IN_STARTOFFRAME               =131, //wrong state=arg1 in start of frame in slotOffset=arg2
+   ERR_WRONG_STATE_IN_ENDOFFRAME                 =132, //wrong state=arg1 in end of frame in slotOffset=arg2
 };
 
 //=========================== global variable =================================

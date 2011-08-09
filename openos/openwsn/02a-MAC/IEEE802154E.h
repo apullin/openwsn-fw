@@ -54,33 +54,33 @@ enum ieee154e_ADV_defaults_enums {
 };
 
 enum ieee154e_state_enum {
-   S_SLEEP         =  0, // ready for next slot
+   S_SLEEP         = 0x00, // ready for next slot
    // synchronizing
-   S_SYNCHRONIZING =  1,
+   S_SYNCHRONIZING = 0x01,
    // TX
-   S_TXDATAOFFSET  =  2, // waiting to prepare for Tx data
-   S_TXDATAPREPARE =  3, // preparing for Tx data
-   S_TXDATAREADY   =  4, // ready to Tx data, waiting for 'go'
-   S_TXDATADELAY   =  5, // 'go' signal given, waiting for SFD Tx data
-   S_TXDATA        =  6, // Tx data SFD received, sending bytes
-   S_RXACKOFFSET   =  7, // Tx data done, waiting to prepare for Rx ACK
-   S_RXACKPREPARE  =  8, // preparing for Rx ACK
-   S_RXACKREADY    =  9, // ready to Rx ACK, waiting for 'go'
-   S_RXACKLISTEN   = 10, // idle listening for ACK
-   S_RXACK         = 11, // Rx ACK SFD received, receiving bytes
-   S_TXPROC        = 12, // processing sent data
+   S_TXDATAOFFSET  = 0x02, // waiting to prepare for Tx data
+   S_TXDATAPREPARE = 0x03, // preparing for Tx data
+   S_TXDATAREADY   = 0x04, // ready to Tx data, waiting for 'go'
+   S_TXDATADELAY   = 0x05, // 'go' signal given, waiting for SFD Tx data
+   S_TXDATA        = 0x06, // Tx data SFD received, sending bytes
+   S_RXACKOFFSET   = 0x07, // Tx data done, waiting to prepare for Rx ACK
+   S_RXACKPREPARE  = 0x08, // preparing for Rx ACK
+   S_RXACKREADY    = 0x09, // ready to Rx ACK, waiting for 'go'
+   S_RXACKLISTEN   = 0x0a, // idle listening for ACK
+   S_RXACK         = 0x0b, // Rx ACK SFD received, receiving bytes
+   S_TXPROC        = 0x0c, // processing sent data
    // RX
-   S_RXDATAOFFSET  = 13, // waiting to prepare for Rx data
-   S_RXDATAPREPARE = 14, // preparing for Rx data
-   S_RXDATAREADY   = 15, // ready to Rx data, waiting for 'go'
-   S_RXDATALISTEN  = 16, // idle listening for data
-   S_RXDATA        = 17, // data SFD received, receiving more bytes
-   S_TXACKOFFSET   = 18, // waiting to prepare for Tx ACK
-   S_TXACKPREPARE  = 19, // preparing for Tx ACK
-   S_TXACKREADY    = 20, // Tx ACK ready, waiting for 'go'
-   S_TXACKDELAY    = 21, // 'go' signal given, waiting for SFD Tx ACK
-   S_TXACK         = 22, // Tx ACK SFD received, sending bytes
-   S_RXPROC        = 23, // processing received data
+   S_RXDATAOFFSET  = 0x0d, // waiting to prepare for Rx data
+   S_RXDATAPREPARE = 0x0e, // preparing for Rx data
+   S_RXDATAREADY   = 0x0f, // ready to Rx data, waiting for 'go'
+   S_RXDATALISTEN  = 0x10, // idle listening for data
+   S_RXDATA        = 0x11, // data SFD received, receiving more bytes
+   S_TXACKOFFSET   = 0x12, // waiting to prepare for Tx ACK
+   S_TXACKPREPARE  = 0x13, // preparing for Tx ACK
+   S_TXACKREADY    = 0x14, // Tx ACK ready, waiting for 'go'
+   S_TXACKDELAY    = 0x15, // 'go' signal given, waiting for SFD Tx ACK
+   S_TXACK         = 0x16, // Tx ACK SFD received, sending bytes
+   S_RXPROC        = 0x17, // processing received data
 };
 
 /*----------------------------- SLOT STRUCTURES ---------------------------------------*/
@@ -102,8 +102,8 @@ enum {
    TsTxAckDelay	        =  33, //  1000us
    TsShortGT	        =  16, //   500us
    TsSlotDuration	= 328, // 10000us
-   maxTxDataPrepare	=  66, //  2000us (TBC)
-   maxRxAckPrepare	=  66, //  2000us (TBC)
+   maxTxDataPrepare	=  33, //  1000us (TBC)
+   maxRxAckPrepare	=  33, //  1000us (TBC)
    delayTx	        =   0, //     0us (TBC)
    wdRadioTx	        =  33, //  1000us
    wdDataDuration	= 164, //  5000us
@@ -146,7 +146,6 @@ enum {
 
 void    mac_init();
 error_t mac_send(OpenQueueEntry_t* msg);
-void    mac_sendDone(OpenQueueEntry_t* pkt, error_t error);
 bool    mac_debugPrint();
 
 void    ieee154e_startOfFrame();
