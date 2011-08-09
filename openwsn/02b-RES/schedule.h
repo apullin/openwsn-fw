@@ -1,5 +1,5 @@
 /*
- * Manages the TSCH schedule
+ * Manages the IEEE802.15.4e schedule
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011

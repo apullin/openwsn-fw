@@ -33,10 +33,10 @@ void scheduler_init();
 void scheduler_start();
 void scheduler_push_task(int8_t task_id);
 #ifdef OPENWSN_STACK
-void tsch_newSlot();
+void ieee154e_newSlot();
 #endif
 #ifdef OPENWSN_STACK
-void tsch_timerFires();
+void ieee154e_timerFires();
 #endif
 #ifdef ISR_ADC
 void isr_adc();

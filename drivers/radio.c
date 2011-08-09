@@ -151,10 +151,10 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
 void isr_radio() {
    if (isStartOfFrameEvent==TRUE) {
       isStartOfFrameEvent = FALSE;
-      tsch_startOfFrame();
+       ieee154e_startOfFrame();
    } else {
       isStartOfFrameEvent = TRUE;
-      tsch_endOfFrame();
+       ieee154e_endOfFrame();
    }
 }
 

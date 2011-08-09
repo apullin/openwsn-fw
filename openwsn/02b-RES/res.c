@@ -1,5 +1,5 @@
 /*
- * Implementation of the TSCH RES layer
+ * Implementation of the IEEE802.15.4e RES layer
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
@@ -17,16 +17,16 @@
 #include "iphc.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//===================================== variables ==============================
 
-//===================================== prototypes ============================
+//===================================== prototypes =============================
 
-//===================================== public ================================
+//===================================== public =================================
 
 void res_init() {
 }
 
-//===================================== public with upper =====================
+//===================================== public with upper ======================
 
 error_t res_send(OpenQueueEntry_t *msg) {
    msg->owner = COMPONENT_RES;
@@ -34,7 +34,7 @@ error_t res_send(OpenQueueEntry_t *msg) {
    return mac_send(msg);
 }
 
-//===================================== public with lower =====================
+//===================================== public with lower ======================
 
 void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_RES;

@@ -1,14 +1,14 @@
 /*
- * Driver for the TSCH timers.
+ * Driver for the IEEE802.15.4e timers.
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
  *
- * These timers are dedicated to TSCH. TSCH uses TimerA, clocked from the 32kHz
- * crystal, in up mode, with interrupts enabled. The counter resetting
- * corresponds to the slot edge.
+ * These timers are dedicated to IEEE802.15.4e. IEEE802.15.4e uses TimerA,
+ * clocked from the 32kHz crystal, in up mode, with interrupts enabled.
+ * The counter resetting corresponds to the slot edge.
  *
- * TSCH only uses the following registers:
+ * IEEE802.15.4e only uses the following registers:
  * - CCR0 holds the slot duration; it will cause the counter to reset
  * - CCR1 is used in compare mode to time the MAC FSM
  * - CCR2 is used in capture mode to timestamp the arrival of a packet for
@@ -16,7 +16,7 @@
  */
 
 #include "msp430x26x.h"
-#include "tsch_timer.h"
+#include "ieee154e_timer.h"
 #include "IEEE802154e.h"
 
 //=========================== variables ===========================================
@@ -26,9 +26,9 @@
 //=========================== public ==============================================
 
 /**
-\brief Initialize the TSCH timer.
+\brief Initialize the IEEE802.15.4e timer.
 */
-void tsch_timer_init() {
+void ieee154e_timer_init() {
    
    // source ACLK from 32kHz crystal
    BCSCTL3 |= LFXT1S_0;
@@ -60,7 +60,7 @@ Calling this function cancels all running timers
 \param [in] offset The time at which to fire, relative to the current slot start
                    time, in 32-kHz ticks.
 */
-void tsch_timer_schedule(uint16_t offset) {
+void ieee154e_timer_schedule(uint16_t offset) {
    // offset when to fire
    TACCR1   =  offset;
    // enable CCR1 interrupt (this also cancels any pending interrupts)
@@ -72,7 +72,7 @@ void tsch_timer_schedule(uint16_t offset) {
 
 This function has no effect if no timer is running.
 */
-void tsch_timer_cancel() {
+void ieee154e_timer_cancel() {
    TACCR1   =  0;                                // reset CCR1 value (also resets interrupt flag)
    TACCTL1 &= ~CCIE;                             // disable CCR1 interrupt
 }
@@ -92,7 +92,7 @@ is valid.
 \param [out] timestampToWrite Variable in which this function returns the
                               timestamp.
 */
-void tsch_timer_getCapturedTime(timestamp_t* timestampToWrite) {
+void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite) {
    uint8_t overflown;
    overflown = (TACCTL2 & 0x02) >> 1;
  

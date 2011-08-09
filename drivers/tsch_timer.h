@@ -1,12 +1,12 @@
 /*
- * Driver for the TSCH timers.
+ * Driver for the IEEE802.15.4e timers.
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
  */
 
-#ifndef __TSCH_TIMER_H
-#define __TSCH_TIMER_H
+#ifndef __IEEE154E_TIMER_H
+#define __IEEE154E_TIMER_H
 
 #include "openwsn.h"
 
@@ -20,14 +20,9 @@ typedef struct timestamp_t {
 } timestamp_t;
 
 // callable functions
-void tsch_timer_init();
-void tsch_timer_schedule(uint16_t offset);
-void tsch_timer_cancel();
-void tsch_timer_getCapturedTime(timestamp_t* timestampToWrite);
-
-// functions to call when timer fires
-#ifdef OPENWSN_STACK
-void timer_mac_periodic_fired();
-#endif
+void ieee154e_timer_init();
+void ieee154e_timer_schedule(uint16_t offset);
+void ieee154e_timer_cancel();
+void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite);
 
 #endif

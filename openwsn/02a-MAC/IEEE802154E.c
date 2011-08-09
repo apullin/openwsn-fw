@@ -16,7 +16,7 @@
 #include "openserial.h"
 #include "openqueue.h"
 #include "schedule.h"
-#include "tsch_timer.h"
+#include "ieee154e_timer.h"
 #include "packetfunctions.h"
 #include "neighbors.h"
 #include "res.h"
@@ -97,8 +97,8 @@ void mac_init() {
    capturedTime.timestamp    = 0;
    isSync                    = FALSE;
    
-   // initialize (and start) TSCH timer
-   tsch_timer_init();
+   // initialize (and start) IEEE802.15.4e timer
+   ieee154e_timer_init();
 }
 
 // a packet sent from the upper layer is simply stored into the OpenQueue buffer.
@@ -130,12 +130,12 @@ void mac_sendDone(OpenQueueEntry_t* pkt, error_t error) {
 //===================================== events =================================
 
 //new slot event
-void tsch_newSlot() {
+void ieee154e_newSlot() {
    activity_ti1ORri1();
 }
 
 //timer fires event
-void tsch_timerFires() {
+void ieee154e_timerFires() {
    switch (state) {
       case S_TXDATAOFFSET:
          activity_ti2();
@@ -208,7 +208,7 @@ void tsch_timerFires() {
 }
 
 // start of frame event
-void tsch_startOfFrame() {
+void ieee154e_startOfFrame() {
    switch (state) {
       case S_TXDATADELAY:
          activity_ti4();
@@ -229,7 +229,7 @@ void tsch_startOfFrame() {
 }
 
 // end of frame event
-void tsch_endOfFrame() {
+void ieee154e_endOfFrame() {
    switch (state) {
       case S_TXDATA:
          activity_ti5();
@@ -287,13 +287,13 @@ inline void activity_ti1ORri1() {
             // change state
             change_state(S_RXDATAOFFSET);
             // arm rt1
-            tsch_timer_schedule(DURATION_rt1);
+            ieee154e_timer_schedule(DURATION_rt1);
          } else {
             // I will be sending an ADV
             // change state
             change_state(S_TXDATAOFFSET);
             // arm tt1
-            tsch_timer_schedule(DURATION_tt1);
+            ieee154e_timer_schedule(DURATION_tt1);
          }
       case CELLTYPE_TX:
          dataToSend = openqueue_getDataPacket(schedule_getNeighbor(asn));
@@ -302,7 +302,7 @@ inline void activity_ti1ORri1() {
             // change state
             change_state(S_TXDATAOFFSET);
             // arm tt1
-            tsch_timer_schedule(DURATION_tt1);
+            ieee154e_timer_schedule(DURATION_tt1);
          } else {
             // abort
             endSlot();
@@ -313,7 +313,7 @@ inline void activity_ti1ORri1() {
          // change state
          change_state(S_RXDATAOFFSET);
          // arm rt1
-         tsch_timer_schedule(DURATION_rt1);
+         ieee154e_timer_schedule(DURATION_rt1);
          break;
    }
 }
@@ -337,7 +337,7 @@ inline void activity_ti2() {
    radio_txEnable();
 
    // arm tt2
-   tsch_timer_schedule(DURATION_tt2);
+   ieee154e_timer_schedule(DURATION_tt2);
 
    // change state
    change_state(S_TXDATAREADY);
@@ -362,7 +362,7 @@ inline void activity_ti3() {
    radio_txNow();
 
    // arm tt3
-   tsch_timer_schedule(DURATION_tt3);
+   ieee154e_timer_schedule(DURATION_tt3);
 }
 
 inline void activity_tie2() {
@@ -381,13 +381,13 @@ inline void activity_ti4() {
    change_state(S_TXDATA);
 
    // cancel the radio watchdog timer
-   tsch_timer_cancel();
+   ieee154e_timer_cancel();
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
 
    // arm tt4
-   tsch_timer_schedule(DURATION_tt4);
+   ieee154e_timer_schedule(DURATION_tt4);
 }
 
 inline void activity_tie3() {
@@ -408,7 +408,7 @@ inline void activity_ti5() {
    state = S_RXACKOFFSET;
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
 
    // decides whether to listen for an ACK
    if (packetfunctions_isBroadcastMulticast(&dataToSend->l2_nextORpreviousHop)==TRUE) {
@@ -419,7 +419,7 @@ inline void activity_ti5() {
 
    if (listenForAck==TRUE) {
       // arm tt5
-      tsch_timer_schedule(DURATION_tt5);
+      ieee154e_timer_schedule(DURATION_tt5);
    } else {
       // indicate that the packet was sent successfully
       res_sendDone(dataToSend,E_SUCCESS);
@@ -446,7 +446,7 @@ inline void activity_ti6() {
    radio_rxEnable();
 
    // arm tt6
-   tsch_timer_schedule(DURATION_tt6);
+   ieee154e_timer_schedule(DURATION_tt6);
 }
 
 inline void activity_tie4() {
@@ -468,7 +468,7 @@ inline void activity_ti7() {
    radio_rxNow();
 
    // arm tt7
-   tsch_timer_schedule(DURATION_tt7);
+   ieee154e_timer_schedule(DURATION_tt7);
 }
 
 inline void activity_tie5() {
@@ -492,13 +492,13 @@ inline void activity_ti8() {
    change_state(S_TXACK);
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
 
    // cancel tt7
-   tsch_timer_cancel();
+   ieee154e_timer_cancel();
 
    // arm tt8
-   tsch_timer_schedule(DURATION_tt8);
+   ieee154e_timer_schedule(DURATION_tt8);
 }
 
 inline void activity_tie6() {
@@ -513,10 +513,10 @@ inline void activity_ti9() {
    state = S_TXPROC;
 
    // cancel tt8
-   tsch_timer_cancel();
+   ieee154e_timer_cancel();
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
    
    // retrieve the ACK frame
    radio_getReceivedFrame(ackReceived);
@@ -559,7 +559,7 @@ inline void activity_ri2() {
    radio_rxEnable();
 
    // arm rt2
-   tsch_timer_schedule(DURATION_rt2);
+   ieee154e_timer_schedule(DURATION_rt2);
 
    // change state
    change_state(S_RXDATAREADY);
@@ -584,7 +584,7 @@ inline void activity_ri3() {
    radio_rxNow();
 
    // arm rt3
-   tsch_timer_schedule(DURATION_rt3);
+   ieee154e_timer_schedule(DURATION_rt3);
 }
 
 inline void activity_rie2() {
@@ -597,13 +597,13 @@ inline void activity_ri4() {
    change_state(S_RXDATA);
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
 
    // cancel rt3
-   tsch_timer_cancel();
+   ieee154e_timer_cancel();
 
    // arm rt4
-   tsch_timer_schedule(DURATION_rt4);
+   ieee154e_timer_schedule(DURATION_rt4);
 }
 
 inline void activity_rie3() {
@@ -622,10 +622,10 @@ inline void activity_ri5() {
    state = S_TXACKOFFSET;
 
    // cancel rt4
-   tsch_timer_cancel();
+   ieee154e_timer_cancel();
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
 
    // retrieve the ACK frame
    radio_getReceivedFrame(dataReceived);
@@ -646,7 +646,7 @@ inline void activity_ri5() {
    // check if ack requested
    if (ackRequested(dataReceived)==TRUE) {
       // arm rt5
-      tsch_timer_schedule(DURATION_rt5);
+      ieee154e_timer_schedule(DURATION_rt5);
    } else {
       // indicate reception to upper layer
       res_receive(dataReceived);
@@ -690,7 +690,7 @@ inline void activity_ri6() {
    radio_txEnable();
 
    // arm rt6
-   tsch_timer_schedule(DURATION_rt6);
+   ieee154e_timer_schedule(DURATION_rt6);
 
    // change state
    change_state(S_TXACKREADY);
@@ -715,7 +715,7 @@ inline void activity_ri7() {
    radio_txNow();
 
    // arm rt7
-   tsch_timer_schedule(DURATION_rt7);
+   ieee154e_timer_schedule(DURATION_rt7);
 }
 
 inline void activity_rie5() {
@@ -734,13 +734,13 @@ inline void activity_ri8() {
    change_state(S_TXACK);
 
    // cancel rt7
-   tsch_timer_cancel();
+   ieee154e_timer_cancel();
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
 
    // arm rt8
-   tsch_timer_schedule(DURATION_rt8);
+   ieee154e_timer_schedule(DURATION_rt8);
 }
 
 inline void activity_rie6() {
@@ -759,10 +759,10 @@ inline void activity_ri9() {
    state = S_RXPROC;
 
    // cancel rt8
-   tsch_timer_cancel();
+   ieee154e_timer_cancel();
 
    // record the captured time
-   tsch_timer_getCapturedTime(&capturedTime);
+   ieee154e_timer_getCapturedTime(&capturedTime);
 
    // inform upper layer of reception
    res_receive(dataReceived);

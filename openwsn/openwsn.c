@@ -47,7 +47,7 @@
 #include "openqueue.h"
 #include "openserial.h"
 //misc
-#include "tsch_timer.h"
+#include "ieee154e_timer.h"
 #include "timers.h"
 #endif
 
@@ -66,7 +66,7 @@ void openwsn_init() {
    scheduler_init();
 #ifdef OPENWSN_STACK
    timer_init();
-   tsch_timer_init();
+   ieee154e_timer_init();
    // cross-layer
    idmanager_init();
    openqueue_init();
@@ -98,7 +98,7 @@ void openwsn_init() {
    apptcpprint_init();
    appudpchannel_init();
    appudpecho_init();
-   //appudpheli_init(); remove heli application for now since we need TimerA for TSCH
+   //appudpheli_init(); remove heli application for now since we need TimerA for IEEE802.15.4e
    appudpgina_init();
    appudpinject_init();
    appudpleds_init();
