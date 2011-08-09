@@ -36,16 +36,21 @@ void schedule_init() {
    debugPrintSlotOffset                    = 0;
 }
 
-cellType_t schedule_getType(slotOffset_t slotOffset) {
+cellType_t schedule_getType(asn_t asn_param) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
    return cellTable[slotOffset].type;
 }
-channelOffset_t schedule_getChannelOffset(slotOffset_t slotOffset) {
+channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
    return cellTable[slotOffset].channelOffset;
 }
-open_addr_t schedule_getNeighbor(slotOffset_t slotOffset) {
+open_addr_t schedule_getNeighbor(asn_t asn_param) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
    return cellTable[slotOffset].neighbor;
 }
-
 
 void schedule_indicateUse(asn_t asn, bool ack){
    uint16_t slotOffset;

@@ -36,7 +36,7 @@ error_t forwarding_send(OpenQueueEntry_t *msg) {
 
 void forwarding_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_FORWARDING;
-   if (msg->creator==COMPONENT_RADIODRIVER) {//that was a packet I had relayed
+   if (msg->creator==COMPONENT_RADIO) {//that was a packet I had relayed
       openqueue_freePacketBuffer(msg);
    } else {//that was a packet coming from above
       switch(msg->l4_protocol) {

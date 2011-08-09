@@ -16,16 +16,15 @@
 //===================================== define ================================
 
 enum {
-   ID_ISR_RADIO               = 0, // interrupt through IRQ_RF connected to P1.6
-   ID_ISR_RPL                 = 1, // timerB CCR0
-   ID_ISR_TCP_TIMEOUT         = 2, // timerB CCR1
-   ID_ISR_TIMERB2             = 3, // timerB CCR2
-   ID_ISR_TIMERB3             = 4, // timerB CCR3
-   ID_ISR_TIMERB4             = 5, // timerB CCR4
-   ID_ISR_TIMERB5             = 6, // timerB CCR5
-   ID_ISR_TIMERB6             = 7, // timerB CCR6
-   ID_ISR_BUTTON              = 8, // P2.7
-   MAX_NUM_TASKS              = 9,
+   TASKID_RPL           = 0, // schedule by timerB CCR0 interrupt
+   TASKID_TCP_TIMEOUT   = 1, // schedule by timerB CCR1 interrupt
+   TASKID_TIMERB2       = 2, // schedule by timerB CCR2 interrupt
+   TASKID_TIMERB3       = 3, // schedule by timerB CCR3 interrupt
+   TASKID_TIMERB4       = 4, // schedule by timerB CCR4 interrupt
+   TASKID_TIMERB5       = 5, // schedule by timerB CCR5 interrupt
+   TASKID_TIMERB6       = 6, // schedule by timerB CCR6 interrupt
+   TASKID_BUTTON        = 7, // schedule by P2.7 interrupt
+   MAX_NUM_TASKS        = 8,
 };
 
 //===================================== prototypes ============================

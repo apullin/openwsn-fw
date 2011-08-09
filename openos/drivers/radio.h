@@ -11,7 +11,7 @@
 #define RADIO_STATE_STOPPED            0x00
 #define RADIO_STATE_STARTED            0x03
 #define RADIO_STATE_LOADING_PACKET     0x04
-#define RADIO_STATE_SETTING_CHANNEL    0x05
+#define RADIO_STATE_SETTING_FREQUENCY  0x05
 #define RADIO_STATE_READY_TX           0x06
 #define RADIO_STATE_TRANSMITTING       0x07
 #define RADIO_STATE_READY_RX           0x08
@@ -25,12 +25,15 @@
 
 //===================================== prototypes ============================
 
-void  radio_init();                              // configures both MSP and radio chip
-void  radio_txPrepare(OpenQueueEntry_t* packet);
-void  radio_txNow();
-void  radio_rxOn(uint8_t channel);               // set the radio in reception mode
-void  radio_packet_received(OpenQueueEntry_t* packetReceived); // called when a packet is completely received
-void  radio_rfOff();                             // switch radio off
+void radio_init();
+void radio_setFrequency(uint8_t frequency);
+void radio_loadPacket(OpenQueueEntry_t* packet);
+void radio_txEnable();
+void radio_txNow();
+void radio_rxEnable();
+void radio_rxNow();
+void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer);
+void radio_rfOff();
 
-void    isr_radio();
+void isr_radio();
 #endif
