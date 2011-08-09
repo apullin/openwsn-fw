@@ -265,7 +265,7 @@ enum {
    ERR_UNSUPPORTED_TXCOMMAND                     = 26, //unsupported txCommand in received message                 [ReservationP] arg1=txCommand
    ERR_SENDDONE_WHILE_NOT_TODO_WAIT_FOR_SENT     = 27, //SimpleSend.sendDone with todo!=WAIT_FOR_SENT              [ReservationP]
    ERR_UNSUPPORTED_ACK_RESPONSE                  = 28, //unsupported ACK response                                  [ReservationP]
-   ERR_WRONG_STATE_IN_STARTSLOTTASK              = 29, //wrong state in startSlotTask                              [IEEE802154EP]  arg1=state arg2=slotOffset
+   ERR_WRONG_STATE_IN_STARTSLOT                  = 29, //wrong state in startSlot                                  [IEEE802154EP]  arg1=state arg2=slotOffset
    ERR_TURN_OFF_RADIO_FAILED                     = 30, //could not turn off radio                                  [IEEE802154EP]  arg1=slotOffset
    ERR_WRONG_STATE_IN_NEWSLOT                    = 31, //wrong state in newSlot                                    [IEEE802154EP]  arg1=state arg2=slotOffset
    ERR_NO_TIME_TO_PREPARE_TX                     = 32, //no time to prepare TX                                     [IEEE802154EP]  arg1=slotOffset
