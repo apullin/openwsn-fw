@@ -381,9 +381,15 @@ inline void activity_ti3() {
 
    // give the 'go' to transmit
    radio_txNow();
-
+   
    // arm tt3
    ieee154e_timer_schedule(DURATION_tt3);
+   
+   // The AT86RF231 does not generate an interrupt when the radio transmits the
+   // SFD. If we leave this funtion like this, tt3 will expire, triggering tie2.
+   // Instead, we will cheat an mimick a start of frame event by calling
+   // ieee154e_startOfFrame from here
+   ieee154e_startOfFrame();
 }
 
 inline void activity_tie2() {
@@ -433,9 +439,9 @@ inline void activity_ti5() {
 
    // decides whether to listen for an ACK
    if (packetfunctions_isBroadcastMulticast(&dataToSend->l2_nextORpreviousHop)==TRUE) {
-      listenForAck = TRUE;
-   } else {
       listenForAck = FALSE;
+   } else {
+      listenForAck = TRUE;
    }
 
    if (listenForAck==TRUE) {

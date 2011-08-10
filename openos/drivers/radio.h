@@ -7,6 +7,18 @@
 
 //===================================== define ================================
 
+// after you get an interrupt from the radio, read
+// the status register to know what type it is, amoung
+// the following
+#define AT_IRQ_BAT_LOW       0x80 // supply voltage below the programmed threshold
+#define AT_IRQ_TRX_UR        0x40 // frame Buffer access violation
+#define AT_IRQ_AMI           0x20 // address matching
+#define AT_IRQ_CCA_ED_DONE   0x10 // end of a CCA or ED measurement
+#define AT_IRQ_TRX_END       0x08 // completion of a frame transmission/reception
+#define AT_IRQ_RX_START      0x04 // start of a PSDU reception
+#define AT_IRQ_PLL_UNLOCK    0x02 // PLL unlock
+#define AT_IRQ_PLL_LOCK      0x01 // PLL lock
+
 //radio states (at_state)
 #define RADIO_STATE_STOPPED            0x00
 #define RADIO_STATE_STARTED            0x03

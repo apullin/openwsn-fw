@@ -42,7 +42,7 @@ void ieee154e_timer_init() {
    TACCR1   =  0;
    
    // CCR2 in capture mode
-   TACCTL2  =  0;
+   TACCTL2  =  CAP+SCS+CCIS1+CM_3;
    TACCR2   =  0;
    
    //reset couter

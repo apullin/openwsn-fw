@@ -154,11 +154,18 @@ void radio_rfOff() {
 //=========================== interrupt handler ================================
 
 void isr_radio() {
-   if (isStartOfFrameEvent==TRUE) {
-      isStartOfFrameEvent = FALSE;
-       ieee154e_startOfFrame();
-   } else {
-      isStartOfFrameEvent = TRUE;
-       ieee154e_endOfFrame();
+   uint8_t irq_status;
+   // reading IRQ_STATUS causes IRQ_RF (P1.6) to go low
+   irq_status = spi_read_register(RG_IRQ_STATUS);
+   switch (irq_status) {
+      case AT_IRQ_RX_START:
+         ieee154e_startOfFrame();
+         break;
+      case AT_IRQ_TRX_END:
+         ieee154e_endOfFrame();
+         break;
+      default:
+         // print error poipoipoi
+         break;
    }
 }
