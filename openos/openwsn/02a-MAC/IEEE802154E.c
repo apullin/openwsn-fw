@@ -264,6 +264,7 @@ void ieee154e_endOfFrame() {
 
 inline void activity_ti1ORri1() {
    uint8_t cellType;
+   open_addr_t neighbor;
    
    // increment ASN (do this first so debug pins are in sync)
    asn++;
@@ -311,7 +312,8 @@ inline void activity_ti1ORri1() {
          }
          break;
       case CELLTYPE_TX:
-         dataToSend = openqueue_getDataPacket(schedule_getNeighbor(asn));
+         schedule_getNeighbor(asn,&neighbor);
+         dataToSend = openqueue_getDataPacket(&neighbor);
          if (dataToSend!=NULL) {
             // I have a packet to send
             // change state

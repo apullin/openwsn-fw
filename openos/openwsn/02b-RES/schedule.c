@@ -31,7 +31,18 @@ void schedule_init() {
    cellTable[0].type                       = CELLTYPE_ADV;
    //slot 1 is receive slot
    cellTable[1].type                       = CELLTYPE_RX;
-   //slot 2 is receive over serial
+   //slot 2 is transmit slot to neighbor 0xffffffffffffffff
+   cellTable[2].type                       = CELLTYPE_TX;
+   cellTable[2].neighbor.type              = ADDR_64B;
+   cellTable[2].neighbor.addr_64b[0]       = 0xff;
+   cellTable[2].neighbor.addr_64b[1]       = 0xff;
+   cellTable[2].neighbor.addr_64b[2]       = 0xff;
+   cellTable[2].neighbor.addr_64b[3]       = 0xff;
+   cellTable[2].neighbor.addr_64b[4]       = 0xff;
+   cellTable[2].neighbor.addr_64b[5]       = 0xff;
+   cellTable[2].neighbor.addr_64b[6]       = 0xff;
+   cellTable[2].neighbor.addr_64b[7]       = 0xff;
+   //slot 3 is receive over serial
    //cellTable[2].type                       = CELLTYPE_RXSERIAL;
    
    // for debug print
@@ -48,10 +59,10 @@ channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
    slotOffset = asn_param%SCHEDULELENGTH;
    return cellTable[slotOffset].channelOffset;
 }
-open_addr_t schedule_getNeighbor(asn_t asn_param) {
+void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
-   return cellTable[slotOffset].neighbor;
+   memcpy(addrToWrite,&cellTable[slotOffset].neighbor,sizeof(open_addr_t));
 }
 
 void schedule_indicateUse(asn_t asn, bool ack){

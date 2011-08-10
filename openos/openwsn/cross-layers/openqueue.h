@@ -19,7 +19,7 @@ typedef struct debugOpenQueueEntry_t {
 void               openqueue_init();
 OpenQueueEntry_t*  openqueue_getFreePacketBuffer();
 error_t            openqueue_freePacketBuffer(OpenQueueEntry_t* pkt);
-OpenQueueEntry_t*  openqueue_getDataPacket(open_addr_t toNeighbor);
+OpenQueueEntry_t*  openqueue_getDataPacket(open_addr_t* toNeighbor);
 OpenQueueEntry_t*  openqueue_getAdvPacket();
 error_t            openqueue_removeAllPacketsToNeighbor(open_addr_t* neighbor);
 void               openqueue_removeAllOwnedBy(uint8_t owner);

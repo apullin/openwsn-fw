@@ -45,11 +45,11 @@ error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
    return E_FAIL;
 }
 
-OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t toNeighbor) {
+OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t* toNeighbor) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (queue[i].owner==COMPONENT_MAC &&
-         packetfunctions_sameAddress(&toNeighbor,&queue[i].l2_nextORpreviousHop)) {
+         packetfunctions_sameAddress(toNeighbor,&queue[i].l2_nextORpreviousHop)) {
          return &queue[i];
       }
    }
