@@ -29,7 +29,7 @@ uint16_t res_periodMaintenance;
 
 void res_init() {
    res_periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
-   //timer_startPeriodic(TIMER_RES,res_periodMaintenance);
+   timer_startPeriodic(TIMER_RES,res_periodMaintenance);
 }
 
 //===================================== public with upper ======================
@@ -44,15 +44,17 @@ error_t res_send(OpenQueueEntry_t *msg) {
 
 void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_RES;
-   iphc_sendDone(msg,error);
+   if (msg->creator == COMPONENT_RES) {
+      // discard (ADV) packets this component has created
+      openqueue_freePacketBuffer(msg);
+   } else {
+      // send the rest up the stack
+      iphc_sendDone(msg,error);
+   }
 }
 
 void res_receive(OpenQueueEntry_t* msg) {
    msg->owner = COMPONENT_RES;
-   // discard (ADV) packet this component has created
-   if (msg->creator == COMPONENT_RES) {
-      openqueue_freePacketBuffer(msg);
-   }
    // send the rest up the stack
    switch (msg->l2_frameType) {
       case IEEE154_TYPE_DATA:
