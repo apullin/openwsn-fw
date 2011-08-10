@@ -29,8 +29,10 @@ void schedule_init() {
    }
    //slot 0 is advertisement slot
    cellTable[0].type                       = CELLTYPE_ADV;
+   //slot 1 is receive slot
+   cellTable[1].type                       = CELLTYPE_RX;
    //slot 2 is receive over serial
-   cellTable[2].type                       = CELLTYPE_RXSERIAL;
+   //cellTable[2].type                       = CELLTYPE_RXSERIAL;
    
    // for debug print
    debugPrintSlotOffset                    = 0;

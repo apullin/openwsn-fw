@@ -151,7 +151,7 @@ void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive) {
       UCA0TXBUF     = *spi_tx_buffer;
       spi_tx_buffer++;
       // busy wait on the interrupt flag
-      while (~(IFG2 & UCA0RXIFG));
+      while ((IFG2 & UCA0RXIFG)==0);
       // clear the interrupt flag
       IFG2 &= ~UCA0RXIFG;
       // save the byte just received in the RX buffer

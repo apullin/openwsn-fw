@@ -263,6 +263,8 @@ void ieee154e_endOfFrame() {
 //===================================== TX =====================================
 
 inline void activity_ti1ORri1() {
+   uint8_t cellType;
+   
    // increment ASN (do this first so debug pins are in sync)
    asn++;
    
@@ -285,7 +287,8 @@ inline void activity_ti1ORri1() {
    }
 
    // check the schedule to see what type of slot this is
-   switch (schedule_getType(asn)) {
+   cellType = schedule_getType(asn);
+   switch (cellType) {
       case CELLTYPE_OFF:
          // I have nothing to do
          // abort
@@ -331,7 +334,7 @@ inline void activity_ti1ORri1() {
          // log the error
          openserial_printError(COMPONENT_MAC,
                                ERR_WRONG_CELLTYPE,
-                               ieee154e_state,
+                               cellType,
                                asn%SCHEDULELENGTH);
          // abort
          endSlot();
