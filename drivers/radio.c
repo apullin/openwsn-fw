@@ -1,19 +1,30 @@
+/*
+ * Radio driver for the Atmel AT86RF231 IEEE802.15.4-compliant radio
+ *
+ * Authors:
+ * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+ */
+
 #include "gina_config.h"
 #include "radio.h"
 #include "packetfunctions.h"
 #include "openqueue.h"
 #include "IEEE802154E.h"
+#include "spi.h"
 
-//===================================== variables ==============================
+//=========================== variables =======================================
 
-uint8_t radio_state; // this radio state is only used for debug
+uint8_t radio_state; // the current state of the radio (only used for debug)
 
-//=========================== prototypes =======================================
+//=========================== private prototypes ==============================
 
-//=========================== initialize the radio =============================
+//=========================== interface =======================================
 
 /**
-\brief Initialize the radio.
+\brief This function initializes this module.
+
+Call this function once before any other function in this module, possibly
+during boot-up.
 */
 void radio_init() {
    // change state
@@ -38,7 +49,7 @@ void radio_init() {
    spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);  // turn radio off
    spi_write_register(RG_IRQ_MASK, 0x0C);                // tell radio to fire interrupt on TRX_END and RX_START
    spi_read_register(RG_IRQ_STATUS);                     // deassert the interrupt pin (P1.6) in case is high
-   spi_write_register(RG_ANT_DIV, USE_CHIP_ANTENNA);     // use chip antenna
+   spi_write_register(RG_ANT_DIV, RADIO_CHIP_ANTENNA);// use chip antenna
 #define RG_TRX_CTRL_1 0x04
    spi_write_register(RG_TRX_CTRL_1, 0x20);              // have the radio calculate CRC   
 
@@ -51,6 +62,16 @@ void radio_init() {
 
 //=========================== sending a packet ================================
 
+/**
+\brief Set the radio frequency.
+
+This function will write the frequency register in the radio over
+SPI.
+
+\param [in] frequency The frequency to set the radio at, an
+                      integer between 11 (2.405GHz) and
+                      26 (2.480GHz).
+*/
 void radio_setFrequency(uint8_t frequency) {
    // change state
    radio_state = RADIOSTATE_SETTING_FREQUENCY;
@@ -67,6 +88,11 @@ void radio_setFrequency(uint8_t frequency) {
    radio_state = RADIOSTATE_FREQUENCY_SET;
 }
 
+/**
+\brief Load a packet in the radio's TX buffer.
+
+\param [in] packet The packet to write into the buffer.
+*/
 void radio_loadPacket(OpenQueueEntry_t* packet) {
    // change state
    radio_state = RADIOSTATE_LOADING_PACKET;
@@ -88,6 +114,12 @@ void radio_loadPacket(OpenQueueEntry_t* packet) {
    radio_state = RADIOSTATE_PACKET_LOADED;
 }
 
+/**
+\brief Enable the radio in TX mode.
+
+This function turns everything on in the radio so it can
+transmit, but does not actually transmit the bytes.
+*/
 void radio_txEnable() {
    // change state
    radio_state = RADIOSTATE_ENABLING_TX;
@@ -103,6 +135,11 @@ void radio_txEnable() {
    radio_state = RADIOSTATE_TX_ENABLED;
 }
 
+/**
+\brief Start transmitting.
+
+Tells the radio to transmit the packet immediately.
+*/
 void radio_txNow() {
    // change state
    radio_state = RADIOSTATE_TRANSMITTING;
@@ -114,6 +151,12 @@ void radio_txNow() {
 
 //=========================== receiving a packet ==============================
 
+/**
+\brief Enable the radio in RX mode.
+
+This function turns everything on in the radio so it can
+receive, but does not actually receive the bytes.
+*/
 void radio_rxEnable() {
    // change state
    radio_state = RADIOSTATE_ENABLING_RX;
@@ -134,11 +177,26 @@ void radio_rxEnable() {
    radio_state = RADIOSTATE_LISTENING;
 }
 
+/**
+\brief Start receoving.
+
+Tells the radio to starte listening for a packet immediately.
+*/
 void radio_rxNow() {
    // this function doesn't do anything since this radio is already
    // listening after radio_rxEnable() is called.
 }
 
+/**
+\brief Retrieves the received frame from the radio's RX buffer.
+
+Copies the bytes of the packet in the buffer provided as an argument.
+If, for some reason, the length byte of the received packet indicates
+a length >127 (which is impossible), only the first two bytes will
+be received.
+
+\param [out] writeToBuffer The buffer to which to write the bytes.
+*/
 void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
    uint8_t temp_crc_reg_value;
    
@@ -165,6 +223,13 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
 
 //=========================== turning radio off ===============================
 
+/**
+\brief Turn the radio off.
+
+This does not turn the radio entirely off, i.e. it is still listening for
+commands over SPI. It does, however, make sure the power hungry components
+such as the PLL are switched off.
+*/
 void radio_rfOff() {
    // change state
    radio_state = RADIOSTATE_TURNING_OFF;
@@ -182,6 +247,14 @@ void radio_rfOff() {
 
 //=========================== interrupt handler ================================
 
+/**
+\brief Radio interrupt handler function.
+
+this function is called by the scheduler when the radio pulses
+the IRQ_RF pin. This function will check what caused the interrupt
+by checking the contents of the RG_IRQ_STATUS register off the radio.
+Reading this register also lowers the IRQ_RF pin.
+*/
 void isr_radio() {
    uint8_t irq_status;
    // reading IRQ_STATUS causes IRQ_RF (P1.6) to go low
@@ -189,13 +262,13 @@ void isr_radio() {
    switch (irq_status) {
       case AT_IRQ_RX_START:
          // change state
-         radio_state = RADIO_ENABLING_RECEIVING;
+         radio_state = RADIOSTATE_RECEIVING;
          // call MAC layer
          ieee154e_startOfFrame();
          break;
       case AT_IRQ_TRX_END:
          // change state
-         radio_state = RADIO_ENABLING_TXRX_DONE;
+         radio_state = RADIOSTATE_TXRX_DONE;
          // call MAC layer
          ieee154e_endOfFrame();
          break;
