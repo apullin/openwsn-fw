@@ -63,10 +63,12 @@ void scheduler_start() {
 #ifdef OPENWSN_STACK
             timer_tcp_timeout_fired();
 #endif
-         } else if (task_list[TASKID_TIMERB3]>0) {
-            task_list[TASKID_TIMERB3]--;
+         } else if (task_list[TASKID_UDP_TIMER]>0) {
+            task_list[TASKID_UDP_TIMER]--;
             num_tasks--;
-            // timer available, put your function here
+#ifdef OPENWSN_STACK
+            appudptimer_trigger();
+#endif
          } else if (task_list[TASKID_TIMERB4]>0) {
             task_list[TASKID_TIMERB4]--;
             num_tasks--;
@@ -169,7 +171,7 @@ __interrupt void TIMERB1through6_ISR (void) {
             TBCCTL3 = 0;                         // stop the timer
             TBCCR3  = 0;
          }
-         scheduler_push_task(TASKID_TIMERB3);    // post the corresponding task
+         scheduler_push_task(TASKID_UDP_TIMER);  // post the corresponding task
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0008: // timerB CCR4

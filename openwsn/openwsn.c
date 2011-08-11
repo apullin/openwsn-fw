@@ -13,6 +13,7 @@
 #include "appudpsensor.h"
 #include "appudpprint.h"
 #include "appudpleds.h"
+#include "appudptimer.h"
 #include "appudpinject.h"
 #include "appudpgina.h"
 #include "appudpheli.h"
@@ -101,6 +102,7 @@ void openwsn_init() {
    //appudpheli_init(); remove heli application for now since we need TimerA for IEEE802.15.4e
    appudpgina_init();
    appudpinject_init();
+   appudptimer_init();
    appudpleds_init();
    appudpprint_init();
    appudpsensor_init();

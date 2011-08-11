@@ -42,8 +42,17 @@ void schedule_init() {
    cellTable[2].neighbor.addr_64b[5]       = 0xff;
    cellTable[2].neighbor.addr_64b[6]       = 0xff;
    cellTable[2].neighbor.addr_64b[7]       = 0xff;
-   //slot 3 is receive over serial
-   //cellTable[2].type                       = CELLTYPE_RXSERIAL;
+   //slot 3 is transmit slot to neighbor 0x14159209022b0087
+   cellTable[3].type                       = CELLTYPE_TX;
+   cellTable[3].neighbor.type              = ADDR_64B;
+   cellTable[3].neighbor.addr_64b[0]       = 0x14;
+   cellTable[3].neighbor.addr_64b[1]       = 0x15;
+   cellTable[3].neighbor.addr_64b[2]       = 0x92;
+   cellTable[3].neighbor.addr_64b[3]       = 0x09;
+   cellTable[3].neighbor.addr_64b[4]       = 0x02;
+   cellTable[3].neighbor.addr_64b[5]       = 0x2b;
+   cellTable[3].neighbor.addr_64b[6]       = 0x00;
+   cellTable[3].neighbor.addr_64b[7]       = 0x87;
    
    // for debug print
    debugPrintSlotOffset                    = 0;
