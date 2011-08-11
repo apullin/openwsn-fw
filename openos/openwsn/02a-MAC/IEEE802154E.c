@@ -36,8 +36,8 @@ bool               isSync;
 //===================================== prototypes =============================
 
 #include "IEEE802154_common.c"
-//Synchronizing
-void activity_synchronize();
+// SYNCHRONIZING
+void activity_synchronize_newSlot();
 void activity_synchronize_startOfFrame();
 void activity_synchronize_endOfFrame();
 // TX
@@ -132,10 +132,10 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 
 //new slot event
 void ieee154e_newSlot() {
-   if(isSync==TRUE){
+   if (isSync==FALSE) {
+      activity_synchronize_newSlot();
+   } else {
       activity_ti1ORri1();
-   }else{
-      activity_synchronize();  
    }
 }
 
@@ -216,9 +216,9 @@ void ieee154e_timerFires() {
 
 // start of frame event
 void ieee154e_startOfFrame() {
-   if(isSync==FALSE){
+   if (isSync==FALSE) {
       activity_synchronize_startOfFrame();
-   }else{
+   } else {
       switch (ieee154e_state) {
          case S_TXDATADELAY:
             activity_ti4();
@@ -248,9 +248,9 @@ void ieee154e_startOfFrame() {
 
 // end of frame event
 void ieee154e_endOfFrame() {
-   if(isSync==FALSE){
+   if (isSync==FALSE) {
       activity_synchronize_endOfFrame();
-   }else{
+   } else {
       switch (ieee154e_state) {
          case S_TXDATA:
             activity_ti5();
@@ -276,24 +276,60 @@ void ieee154e_endOfFrame() {
       }
    }
 }
-//===================================== Synchronizing ==========================
-inline void activity_synchronize(){
+//===================================== SYNCHRONIZING ==========================
+
+inline void activity_synchronize_newSlot() {
+   // clear the timer overflow flag
    ieee15e_timer_clear_capture_overflow();
-   if(ieee154e_state != S_SYNCHRONIZING){
+   
+   // if this is the first time I call this function while not synchronized,
+   // switch on the radio in Rx mode
+   if (ieee154e_state!=S_SYNCHRONIZING) {
+      // change state
+      change_state(S_SYNCHRONIZING);
+      
+      // turn off the radio (in case it wasn't yet)
       radio_rfOff();
-      radio_setFrequency(26);
+      
+      // configure the radio to listen to the default synchronizing channel
+      radio_setFrequency(SYNCHRONIZING_CHANNEL);
+      
+      // switch on the radio in Rx mode.
       radio_rxEnable();
       radio_rxNow();
-      ieee154e_state = S_SYNCHRONIZING;
    }
 }
 
-inline void activity_synchronize_startOfFrame(){
+inline void activity_synchronize_startOfFrame() {
+   // remember the last capture time, i.e. the
+   // time the SFD was received, we'll use it when the
+   // packet is fully received
    ieee154e_timer_getCapturedTime(&capturedTime);
 }
 
-inline void activity_synchronize_endOfFrame(){
+
+inline void activity_synchronize_endOfFrame() {
    __no_operation();
+   // retrieve the packet from the radio's Rx buffer
+   radio_getReceivedFrame();
+   
+   // parse the packet to decide whether it's an ADV we like
+   // TODO
+   
+   // we can only synchronize if the captured time is valid
+   if (capturedTime->valid = TRUE) {
+      // synchronize the slots to the sender's
+      // TODO
+      
+      // declare yourselve as synchronized
+      isSync = TRUE;
+      
+      // turn radio off
+      radio_rfOff();
+      
+      // change state
+      change_state(S_SLEEP);
+   }
 }
 
 //===================================== TX =====================================

@@ -22,7 +22,11 @@
 //radio states (at_state)
 #define RADIO_STATE_STOPPED            0x00
 #define RADIO_STATE_STARTED            0x03
+
 #define RADIO_STATE_LOADING_PACKET     0x04
+#define RADIO_STATE_PACKET_LOADED      0x04
+
+
 #define RADIO_STATE_SETTING_FREQUENCY  0x05
 #define RADIO_STATE_READY_TX           0x06
 #define RADIO_STATE_TRANSMITTING       0x07

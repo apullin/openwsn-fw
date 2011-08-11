@@ -3,6 +3,9 @@
 
 #include "openwsn.h"
 
+
+#define SYNCHRONIZING_CHANNEL 26
+
 /*----------------------------- IEEE802.15.4E ACK ---------------------------------------*/
 
 typedef struct IEEE802154E_ACK_ht {
@@ -143,6 +146,8 @@ enum {
                                             //will add EXTRA_WAIT_TIME later if receiving
    EXTRA_WAIT_TIME       =    32*5, //1 ms    //this is used to add 1ms to the receiver for overlap
 };
+
+/*----------------------------- interface ------------------------------------*/
 
 void    mac_init();
 error_t mac_send(OpenQueueEntry_t* msg);
