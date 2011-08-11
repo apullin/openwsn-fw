@@ -99,7 +99,7 @@ error_t fowarding_send_internal(OpenQueueEntry_t *msg) {
 }
 
 void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
-   uint8_t i;
+/*   uint8_t i;
    open_addr_t temp_prefix64btoWrite;
    if (packetfunctions_isBroadcastMulticast(destination128b)) {
       addressToWrite64b->type = ADDR_64B;
@@ -110,5 +110,16 @@ void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
       packetfunctions_ip128bToMac64b(destination128b,&temp_prefix64btoWrite,addressToWrite64b);
    } else {
       neighbors_getPreferredParent(addressToWrite64b,ADDR_64B); //destination is remote
-   }
+   }*/
+   //poipoipoi
+   addressToWrite64b->type = ADDR_64B;
+   addressToWrite64b->addr_64b[0] = 0x14;
+   addressToWrite64b->addr_64b[1] = 0x15;
+   addressToWrite64b->addr_64b[2] = 0x92;
+   addressToWrite64b->addr_64b[3] = 0x09;
+   addressToWrite64b->addr_64b[4] = 0x02;
+   addressToWrite64b->addr_64b[5] = 0x2b;
+   addressToWrite64b->addr_64b[6] = 0x00;
+   addressToWrite64b->addr_64b[7] = 0x87;   
+   
 }

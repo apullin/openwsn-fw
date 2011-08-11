@@ -266,6 +266,9 @@ inline void activity_ti1ORri1() {
    uint8_t cellType;
    open_addr_t neighbor;
    
+   //stop outputting serial data
+   openserial_stop();
+   
    // increment ASN (do this first so debug pins are in sync)
    asn++;
    
@@ -294,6 +297,8 @@ inline void activity_ti1ORri1() {
          // I have nothing to do
          // abort
          endSlot();
+         //start outputing serial
+         openserial_startOutput();
          break;
       case CELLTYPE_ADV:
          dataToSend = openqueue_getAdvPacket();

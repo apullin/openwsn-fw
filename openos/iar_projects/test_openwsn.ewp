@@ -2019,6 +2019,9 @@
         <name>$PROJ_DIR$\..\openwsn\07-App\appudpsensor.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\openwsn\07-App\appudptimer.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\openwsn\07-App\ohlone_webpages.c</name>
       </file>
     </group>

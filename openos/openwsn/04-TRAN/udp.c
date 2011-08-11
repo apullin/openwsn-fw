@@ -18,6 +18,7 @@
 #include "appudpgina.h"
 #include "appudpheli.h"
 #include "appudpinject.h"
+#include "appudptimer.h"
 #include "appudpleds.h"
 #include "appudpprint.h"
 #include "appudpsensor.h"
@@ -67,6 +68,9 @@ void udp_sendDone(OpenQueueEntry_t* msg, error_t error) {
       case WKP_UDP_INJECT:
          appudpinject_sendDone(msg,error);
          break;
+      case WKP_UDP_TIMER:
+         appudptimer_sendDone(msg,error);
+         break;
       case WKP_UDP_DISCARD:
          appudpprint_sendDone(msg,error);
          break;
@@ -104,6 +108,9 @@ void udp_receive(OpenQueueEntry_t* msg) {
          break;
       case WKP_UDP_INJECT:
          appudpinject_receive(msg);
+         break;
+      case WKP_UDP_TIMER:
+         appudptimer_receive(msg);
          break;
       case WKP_UDP_DISCARD:
          appudpprint_receive(msg);
