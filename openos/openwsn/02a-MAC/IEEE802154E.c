@@ -21,19 +21,19 @@
 #include "neighbors.h"
 #include "res.h"
 
-//===================================== variables ==============================
+//===================================== variables =============================
 
-asn_t              asn;
-uint8_t            ieee154e_state;
-uint8_t            dsn;
-OpenQueueEntry_t*  dataToSend;
-OpenQueueEntry_t*  dataReceived;
-OpenQueueEntry_t*  ackToSend;
-OpenQueueEntry_t*  ackReceived;
-timestamp_t        capturedTime;
-bool               isSync;
+asn_t              asn;                // current absolute slot number
+uint8_t            ieee154e_state;     // state of the FSM
+uint8_t            dsn;                // data sequence number
+timestamp_t        capturedTime;       // last captures time
+bool               isSync;             // TRUE iff mote synchronized to network
+OpenQueueEntry_t*  dataToSend;         // pointer to the data to send
+OpenQueueEntry_t*  dataReceived;       // pointer to the data received
+OpenQueueEntry_t*  ackToSend;          // pointer to the ack to send
+OpenQueueEntry_t*  ackReceived;        // pointer to the ack received
 
-//===================================== prototypes =============================
+//===================================== prototypes ============================
 
 #include "IEEE802154_common.c"
 // SYNCHRONIZING
@@ -83,6 +83,12 @@ bool    mac_debugPrint();
 
 //===================================== public from upper layer ===============
 
+/**
+\brief This function initializes this module.
+
+Call this function once before any other function in this module, possibly
+during boot-up.
+*/
 void mac_init() {   
    // initialize debug pins
    DEBUG_PIN_FRAME_INIT();
@@ -105,7 +111,16 @@ void mac_init() {
    ieee154e_timer_init();
 }
 
-// a packet sent from the upper layer is simply stored into the OpenQueue buffer.
+/**
+\brief Function called by the upper layer when it wants to send a packet
+
+This function adds a IEEE802.15.4 header to the packet and leaves it the 
+OpenQueue buffer, waiting to be transmitted.
+
+\param [in] msg The packet to the transmitted
+
+\returns E_SUCCESS iff successful.
+*/
 error_t mac_send(OpenQueueEntry_t* msg) {
    msg->owner = COMPONENT_MAC;
    if (packetfunctions_isBroadcastMulticast(&(msg->l2_nextORpreviousHop))==TRUE) {
@@ -130,7 +145,11 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 
 //===================================== events =================================
 
-//new slot event
+/**
+\brief Indicates a new slot has just started.
+
+This function executes in ISR mode, when the new slot timer fires.
+*/
 void ieee154e_newSlot() {
    if (isSync==FALSE) {
       activity_synchronize_newSlot();
@@ -139,7 +158,11 @@ void ieee154e_newSlot() {
    }
 }
 
-//timer fires event
+/**
+\brief Indicates the FSM timer has fired.
+
+This function executes in ISR mode, when the FSM timer fires.
+*/
 void ieee154e_timerFires() {
    switch (ieee154e_state) {
       case S_TXDATAOFFSET:
@@ -214,7 +237,11 @@ void ieee154e_timerFires() {
    }
 }
 
-// start of frame event
+/**
+\brief Indicates the radio just received the first byte of a packet.
+
+This function executes in ISR mode.
+*/
 void ieee154e_startOfFrame() {
    if (isSync==FALSE) {
       activity_synchronize_startOfFrame();
@@ -246,7 +273,11 @@ void ieee154e_startOfFrame() {
    
 }
 
-// end of frame event
+/**
+\brief Indicates the radio just received the last byte of a packet.
+
+This function executes in ISR mode.
+*/
 void ieee154e_endOfFrame() {
    if (isSync==FALSE) {
       activity_synchronize_endOfFrame();
@@ -276,7 +307,8 @@ void ieee154e_endOfFrame() {
       }
    }
 }
-//===================================== SYNCHRONIZING ==========================
+
+//===================================== SYNCHRONIZING =========================
 
 inline void activity_synchronize_newSlot() {
    // clear the timer overflow flag
@@ -307,7 +339,6 @@ inline void activity_synchronize_startOfFrame() {
    ieee154e_timer_getCapturedTime(&capturedTime);
 }
 
-
 inline void activity_synchronize_endOfFrame() {
    __no_operation();
    // retrieve the packet from the radio's Rx buffer
@@ -332,7 +363,7 @@ inline void activity_synchronize_endOfFrame() {
    }
 }
 
-//===================================== TX =====================================
+//===================================== TX ====================================
 
 inline void activity_ti1ORri1() {
    uint8_t cellType;
@@ -650,7 +681,7 @@ inline void activity_ti9() {
    endSlot();
 }
 
-//===================================== TX =====================================
+//===================================== RX ====================================
 
 inline void activity_ri2() {
    uint8_t frequency;
@@ -883,14 +914,16 @@ inline void activity_ri9() {
    endSlot();
 }
 
+//===================================== helper functions ======================
+
 /**
-\brief This function calculates the frequency to transmit on based on the 
+\brief Calculates the frequency to transmit on, based on the 
 absolute slot number and the channel offset of the requested slot.
 
 \param [in] asn Absolute Slot Number
-\param [channelOffset] channel offset for the current slot
+\param [in] channelOffset channel offset for the current slot
 
-\returns The calculated frequency channel, between 11 and 26.
+\returns The calculated frequency channel, an integer between 11 and 26.
 */
 inline uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset) {
    //return 11+(asn+channelOffset)%16;
@@ -933,11 +966,24 @@ bool ackRequested(OpenQueueEntry_t* frame) {
    return TRUE;
 }
 
+/**
+\brief Turns an newly reserved OpenQueueEntry_t in an ACK packet.
+
+\param [out] frame The frame to turn into an ACK.
+*/
 void createAck(OpenQueueEntry_t* frame) {
    // TODO: implement
    return;
 }
 
+/**
+\brief Changes the state of the IEEE802.15.4e FSM.
+
+Besides simply updating the ieee154e_state global variable,
+this function toggles the FSM debug pin.
+
+\param [in] newstate The state the IEEE802.15.4e FSM is now in.
+*/
 void change_state(uint8_t newstate) {
    // update the state
    ieee154e_state = newstate;
@@ -976,6 +1022,18 @@ void change_state(uint8_t newstate) {
    }
 }
 
+/**
+\brief Housekeeping tasks to do at the end of a slot.
+
+This functions is called once in each slot, when there is nothing more
+to do. This might be when an error occured, or when everything went well.
+This function resets the state of the FSM so it is ready for the next slot.
+
+Note that by the time this function is called, any received packet should already
+have been sent to the upper layer. Similarly, in a Tx slot, the sendDone
+function should already have been done. If this is not the case, this function
+will do that for you, but assume that something went wrong.
+*/
 void endSlot() {
    // turn off the radio
    radio_rfOff();
@@ -1002,8 +1060,9 @@ void endSlot() {
 
    // clean up dataReceived
    if (dataReceived!=NULL) {
-      // assume something went wrong. If everything went well, dataReceived would have been set to NULL in ri9.
-      // indicate  "received packet" to upper layer; we don't want to loose packets
+      // assume something went wrong. If everything went well, dataReceived
+      // would have been set to NULL in ri9.
+      // indicate  "received packet" to upper layer since we don't want to loose packets
       res_receive(dataReceived);
       // reset local variable
       dataReceived = NULL;
