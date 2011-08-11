@@ -36,6 +36,10 @@ bool               isSync;
 //===================================== prototypes =============================
 
 #include "IEEE802154_common.c"
+//Synchronizing
+void activity_synchronize();
+void activity_synchronize_startOfFrame();
+void activity_synchronize_endOfFrame();
 // TX
 void activity_ti1ORri1();
 void activity_ti2();
@@ -128,7 +132,11 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 
 //new slot event
 void ieee154e_newSlot() {
-   activity_ti1ORri1();
+   if(isSync==TRUE){
+      activity_ti1ORri1();
+   }else{
+      activity_synchronize();  
+   }
 }
 
 //timer fires event
@@ -208,56 +216,84 @@ void ieee154e_timerFires() {
 
 // start of frame event
 void ieee154e_startOfFrame() {
-   switch (ieee154e_state) {
-      case S_TXDATADELAY:
-         activity_ti4();
-         break;
-      case S_RXACKLISTEN:
-         activity_ti8();
-         break;
-      case S_RXDATALISTEN:
-         activity_ri4();
-         break;
-      case S_TXACKDELAY:
-         activity_ri8();
-         break;
-      default:
-         // log the error
-         openserial_printError(COMPONENT_MAC,
-                               ERR_WRONG_STATE_IN_STARTOFFRAME,
-                               ieee154e_state,
-                               asn%SCHEDULELENGTH);
-         // abort
-         endSlot();
-         break;
+   if(isSync==FALSE){
+      activity_synchronize_startOfFrame();
+   }else{
+      switch (ieee154e_state) {
+         case S_TXDATADELAY:
+            activity_ti4();
+            break;
+         case S_RXACKLISTEN:
+            activity_ti8();
+            break;
+         case S_RXDATALISTEN:
+            activity_ri4();
+            break;
+         case S_TXACKDELAY:
+            activity_ri8();
+            break;
+         default:
+            // log the error
+            openserial_printError(COMPONENT_MAC,
+                                  ERR_WRONG_STATE_IN_STARTOFFRAME,
+                                  ieee154e_state,
+                                  asn%SCHEDULELENGTH);
+            // abort
+            endSlot();
+            break;
+      }
    }
+   
 }
 
 // end of frame event
 void ieee154e_endOfFrame() {
-   switch (ieee154e_state) {
-      case S_TXDATA:
-         activity_ti5();
-         break;
-      case S_RXACK:
-         activity_ti9();
-         break;
-      case S_RXDATA:
-         activity_ri5();
-         break;
-      case S_TXACK:
-         activity_ri9();
-         break;
-      default:
-         // log the error
-         openserial_printError(COMPONENT_MAC,
-                               ERR_WRONG_STATE_IN_ENDOFFRAME,
-                               ieee154e_state,
-                               asn%SCHEDULELENGTH);
-         // abort
-         endSlot();
-         break;
+   if(isSync==FALSE){
+      activity_synchronize_endOfFrame();
+   }else{
+      switch (ieee154e_state) {
+         case S_TXDATA:
+            activity_ti5();
+            break;
+         case S_RXACK:
+            activity_ti9();
+            break;
+         case S_RXDATA:
+            activity_ri5();
+            break;
+         case S_TXACK:
+            activity_ri9();
+            break;
+         default:
+            // log the error
+            openserial_printError(COMPONENT_MAC,
+                                  ERR_WRONG_STATE_IN_ENDOFFRAME,
+                                  ieee154e_state,
+                                  asn%SCHEDULELENGTH);
+            // abort
+            endSlot();
+            break;
+      }
    }
+}
+//===================================== Synchronizing ==========================
+inline void activity_synchronize(){
+   ieee15e_timer_clear_capture_overflow();
+   if(ieee154e_state != S_SYNCHRONIZING){
+      radio_rfOff();
+      radio_setFrequency(26);
+      radio_rxEnable();
+      radio_rxNow();
+      ieee154e_state = S_SYNCHRONIZING;
+   }
+}
+
+inline void activity_synchronize_startOfFrame(){
+   ieee154e_timer_getCapturedTime(&capturedTime);
+}
+
+inline void activity_synchronize_endOfFrame(){
+   __no_operation();
 }
 
 //===================================== TX =====================================

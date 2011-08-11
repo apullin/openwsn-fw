@@ -107,3 +107,7 @@ void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite) {
    timestampToWrite->timestamp = TACCR2;
 }
 
+void ieee15e_timer_clear_capture_overflow(){
+   TACCTL2 &= ~0x02;
+}
+

@@ -24,5 +24,5 @@ void ieee154e_timer_init();
 void ieee154e_timer_schedule(uint16_t offset);
 void ieee154e_timer_cancel();
 void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite);
-
+void ieee15e_timer_clear_capture_overflow();
 #endif
