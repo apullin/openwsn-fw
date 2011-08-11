@@ -234,137 +234,42 @@ enum {
 
 //error codes
 enum {
-   ERR_BOOTED                                    =  0, //main program booted                                       [App] 
-   ERR_RES_READY                                 =  1, //reservation is ready                                      [App]        arg1=neighbor
-   ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND           =  2, //send.sendDone for packet I didn't send                    [App,Advertise,KeepAlive,Reservation]
-   ERR_NO_NEXTHOP                                =  3, //no nextHop                                                [RPL]
-   ERR_NO_FREE_PACKET_BUFFER                     =  4, //no free Queuepkt Cell                                     [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
-   ERR_OVER_255_CELLS_SAME_TYPE_NEIGHBOR         =  5, //over 255 cells of same type and same neighbor             [Schedule]   arg1=type,        arg2=neighbor
-   ERR_WRONG_CELLTYPE                            =  6, //wrong celltype                                            [Schedule,IEEE802154EP,OpenQueueP] arg1=type
-   ERR_RES_NOT_ON_RESSLOTOFFSET                  =  7, //CELLTYPE_RES not on SlotOffset RESSLOTOFFSET              [Schedule]   arg1=slotOffset,  arg2=channelOffset
-   ERR_ILLEGAL_TYPE_TRANSITION                   =  8, //illegal type transition arg1->arg2                        [Schedule]   arg1=old_type,  arg2=old_type
-   ERR_MODIFYING_OVERHEAD_SLOTS                  =  9, //modifying overhead slots                                  [Schedule]   arg1=slotOffset,  arg2=channelOffset
-   ERR_SETUSAGE_NOT_FOR_RES_ADV                  = 10, //CellUsageSet.setUsage does not set RES and ADV slots      [Schedule]   arg1=slotOffset,  arg2=channelOffset
-   ERR_BUSY_SENDING                              = 11, //busy sending a packet                                     [RPLP,TCPP] arg1=location
-   ERR_LOST_SYNC                                 = 12, //lost synchronization                                      [GlobalTimeP]
-   ERR_SENDDONE_WHILE_NOT_BUSY                   = 13, //SimpleSend.sendDone while busy==FALSE                     [KeepAliveC,AdvertiseP]
-   ERR_MSG_UNKNOWN_TYPE                          = 14, //received message of unknown type                          [NRESC,OpenQueueP] arg1=type
-   ERR_TXDATA_RESERVATION_TO_NEIGHBOR_FAILED     = 15, //ReservationUpdate.addSlot() to neighbor failed            [NeighborsP]   arg1=neighbor
-   ERR_NEIGHBORS_FULL                            = 16, //neighbors table is full                                   [NeighborsP] arg1=MAXNUMNEIGHBORS
-   ERR_NEIGHBOR_NOT_REACHABLE_YET                = 17, //neighbor not reachable (yet?)                             [ReservationP] arg1=neighbor
-   ERR_CONFIRMRESERVATION_FAILED                 = 18, //confirmReservation failed   [ReservationP] arg1=type,  arg2=neighbor
-   ERR_SETUSAGE_OFF_FAILED                       = 19, //CellUsageSet.setUsage OFF failed                          [ReservationP] arg1=slotOffset,  arg2=channelOffset
-   ERR_RES_TYPE_UNKNOWN                          = 20, //RES type unknown                                          [ReservationP] arg1=type arg2=i
-   ERR_LOCALRES_NOT_TXDATA_OR_OFF                = 21, //local RES which is not TXDATA or OFF                      [ReservationP] arg1=type
-   ERR_LOSING_NEIGHBOR                           = 22, //losing neighbor==arg1                                     [NeighborsP] arg1=neighbor->addr_64b[7]
-   ERR_TODO_UNKNOWN                              = 23, //unsupported todo code                                     [ReservationP] arg1=todo
-   ERR_RXMSG_NOT_RES                             = 24, //received a message which is not RES                       [ReservationP] arg1=RXMESG_type
-   ERR_UNEXPECTED_RES_ACTION_SUCCESS             = 25, //received a RES_ACTION_SUCCESS I wasn't waiting for        [ReservationP]
-   ERR_UNSUPPORTED_TXCOMMAND                     = 26, //unsupported txCommand in received message                 [ReservationP] arg1=txCommand
-   ERR_SENDDONE_WHILE_NOT_TODO_WAIT_FOR_SENT     = 27, //SimpleSend.sendDone with todo!=WAIT_FOR_SENT              [ReservationP]
-   ERR_UNSUPPORTED_ACK_RESPONSE                  = 28, //unsupported ACK response                                  [ReservationP]
-   ERR_WRONG_STATE_IN_STARTSLOT                  = 29, //wrong state in startSlot                                  [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_TURN_OFF_RADIO_FAILED                     = 30, //could not turn off radio                                  [IEEE802154EP]  arg1=slotOffset
-   ERR_WRONG_STATE_IN_NEWSLOT                    = 31, //wrong state in newSlot                                    [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_NO_TIME_TO_PREPARE_TX                     = 32, //no time to prepare TX                                     [IEEE802154EP]  arg1=slotOffset
-   ERR_NO_TIME_TO_PREPARE_ACK                    = 34, //no time to prepare ACK                                    [IEEE802154EP]  arg1=slotOffset
-   ERR_WRONG_STATE_IN_FASTTIMER_FIRED            = 35, //wrong state in FastTimer.fired                            [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_WRONG_STATE_IN_SUBCONTROL_STARTDONE       = 36, //wrong state in SubControl.startDone                       [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_WRONG_STATE_IN_SUBCONTROL_STOPDONE        = 37, //wrong state in SubControl.stopDone                        [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_START_RADIO_FOR_SYNCHRONIZER_FAILED       = 38, //could not start radio for synchronizer                    [IEEE802154EP]  arg1=slotOffset
-   ERR_START_RADIO_AT_START_SLOT_FAILED          = 39, //could not start radio at beginning of slot                [IEEE802154EP]  arg1=slotOffset
-   ERR_WRONG_STATE_IN_CC2420CONFIG_SYNCDONE      = 40, //wrong state in CC2420Config.syncDone                      [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_WRONG_STATE_IN_SUBSEND_SENDDONE           = 41, //wrong state in SubSend.sendDone                           [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_UNDEFINED_TYPE                            = 42, //undefined type                                            [OpenQueueC]   arg1=type
-   ERR_NOT_DATA_MSG_THROUGH_SENDDATA             = 43, //should receive only DATA through SendDATA                 [OpenQueueC]   arg1=message type
-   ERR_NOT_KA_MSG_THROUGH_SENDKA                 = 44, //should receive only DATA through KASend                   [OpenQueueC]   arg1=message type
-   ERR_SEND_IMPOSSIBLE_PACKET_ADDRESS            = 45, //Send with an impossible packet address                    [OpenQueueP]   arg1=code_location arg2=requested_address
-   ERR_NOT_RES_MSG_THROUGH_SENDRES               = 46, //should receive only RES through SendRES                   [OpenQueueC]   arg1=message type
-   ERR_NOT_ADV_MSG_THROUGH_SENDADV               = 47, //should receive only ADV through SendADV                   [OpenQueueC]   arg1=message type
-   ERR_DEQUEUEDONE_WHILE_BUSY_INFORMING_REQUESTER =48, //Dequeue.done while busy==TRUE                             [OpenQueueC]
-   ERR_DEQUEUEDONE_FOR_MSG_I_DID_NOT_SEND        = 49, //DeQueue.done for packet I didn't send                     [OpenQueueC]
-   ERR_ACQUIRED_SYNC                             = 50, //Acquired synchronization                                  [GlobalTimeP]
-   ERR_LOSING_SYNC                               = 51, //Losing synchronization                                    [GlobalTimeP]
-   ERR_UNKNOWN_NEIGBOR                           = 52, //Unknown Neighbors                                         [IEEE802154EP]  arg1=neighbor
-   ONGOINGRES_TABLE_FULL                         = 53, //ongoingRes table is full                                  [ReservationP] arg1=NUMONGOINGRES
-   ERR_RES_SENT                                  = 54, //RES sent                                                  [ReservationP] arg1=slotOffset arg2=ack
-   ERR_RES_RECEIVED                              = 55, //RES received                                              [ReservationP] arg1=txCommand arg2=rxCommand 
-   ERR_RES_OUTCOME                               = 56, //whether RES has successed                                 [AppP]        arg1=neighbor arg2=error
-   ERR_LOST_NEIGHBOR                             = 57, //lost neighbor==arg1                                       [NeighborsP] arg1=neighbor->addr_64b[7]
-   ERR_GLOBALSLOTOFFSET_TOO_LARGE                = 58, //globalSlotOffset>SLOT_TIME                                [GlobalTimeP]  arg1=globalSlotOffset arg2=SLOT_TIME
-   ERR_TOO_LONG_SINCE_RX                         = 59, //time since received message>SLOT_TIME                     [GlobalTimeP]  arg1=now-myReceptionLocalTime arg2=SLOT_TIME
-   ERR_POIPOI                                    = 60, //pure debug                                                [temporary]    arg1=whatever arg2=whatever
-   ERR_SENDDONE                                  = 61, //sendDone                                                  [AppP]    arg1=error arg2=ack
-   ERR_REGISTERRES_TYPE_NOT_SUPPORTED            = 63, //registerRES type not supported                            [ReservationP] arg1=type
-   ERR_UNSUPPORTED_RXCOMMAND                     = 64, //unsupported rxCommand in received message                 [ReservationP] arg1=txCommand
-   ERR_INCONSISTENT_TXCOMMAND                    = 65, //inconsistent TXCOMMAND received from neighbor             [ReservationP] arg1=neighbor arg2=slotOffset
-   ERR_INVALID_GLOBALSLOTOFFSET_TIMESTAMP        = 66, //invalid globalSlotOffset timestamp                        [GlobalTimeP,NeighborsP] arg1=source of message arg2=code locator
-   ERR_INVALID_LOCALTIME_TIMESTAMP               = 67, //invalid localTime timestamp                               [GlobalTimeP,NeighborsP] arg1=source of message arg2=code locator
-   ERR_REMOVE_ALL_CELLS                          = 68, //remove all celltype=arg1 with neighbor=arg2               [CellUsageP] arg1=celltype arg2=neighbor
-   ERR_INCONSISTENT_RXCOMMAND                    = 69, //inconsistent RXCOMMAND received from neighbor             [ReservationP] arg1=neighbor arg2=slotOffset
-   ERR_FAILRESERVATION                           = 70, //reservation fails after todo=arg1                         [ReservationP] arg1=todo
-   ERR_DETECTED_FROZEN                           = 71, //frozen reservation type=arg1 neighbor=arg2                [ReservationP] arg1=type arg2=neighbor
-   ERR_UNSUPPORTED_COMMAND                       = 72, //unsupported command=arg1                                  [SerialIOP] arg1=command
-   ERR_NO_TIME_TO_PREPARE_RX                     = 73, //no time to prepare RX                                     [IEEE802154EP]  arg1=slotOffset
-   ERR_PREPARESENDDONE_FAILED                    = 74, //RadioSend.prepareSendDone returned with error             [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_WRONG_STATE_IN_RECEIVE                    = 75, //wrong state in receive                                    [IEEE802154EP] arg1=state arg2=slotOffset
-   ERR_RECEIVENOW_FAILED                         = 76, //receiveNow failed                                         [IEEE802154EP] arg1=state arg2=slotOffset
-   ERR_WRONG_STATE_IN_PREPARESEND                = 77, //RadioSend.prepareSend received but radio not S_STARTED    [CC2420driverP] arg1=state
-   ERR_PREPARESEND_FAILED                        = 78, //RadioSend.prepareSend failed                              [IEEE802154EP]  arg1=slotOffset
-   ERR_TXFIFOWRITEDONE_FAILED                    = 79, //TXFIFO.writeDone failed                                   [CC2420TransmitP]  arg1=error
-   ERR_SETCHANNEL_FAILED                         = 80, //CC2420Config.setChannel failed                            [CC2420driverP]
-   ERR_WRONG_STATE_IN_PREPARERECEIVE             = 81, //RadioSend.prepareReceive received but radio not S_STARTED [CC2420driverP] arg1=state
-   ERR_PREPARERECEIVE_FAILED                     = 82, //RadioSend.prepareReceive failed                           [IEEE802154EP]  arg1=slotOffset
-   ERR_PREPARERECEIVEDONE_FAILED                 = 83, //PrepareReceiveDone failed                                 [IEEE802154EP]  arg1=error arg2=slotOffset
-   ERR_WRONG_STATE_LOADPACKET                    = 84, //loadpacket while state=arg1                               [CC2420TransmitP] arg1=state
-   ERR_WRONG_STATE_IN_RECEIVEDNOTHING            = 85, //wrong state in receivedNothing                            [IEEE802154EP] arg1=state arg2=slotOffset
-   ERR_BUFFER_NOT_READY                          = 86, //buffer not ready                                          [IEEE802154EP] arg1=slotOffset
-   ERR_WRONG_STATE_SENDNOW                       = 87, //wrong state=arg1 in sendNow                               [CC2420TransmitP] arg1=slotOffset
-   ERR_SYNC_RACE_CONDITION                       = 88, //race condition in resyncTask                              [IEEE802154EP] arg1=slotOffset arg2=dataGlobalSlotOffset
-   ERR_PACKET_LARGER_BYTES_LEFT                  = 89, //packet larger than free_bytes_left_in_fifo                [CC2420ReceiveP] arg1=rxFrameLength + 1 arg2=free_bytes_left_in_fifo
-   ERR_PACKET_TOO_LARGE                          = 90, //packet too large                                          [CC2420ReceiveP] arg1=rxFrameLength
-   ERR_INCORRECT_CRC                             = 91, //incorrect CRC                                             [CC2420ReceiveP]
-   ERR_PACKET_TOO_SHORT                          = 92, //packet too short                                          [CC2420ReceiveP] arg1=length
-   ERR_SFD_DROPPED                               = 93, //sfd dropped                                               [CC2420TransmitP]
-   ERR_WRONG_STATE_IN_PREPARESENDDONE            = 94, //wrong state in prepareSendDone                            [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_WRONG_STATE_IN_PREPARERECEIVEDONE         = 95, //wrong state in prepareReceiveDone                         [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_RFOFF_FAILED                              = 96, //RadioControl.rfOff failed                                 [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_SENDNOW_FAILED                            = 97, //RadioSend.sendNow failed                                  [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_SENDNOWDONE_FAILED                        = 98, //RadioSend.sendNowDone failed                              [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_WRONG_PANID                               = 99, //received msg with wrong PANid                             [IEEE802154EP]  arg1=msg_panid
-   ERR_6LOWPAN_UNSUPPORTED                       =100, //unsupported 6LoWPAN parameter                             [IPHC] arg1=location arg2=param
-   ERR_RCVD_ECHO_REQUEST                         =101, //received echo request                                     [RPLC]
-   ERR_RCVD_ECHO_REPLY                           =102, //received echo reply                                       [RPLC]
-   ERR_UNSUPPORTED_NEXT_HEADER                   =103, //unsupported next header                                   [RPLC] arg1=next_header
-   ERR_UNSUPPORTED_ICMPV6_TYPE                   =104, //unsupported ICMPv6 type                                   [RPLC] arg1=icmpv6_type arg2=location
-   ERR_PACKET_EMPTY                              =105, //packet empty                                              [CC2420ReceiveP] arg1=rxFrameLength
-   ERR_WRONG_ADDR_TYPE                           =106, //wrong address type                                        [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
-   ERR_IEEE154_UNSUPPORTED                       =107, //unsupported 802154 parameter                              [IEEE802154EP] arg1=location arg2=param
-   ERR_INVALID_NEXTHOP                           =108, //invalid nextHop                                           [NRESP]
-   ERR_GETDATA_ASKS_TOO_FEW_BYTES                =109, //getData asks too few bytes                                [SerialIO] arg1=maxNumBytes arg2=input_buffer_fill_level
-   ERR_INPUT_BUFFER_OVERFLOW                     =110, //input buffer overflow                                     [SerialIO]
-   ERR_WRONG_CREATOR_COMPONENT                   =111, //wrong creator component                                   [IPHC] arg=creator_component
-   ERR_WRONG_TRAN_PROTOCOL                       =112, //wrong transport protocol                                  [App] arg=tran_protocol
-   ERR_WRONG_TCP_STATE                           =113, //wrong TCP state                                           [TCP] arg=state arg2=location
-   ERR_RESET                                     =114, //TCP reset                                                 [TCP] arg=state arg2=location
-   ERR_BRIDGE_MISMATCH                           =115, //isBridge mismatch                                         [NRES] arg1=code_location
-   ERR_HEADER_TOO_LONG                           =116, //header too long                                           [PacketFunctions] arg1=code_location
-   ERR_UNSUPPORTED_PORT_NUMBER                   =117, //unsupported port number                                   [all Apps and transport protocols] arg1=portNumber
-   ERR_INPUTBUFFER_LENGTH                        =118, //input length problem                                      [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location
-   ERR_DATAFRAMETOSEND_ERROR                     =119, //dataFrameToSend is/is not NULL when it should be          [stupidMAC] arg1=code_location
-   ERR_BUSY_RECEIVING                            =120, //busy receiving                                            [stupidMAC]
-   ERR_BUSY_SENDDONE                             =121, //busy in SenDone                                           [IEEE802154E] arg1=state arg2=slotOffset
-   ERR_MAXTXDATAPREPARE_OVERFLOW                 =122, //maxTxDataPrepare overflows in state=arg1 and slotOffset=arg2
-   ERR_WDRADIO_OVERFLOW                          =123, //wdRadio overflows in state=arg1 and slotOffset=arg2
-   ERR_WDDATADURATION_OVERFLOWS                  =124, //wdDataDuration overflows in state=arg1 and slotOffset=arg2
-   ERR_MAXRXACKPREPARE_OVERFLOWS                 =125, //maxRxAckPrepapre overflows in state=arg1 and slotOffset=arg2
-   ERR_MAXRXDATAPREPARE_OVERFLOWS                =126, //maxRxDataPrepapre overflows in state=arg1 and slotOffset=arg2
-   ERR_MAXTXACKPREPARE_OVERFLOWS                 =127, //maxTxAckPrepapre overflows in state=arg1 and slotOffset=arg2
-   ERR_WDRADIOTX_OVERFLOWS                       =128, //wdRadioTx overflows in state=arg1 and slotOffset=arg2
-   ERR_WDACKDURATION_OVERFLOWS                   =129, //wdAckDuration overflows in state=arg1 and slotOffset=arg2
-   ERR_WRONG_STATE_IN_TIMERFIRES                 =130, //wrong state=arg1 in timer fires in slotOffset=arg2
-   ERR_WRONG_STATE_IN_STARTOFFRAME               =131, //wrong state=arg1 in start of frame in slotOffset=arg2
-   ERR_WRONG_STATE_IN_ENDOFFRAME                 =132, //wrong state=arg1 in end of frame in slotOffset=arg2
+   ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND           =  1, //send.sendDone for packet I didn't send                    [App,Advertise,KeepAlive,Reservation]
+   ERR_NO_NEXTHOP                                =  2, //no nextHop                                                [RPL]
+   ERR_NO_FREE_PACKET_BUFFER                     =  3, //no free Queuepkt Cell                                     [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
+   ERR_WRONG_CELLTYPE                            =  4, //wrong celltype                                            [Schedule,IEEE802154EP,OpenQueueP] arg1=type
+   ERR_BUSY_SENDING                              =  5, //busy sending a packet                                     [RPLP,TCPP] arg1=location
+   ERR_MSG_UNKNOWN_TYPE                          =  6, //received message of unknown type                          [NRESC,OpenQueueP] arg1=type
+   ERR_NEIGHBORS_FULL                            =  7, //neighbors table is full                                   [NeighborsP] arg1=MAXNUMNEIGHBORS
+   ERR_WRONG_STATE_IN_STARTSLOT                  =  8, //wrong state in startSlot                                  [IEEE802154EP]  arg1=state arg2=slotOffset
+   ERR_SENDDONE                                  =  9, //sendDone                                                  [AppP]    arg1=error arg2=ack
+   ERR_UNSUPPORTED_COMMAND                       = 10, //unsupported command=arg1                                  [SerialIOP] arg1=command
+   ERR_6LOWPAN_UNSUPPORTED                       = 11, //unsupported 6LoWPAN parameter                             [IPHC] arg1=location arg2=param
+   ERR_RCVD_ECHO_REQUEST                         = 12, //received echo request                                     [RPLC]
+   ERR_RCVD_ECHO_REPLY                           = 13, //received echo reply                                       [RPLC]
+   ERR_UNSUPPORTED_ICMPV6_TYPE                   = 14, //unsupported ICMPv6 type                                   [RPLC] arg1=icmpv6_type arg2=location
+   ERR_WRONG_ADDR_TYPE                           = 15, //wrong address type                                        [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
+   ERR_IEEE154_UNSUPPORTED                       = 16, //unsupported 802154 parameter                              [IEEE802154EP] arg1=location arg2=param
+   ERR_GETDATA_ASKS_TOO_FEW_BYTES                = 17, //getData asks too few bytes                                [SerialIO] arg1=maxNumBytes arg2=input_buffer_fill_level
+   ERR_INPUT_BUFFER_OVERFLOW                     = 18, //input buffer overflow                                     [SerialIO]
+   ERR_WRONG_TRAN_PROTOCOL                       = 19, //wrong transport protocol                                  [App] arg=tran_protocol
+   ERR_WRONG_TCP_STATE                           = 20, //wrong TCP state                                           [TCP] arg=state arg2=location
+   ERR_RESET                                     = 21, //TCP reset                                                 [TCP] arg=state arg2=location
+   ERR_BRIDGE_MISMATCH                           = 22, //isBridge mismatch                                         [NRES] arg1=code_location
+   ERR_HEADER_TOO_LONG                           = 23, //header too long                                           [PacketFunctions] arg1=code_location
+   ERR_UNSUPPORTED_PORT_NUMBER                   = 24, //unsupported port number                                   [all Apps and transport protocols] arg1=portNumber
+   ERR_INPUTBUFFER_LENGTH                        = 25, //input length problem                                      [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location
+   ERR_MAXTXDATAPREPARE_OVERFLOW                 = 26, //maxTxDataPrepare overflows                                [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDRADIO_OVERFLOW                          = 27, //wdRadio overflows                                         [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDDATADURATION_OVERFLOWS                  = 28, //wdDataDuration overflows                                  [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXRXACKPREPARE_OVERFLOWS                 = 29, //maxRxAckPrepapre overflows                                [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXRXDATAPREPARE_OVERFLOWS                = 30, //maxRxDataPrepapre overflows                               [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXTXACKPREPARE_OVERFLOWS                 = 31, //maxTxAckPrepapre overflows                                [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDRADIOTX_OVERFLOWS                       = 32, //wdRadioTx overflows                                       [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDACKDURATION_OVERFLOWS                   = 33, //wdAckDuration overflows                                   [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WRONG_STATE_IN_TIMERFIRES                 = 34, //wrong timer fires                                         [IEEE154E] arg1=state, arg2=slotOffset  
+   ERR_WRONG_STATE_IN_STARTOFFRAME               = 35, //wrong start of frame                                      [IEEE154E] arg1=state,  arg2=slotOffset
+   ERR_WRONG_STATE_IN_ENDOFFRAME                 = 36, //wrong  end of frame                                       [IEEE154E] arg1=state, arg2=slotOffset
 };
 
 //=========================== global variable =================================
