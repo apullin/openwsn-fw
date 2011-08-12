@@ -31,7 +31,7 @@ bool     res_busySending;
 void res_init() {
    res_periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
    res_busySending       = FALSE;
-   timer_startPeriodic(TIMER_RES,res_periodMaintenance);
+   //poipoi disabling ADV timer_startPeriodic(TIMER_RES,res_periodMaintenance);
 }
 
 //===================================== public with upper ======================
@@ -102,8 +102,9 @@ void timer_res_fired() {
       adv->owner   = COMPONENT_RES;
       
       // add ADV-specific header
-      packetfunctions_reserveHeaderSize(adv,2);
-      // TODO put some bytes
+      packetfunctions_reserveHeaderSize(adv,sizeof(IEEE802154E_ADV_t));
+      // the actual value of the current ASN will be written by the
+      // IEEE802.15.4e when transmitting
       
       // some l2 information about this packet
       adv->l2_frameType = IEEE154_TYPE_BEACON;

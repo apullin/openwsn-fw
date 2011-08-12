@@ -33,7 +33,6 @@ void sendDIO();
 void icmpv6rpl_init() {
    icmpv6rpl_busySending = FALSE;
    res_periodDIO = 40000+(64*(*(&random_uint8)));       // pseudo-random
-   timer_startPeriodic(TIMER_RPL,res_periodDIO);
    all_routers_multicast.type = ADDR_128B;
    all_routers_multicast.addr_128b[0]  = 0xff;
    all_routers_multicast.addr_128b[1]  = 0x02;
@@ -51,6 +50,7 @@ void icmpv6rpl_init() {
    all_routers_multicast.addr_128b[13] = 0x00;
    all_routers_multicast.addr_128b[14] = 0x00;
    all_routers_multicast.addr_128b[15] = 0x02;
+   //poipoi disabling timer_startPeriodic(TIMER_RPL,res_periodDIO);
 }
 
 void icmpv6rpl_trigger() {

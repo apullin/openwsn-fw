@@ -49,6 +49,11 @@ void idmanager_init() {
    idmanager_my64bID.addr_64b[6]  = *(&eui64+6);
    idmanager_my64bID.addr_64b[7]  = *(&eui64+7);
    packetfunctions_mac64bToMac16b(&idmanager_my64bID,&idmanager_my16bID);
+   
+   // poipoi forcing part 0x00b6 to be the DAGroot
+   if (idmanager_my16bID.addr_16b[1]==0xb6) {
+      idmanager_isDAGroot         = TRUE;
+   }
 }
 
 bool idmanager_getIsDAGroot() {

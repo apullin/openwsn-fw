@@ -11,10 +11,10 @@
 #include "openwsn.h"
 
 // address translation
-void packetfunctions_ip128bToMac64b(open_addr_t* ip128b,open_addr_t* prefix64btoWrite,open_addr_t* mac64btoWrite);
-void packetfunctions_mac64bToIp128b(open_addr_t* prefix64b,open_addr_t* mac64b,open_addr_t* ip128bToWrite);
-void packetfunctions_mac64bToMac16b(open_addr_t* mac64b, open_addr_t* mac16btoWrite);
-void packetfunctions_mac16bToMac64b(open_addr_t* mac16b, open_addr_t* mac64btoWrite);
+void     packetfunctions_ip128bToMac64b(open_addr_t* ip128b,open_addr_t* prefix64btoWrite,open_addr_t* mac64btoWrite);
+void     packetfunctions_mac64bToIp128b(open_addr_t* prefix64b,open_addr_t* mac64b,open_addr_t* ip128bToWrite);
+void     packetfunctions_mac64bToMac16b(open_addr_t* mac64b, open_addr_t* mac16btoWrite);
+void     packetfunctions_mac16bToMac64b(open_addr_t* mac16b, open_addr_t* mac64btoWrite);
 
 //address recognition
 bool     packetfunctions_isBroadcastMulticast(open_addr_t* address);
