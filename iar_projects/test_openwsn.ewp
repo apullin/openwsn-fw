@@ -1932,6 +1932,9 @@
     <group>
       <name>02a-MAC</name>
       <file>
+        <name>$PROJ_DIR$\..\openwsn\02a-MAC\IEEE802154.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\openwsn\02a-MAC\IEEE802154E.c</name>
       </file>
     </group>

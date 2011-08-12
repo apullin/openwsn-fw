@@ -1,3 +1,10 @@
+/*
+ * IEEE802.15.4 header manipulation funtions
+ *
+ * Authors:
+ * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+ */
+
 #ifndef __IEEE802154_H
 #define __IEEE802154_H
 
@@ -73,7 +80,7 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
                              uint8_t           frameType,
                              bool              securityEnabled,
                              uint8_t           sequenceNumber,
-                             open_addr_t*      nextHop)
+                             open_addr_t*      nextHop);
 ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg);
 
 #endif

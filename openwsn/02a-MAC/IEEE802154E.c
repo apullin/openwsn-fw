@@ -35,7 +35,6 @@ OpenQueueEntry_t*  ackReceived;        // pointer to the ack received
 
 //===================================== prototypes ============================
 
-#include "IEEE802154_common.c"
 // SYNCHRONIZING
 void activity_synchronize_newSlot();
 void activity_synchronize_startOfFrame();
@@ -122,7 +121,7 @@ OpenQueue buffer, waiting to be transmitted.
 \returns E_SUCCESS iff successful.
 */
 error_t mac_send(OpenQueueEntry_t* msg) {
-   msg->owner = COMPONENT_MAC;
+   msg->owner = COMPONENT_IEEE802154E;
    if (packetfunctions_isBroadcastMulticast(&(msg->l2_nextORpreviousHop))==TRUE) {
       msg->l2_retriesLeft = 1;
    } else {
@@ -227,7 +226,7 @@ void ieee154e_timerFires() {
          break;
       default:
          // log the error
-         openserial_printError(COMPONENT_MAC,
+         openserial_printError(COMPONENT_IEEE802154E,
                                ERR_WRONG_STATE_IN_TIMERFIRES,
                                ieee154e_state,
                                asn%SCHEDULELENGTH);
@@ -261,7 +260,7 @@ void ieee154e_startOfFrame() {
             break;
          default:
             // log the error
-            openserial_printError(COMPONENT_MAC,
+            openserial_printError(COMPONENT_IEEE802154E,
                                   ERR_WRONG_STATE_IN_NEWSLOT,
                                   ieee154e_state,
                                   asn%SCHEDULELENGTH);
@@ -296,7 +295,7 @@ void ieee154e_endOfFrame() {
             break;
          default:
             // log the error
-            openserial_printError(COMPONENT_MAC,
+            openserial_printError(COMPONENT_IEEE802154E,
                                   ERR_WRONG_STATE_IN_ENDOFFRAME,
                                   ieee154e_state,
                                   asn%SCHEDULELENGTH);
@@ -359,7 +358,7 @@ inline void activity_synchronize_endOfFrame() {
    dataReceived = openqueue_getFreePacketBuffer();
    if (dataReceived==NULL) {
       // log the error
-      openserial_printError(COMPONENT_MAC,
+      openserial_printError(COMPONENT_IEEE802154E,
                             ERR_NO_FREE_PACKET_BUFFER,
                             0,
                             0);
@@ -417,7 +416,7 @@ inline void activity_ti1ORri1() {
    // if the previous slot took too long, we will not be in the right state
    if (ieee154e_state!=S_SLEEP) {
       // log the error
-      openserial_printError(COMPONENT_MAC,
+      openserial_printError(COMPONENT_IEEE802154E,
                             ERR_WRONG_STATE_IN_STARTSLOT,
                             ieee154e_state,
                             asn%SCHEDULELENGTH);
@@ -475,7 +474,7 @@ inline void activity_ti1ORri1() {
          break;
       default:
          // log the error
-         openserial_printError(COMPONENT_MAC,
+         openserial_printError(COMPONENT_IEEE802154E,
                                ERR_WRONG_CELLTYPE,
                                cellType,
                                asn%SCHEDULELENGTH);
@@ -512,7 +511,7 @@ inline void activity_ti2() {
 
 inline void activity_tie1() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_MAXTXDATAPREPARE_OVERFLOW,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -540,7 +539,7 @@ inline void activity_ti3() {
 
 inline void activity_tie2() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_WDRADIO_OVERFLOW,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -565,7 +564,7 @@ inline void activity_ti4() {
 
 inline void activity_tie3() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_WDDATADURATION_OVERFLOWS,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -624,7 +623,7 @@ inline void activity_ti6() {
 
 inline void activity_tie4() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_MAXRXACKPREPARE_OVERFLOWS,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -695,7 +694,7 @@ inline void activity_ti9() {
    ackReceived = openqueue_getFreePacketBuffer();
    if (ackReceived==NULL) {
       // log the error
-      openserial_printError(COMPONENT_MAC,
+      openserial_printError(COMPONENT_IEEE802154E,
                             ERR_NO_FREE_PACKET_BUFFER,
                             0,
                             0);
@@ -753,7 +752,7 @@ inline void activity_ri2() {
 
 inline void activity_rie1() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_MAXRXDATAPREPARE_OVERFLOWS,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -794,7 +793,7 @@ inline void activity_ri4() {
 
 inline void activity_rie3() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_WDDATADURATION_OVERFLOWS,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -817,7 +816,7 @@ inline void activity_ri5() {
    dataReceived = openqueue_getFreePacketBuffer();
    if (dataReceived==NULL) {
       // log the error
-      openserial_printError(COMPONENT_MAC,
+      openserial_printError(COMPONENT_IEEE802154E,
                             ERR_NO_FREE_PACKET_BUFFER,
                             0,
                             0);
@@ -866,7 +865,7 @@ inline void activity_ri6() {
    ackToSend = openqueue_getFreePacketBuffer();
    if (ackToSend==NULL) {
       // log the error
-      openserial_printError(COMPONENT_MAC,
+      openserial_printError(COMPONENT_IEEE802154E,
                             ERR_NO_FREE_PACKET_BUFFER,
                             0,
                             0);
@@ -903,7 +902,7 @@ inline void activity_ri6() {
 
 inline void activity_rie4() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_MAXTXACKPREPARE_OVERFLOWS,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -925,7 +924,7 @@ inline void activity_ri7() {
 
 inline void activity_rie5() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_WDRADIOTX_OVERFLOWS,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);
@@ -950,7 +949,7 @@ inline void activity_ri8() {
 
 inline void activity_rie6() {
    // log the error
-   openserial_printError(COMPONENT_MAC,
+   openserial_printError(COMPONENT_IEEE802154E,
                          ERR_WDACKDURATION_OVERFLOWS,
                          ieee154e_state,
                          asn%SCHEDULELENGTH);

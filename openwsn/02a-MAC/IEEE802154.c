@@ -1,3 +1,20 @@
+/*
+ * IEEE802.15.4 header manipulation funtions
+ *
+ * Authors:
+ * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+ */
+
+#include "openwsn.h"
+#include "IEEE802154.h"
+#include "packetfunctions.h"
+#include "idmanager.h"
+#include "openserial.h"
+
+//===================================== variables =============================
+
+//===================================== implementation ========================
+
 void prependIEEE802154header(OpenQueueEntry_t* msg,
                              uint8_t           frameType,
                              bool              securityEnabled,
@@ -14,7 +31,7 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
             packetfunctions_writeAddress(msg,idmanager_getMyID(ADDR_64B),LITTLE_ENDIAN);
             break;
          default:
-            openserial_printError(COMPONENT_MAC,ERR_WRONG_ADDR_TYPE,
+            openserial_printError(COMPONENT_IEEE802154,ERR_WRONG_ADDR_TYPE,
                   (errorparameter_t)nextHop->type,
                   (errorparameter_t)0);
       }
@@ -33,7 +50,7 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
                packetfunctions_writeAddress(msg,nextHop,LITTLE_ENDIAN);
                break;
             default:
-               openserial_printError(COMPONENT_MAC,ERR_WRONG_ADDR_TYPE,
+               openserial_printError(COMPONENT_IEEE802154,ERR_WRONG_ADDR_TYPE,
                      (errorparameter_t)nextHop->type,
                      (errorparameter_t)1);
          }
@@ -115,7 +132,7 @@ ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg) {
          ieee802514_header.dest.type = ADDR_64B;
          break;
       default:
-         openserial_printError(COMPONENT_MAC,ERR_IEEE154_UNSUPPORTED,
+         openserial_printError(COMPONENT_IEEE802154,ERR_IEEE154_UNSUPPORTED,
                (errorparameter_t)1,
                (errorparameter_t)(temp_8b >> IEEE154_FCF_DEST_ADDR_MODE ) & 0x03);
          break;
@@ -131,7 +148,7 @@ ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg) {
          ieee802514_header.src.type = ADDR_64B;
          break;
       default:
-         openserial_printError(COMPONENT_MAC,ERR_IEEE154_UNSUPPORTED,
+         openserial_printError(COMPONENT_IEEE802154,ERR_IEEE154_UNSUPPORTED,
                (errorparameter_t)2,
                (errorparameter_t)(temp_8b >> IEEE154_FCF_SRC_ADDR_MODE ) & 0x03);
          break;
