@@ -16,7 +16,11 @@
 
 //=========================== variables =======================================
 
-uint8_t radio_state; // the current state of the radio (only used for debug)
+typedef struct {
+   uint8_t state;  // the current state of the radio (only used for debug)
+} radio_vars_t;
+
+radio_vars_t radio_vars;
 
 //=========================== private prototypes ==============================
 
@@ -30,7 +34,7 @@ during boot-up.
 */
 void radio_init() {
    // change state
-   radio_state = RADIOSTATE_STOPPED;
+   radio_vars.state = RADIOSTATE_STOPPED;
    
    // set the radio debug pin as output
    DEBUG_PIN_RADIO_INIT();
@@ -59,7 +63,7 @@ void radio_init() {
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != TRX_OFF);
    
    // change state
-   radio_state = RADIOSTATE_RFOFF;
+   radio_vars.state = RADIOSTATE_RFOFF;
 }
 
 //=========================== sending a packet ================================
@@ -76,7 +80,7 @@ SPI.
 */
 void radio_setFrequency(uint8_t frequency) {
    // change state
-   radio_state = RADIOSTATE_SETTING_FREQUENCY;
+   radio_vars.state = RADIOSTATE_SETTING_FREQUENCY;
    
    // make sure the frequency asked for is within bounds
    if (frequency < 11 || frequency > 26){
@@ -87,7 +91,7 @@ void radio_setFrequency(uint8_t frequency) {
    spi_write_register(RG_PHY_CC_CCA,0x20+frequency);
    
    // change state
-   radio_state = RADIOSTATE_FREQUENCY_SET;
+   radio_vars.state = RADIOSTATE_FREQUENCY_SET;
 }
 
 /**
@@ -97,7 +101,7 @@ void radio_setFrequency(uint8_t frequency) {
 */
 void radio_loadPacket(OpenQueueEntry_t* packet) {
    // change state
-   radio_state = RADIOSTATE_LOADING_PACKET;
+   radio_vars.state = RADIOSTATE_LOADING_PACKET;
    
    // don't declare radio as owner or else MAC will not be able to retransmit
    
@@ -113,7 +117,7 @@ void radio_loadPacket(OpenQueueEntry_t* packet) {
    spi_write_buffer(packet);
    
    // change state
-   radio_state = RADIOSTATE_PACKET_LOADED;
+   radio_vars.state = RADIOSTATE_PACKET_LOADED;
 }
 
 /**
@@ -124,7 +128,7 @@ transmit, but does not actually transmit the bytes.
 */
 void radio_txEnable() {
    // change state
-   radio_state = RADIOSTATE_ENABLING_TX;
+   radio_vars.state = RADIOSTATE_ENABLING_TX;
    
    // wiggle debug pin
    DEBUG_PIN_RADIO_SET();
@@ -134,7 +138,7 @@ void radio_txEnable() {
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != PLL_ON); // busy wait until done
    
    // change state
-   radio_state = RADIOSTATE_TX_ENABLED;
+   radio_vars.state = RADIOSTATE_TX_ENABLED;
 }
 
 /**
@@ -144,7 +148,7 @@ Tells the radio to transmit the packet immediately.
 */
 void radio_txNow() {
    // change state
-   radio_state = RADIOSTATE_TRANSMITTING;
+   radio_vars.state = RADIOSTATE_TRANSMITTING;
    
    // send packet by pulsing the RF_SLP_TR_CNTL pin
    P4OUT |=  0x80;
@@ -161,7 +165,7 @@ receive, but does not actually receive the bytes.
 */
 void radio_rxEnable() {
    // change state
-   radio_state = RADIOSTATE_ENABLING_RX;
+   radio_vars.state = RADIOSTATE_ENABLING_RX;
    
    // put radio in reception mode
    spi_write_register(RG_TRX_STATE, CMD_RX_ON);
@@ -176,7 +180,7 @@ void radio_rxEnable() {
    ieee154etimer_clearCaptureOverflow();
    
    // change state
-   radio_state = RADIOSTATE_LISTENING;
+   radio_vars.state = RADIOSTATE_LISTENING;
 }
 
 /**
@@ -234,7 +238,7 @@ such as the PLL are switched off.
 */
 void radio_rfOff() {
    // change state
-   radio_state = RADIOSTATE_TURNING_OFF;
+   radio_vars.state = RADIOSTATE_TURNING_OFF;
    
    // turn radio off
    spi_write_register(RG_TRX_STATE, CMD_FORCE_TRX_OFF);
@@ -244,7 +248,7 @@ void radio_rfOff() {
    DEBUG_PIN_RADIO_CLR();
    
    // change state
-   radio_state = RADIOSTATE_RFOFF;
+   radio_vars.state = RADIOSTATE_RFOFF;
 }
 
 //=========================== interrupt handler ================================
@@ -264,13 +268,13 @@ void isr_radio() {
    switch (irq_status) {
       case AT_IRQ_RX_START:
          // change state
-         radio_state = RADIOSTATE_RECEIVING;
+         radio_vars.state = RADIOSTATE_RECEIVING;
          // call MAC layer
          ieee154e_startOfFrame();
          break;
       case AT_IRQ_TRX_END:
          // change state
-         radio_state = RADIOSTATE_TXRX_DONE;
+         radio_vars.state = RADIOSTATE_TXRX_DONE;
          // call MAC layer
          ieee154e_endOfFrame();
          break;
