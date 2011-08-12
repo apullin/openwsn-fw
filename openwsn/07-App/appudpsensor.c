@@ -62,7 +62,7 @@ void appudpsensor_trigger() {
 void appudpsensor_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPSENSOR;
    if (msg->creator!=COMPONENT_APPUDPSENSOR) {
-      openserial_printError(COMPONENT_APPUDPSENSOR,ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND,0,0);
+      openserial_printError(COMPONENT_APPUDPSENSOR,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
 }

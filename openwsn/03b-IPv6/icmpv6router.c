@@ -93,7 +93,7 @@ void icmpv6router_trigger() {
 void icmpv6router_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_ICMPv6ROUTER;
    if (msg->creator!=COMPONENT_ICMPv6ROUTER) {//that was a packet I had not created
-      openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND,0,0);
+      openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
    icmpv6router_busySending = FALSE;

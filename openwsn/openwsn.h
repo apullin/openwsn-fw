@@ -236,42 +236,49 @@ enum {
 
 //error codes
 enum {
-   ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND           =  1, //send.sendDone for packet I didn't send                    [App,Advertise,KeepAlive,Reservation]
-   ERR_NO_NEXTHOP                                =  2, //no nextHop                                                [RPL]
-   ERR_NO_FREE_PACKET_BUFFER                     =  3, //no free Queuepkt Cell                                     [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
-   ERR_WRONG_CELLTYPE                            =  4, //wrong celltype                                            [Schedule,IEEE802154EP,OpenQueueP] arg1=type
-   ERR_BUSY_SENDING                              =  5, //busy sending a packet                                     [RPLP,TCPP] arg1=location
-   ERR_MSG_UNKNOWN_TYPE                          =  6, //received message of unknown type                          [NRESC,OpenQueueP] arg1=type
-   ERR_NEIGHBORS_FULL                            =  7, //neighbors table is full                                   [NeighborsP] arg1=MAXNUMNEIGHBORS
-   ERR_WRONG_STATE_IN_STARTSLOT                  =  8, //wrong state in startSlot                                  [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_SENDDONE                                  =  9, //sendDone                                                  [AppP]    arg1=error arg2=ack
-   ERR_UNSUPPORTED_COMMAND                       = 10, //unsupported command=arg1                                  [SerialIOP] arg1=command
-   ERR_6LOWPAN_UNSUPPORTED                       = 11, //unsupported 6LoWPAN parameter                             [IPHC] arg1=location arg2=param
-   ERR_RCVD_ECHO_REQUEST                         = 12, //received echo request                                     [RPLC]
-   ERR_RCVD_ECHO_REPLY                           = 13, //received echo reply                                       [RPLC]
-   ERR_UNSUPPORTED_ICMPV6_TYPE                   = 14, //unsupported ICMPv6 type                                   [RPLC] arg1=icmpv6_type arg2=location
-   ERR_WRONG_ADDR_TYPE                           = 15, //wrong address type                                        [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
-   ERR_IEEE154_UNSUPPORTED                       = 16, //unsupported 802154 parameter                              [IEEE802154EP] arg1=location arg2=param
-   ERR_GETDATA_ASKS_TOO_FEW_BYTES                = 17, //getData asks too few bytes                                [SerialIO] arg1=maxNumBytes arg2=input_buffer_fill_level
-   ERR_INPUT_BUFFER_OVERFLOW                     = 18, //input buffer overflow                                     [SerialIO]
-   ERR_WRONG_TRAN_PROTOCOL                       = 19, //wrong transport protocol                                  [App] arg=tran_protocol
-   ERR_WRONG_TCP_STATE                           = 20, //wrong TCP state                                           [TCP] arg=state arg2=location
-   ERR_RESET                                     = 21, //TCP reset                                                 [TCP] arg=state arg2=location
-   ERR_BRIDGE_MISMATCH                           = 22, //isBridge mismatch                                         [NRES] arg1=code_location
-   ERR_HEADER_TOO_LONG                           = 23, //header too long                                           [PacketFunctions] arg1=code_location
-   ERR_UNSUPPORTED_PORT_NUMBER                   = 24, //unsupported port number                                   [all Apps and transport protocols] arg1=portNumber
-   ERR_INPUTBUFFER_LENGTH                        = 25, //input length problem                                      [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location
-   ERR_MAXTXDATAPREPARE_OVERFLOW                 = 26, //maxTxDataPrepare overflows                                [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WDRADIO_OVERFLOW                          = 27, //wdRadio overflows                                         [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WDDATADURATION_OVERFLOWS                  = 28, //wdDataDuration overflows                                  [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_MAXRXACKPREPARE_OVERFLOWS                 = 29, //maxRxAckPrepapre overflows                                [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_MAXRXDATAPREPARE_OVERFLOWS                = 30, //maxRxDataPrepapre overflows                               [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_MAXTXACKPREPARE_OVERFLOWS                 = 31, //maxTxAckPrepapre overflows                                [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WDRADIOTX_OVERFLOWS                       = 32, //wdRadioTx overflows                                       [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WDACKDURATION_OVERFLOWS                   = 33, //wdAckDuration overflows                                   [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WRONG_STATE_IN_TIMERFIRES                 = 34, //wrong timer fires                                         [IEEE154E] arg1=state, arg2=slotOffset  
-   ERR_WRONG_STATE_IN_STARTOFFRAME               = 35, //wrong start of frame                                      [IEEE154E] arg1=state,  arg2=slotOffset
-   ERR_WRONG_STATE_IN_ENDOFFRAME                 = 36, //wrong  end of frame                                       [IEEE154E] arg1=state, arg2=slotOffset
+   // l7
+   ERR_SENDDONE                   = 0x01, // sendDone                          [AppP]    arg1=error arg2=ack   
+   ERR_RCVD_ECHO_REQUEST          = 0x02, // received echo request             [RPLC]
+   ERR_RCVD_ECHO_REPLY            = 0x03, // received echo reply               [RPLC]
+   ERR_GETDATA_ASKS_TOO_FEW_BYTES = 0x04, // getData asks too few bytes        [SerialIO] arg1=maxNumBytes arg2=input_buffer_fill_level
+   ERR_INPUT_BUFFER_OVERFLOW      = 0x05, // input buffer overflow             [SerialIO]
+   // l4
+   ERR_WRONG_TRAN_PROTOCOL        = 0x06, // wrong transport protocol          [App] arg=tran_protocol
+   ERR_WRONG_TCP_STATE            = 0x07, // wrong TCP state                   [TCP] arg=state arg2=location
+   ERR_RESET                      = 0x08, // TCP reset                         [TCP] arg=state arg2=location
+   ERR_UNSUPPORTED_PORT_NUMBER    = 0x09, // unsupported port number           [all Apps and transport protocols] arg1=portNumber
+   // l3
+   ERR_UNSUPPORTED_ICMPV6_TYPE    = 0x0a, // unsupported ICMPv6 type           [RPLC] arg1=icmpv6_type arg2=location
+   ERR_6LOWPAN_UNSUPPORTED        = 0x0b, // unsupported 6LoWPAN parameter     [IPHC] arg1=location arg2=param
+   ERR_NO_NEXTHOP                 = 0x0c, // no nextHop                        [RPL]   
+   // l2
+   ERR_WRONG_STATE_IN_STARTSLOT   = 0x0d, // wrong state in startSlot          [IEEE802154EP]  arg1=state arg2=slotOffset
+   ERR_WRONG_STATE_IN_TIMERFIRES  = 0x0e, // wrong state in timer fires        [IEEE154E] arg1=state, arg2=slotOffset  
+   ERR_WRONG_STATE_IN_NEWSLOT     = 0x0f, // wrong state in start of frame     [IEEE154E] arg1=state,  arg2=slotOffset
+   ERR_WRONG_STATE_IN_ENDOFFRAME  = 0x10, // wrong state in end of frame       [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXTXDATAPREPARE_OVERFLOW  = 0x11, // maxTxDataPrepare overflows        [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXRXACKPREPARE_OVERFLOWS  = 0x12, // maxRxAckPrepapre overflows        [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXRXDATAPREPARE_OVERFLOWS = 0x13, // maxRxDataPrepapre overflows       [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXTXACKPREPARE_OVERFLOWS  = 0x14, // maxTxAckPrepapre overflows        [IEEE154E] arg1=state, arg2=slotOffset   
+   ERR_WDDATADURATION_OVERFLOWS   = 0x15, // wdDataDuration overflows          [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDRADIO_OVERFLOW           = 0x16, // wdRadio overflows                 [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDRADIOTX_OVERFLOWS        = 0x17, // wdRadioTx overflows               [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDACKDURATION_OVERFLOWS    = 0x18, // wdAckDuration overflows           [IEEE154E] arg1=state, arg2=slotOffset   
+   ERR_IEEE154_UNSUPPORTED        = 0x19, // unsupported 802154 parameter      [IEEE802154EP] arg1=location arg2=param   
+   ERR_NEIGHBORS_FULL             = 0x1a, // neighbors table is full           [NeighborsP] arg1=MAXNUMNEIGHBORS
+   ERR_WRONG_CELLTYPE             = 0x1b, // wrong celltype                    [Schedule,IEEE802154EP,OpenQueueP] arg1=type      
+   // drivers
+   ERR_WRONG_IRQ_STATUS           = 0x1c, // wrong IRQ_STATUS                  [radio] arg1=irq_status
+   // general
+   ERR_BUSY_SENDING               = 0x1d, // busy sending a packet             [RPLP,TCPP] arg1=location
+   ERR_UNEXPECTED_SENDDONE        = 0x1e, // sendDone for packet I didn't send [App,Advertise,KeepAlive,Reservation]
+   ERR_NO_FREE_PACKET_BUFFER      = 0x1f, // no free Queuepkt Cell             [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
+   ERR_UNSUPPORTED_COMMAND        = 0x20, // unsupported command=arg1          [SerialIOP] arg1=command
+   ERR_MSG_UNKNOWN_TYPE           = 0x21, // received message of unknown type  [NRESC,OpenQueueP] arg1=type
+   ERR_WRONG_ADDR_TYPE            = 0x22, // wrong address type                [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
+   ERR_BRIDGE_MISMATCH            = 0x23, // isBridge mismatch                 [NRES] arg1=code_location
+   ERR_HEADER_TOO_LONG            = 0x24, // header too long                   [PacketFunctions] arg1=code_location
+   ERR_INPUTBUFFER_LENGTH         = 0x25, // input length problem              [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location   
 };
 
 //=========================== global variable =================================

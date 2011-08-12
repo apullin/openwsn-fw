@@ -19,11 +19,11 @@
 #include "ieee154e_timer.h"
 #include "IEEE802154e.h"
 
-//=========================== variables ===========================================
+//=========================== variables =======================================
 
-//=========================== prototypes ==========================================
+//=========================== prototypes ======================================
 
-//=========================== public ==============================================
+//=========================== interface =======================================
 
 /**
 \brief Initialize the IEEE802.15.4e timer.
@@ -42,7 +42,7 @@ void ieee154e_timer_init() {
    TACCR1   =  0;
    
    // CCR2 in capture mode
-   TACCTL2  =  CAP+SCS+CCIS1+CM_3;
+   TACCTL2  =  CAP+SCS+CCIS1+CM_1;
    TACCR2   =  0;
    
    //reset couter
@@ -51,6 +51,8 @@ void ieee154e_timer_init() {
    // start counting
    TACTL    =  MC_1+TBSSEL_1;                    // up mode, clocked from ACLK
 }
+
+//--- CCR1 compare timer
 
 /**
 \brief Schedule the timer to fire in the future.
@@ -75,6 +77,19 @@ This function has no effect if no timer is running.
 void ieee154e_timer_cancel() {
    TACCR1   =  0;                                // reset CCR1 value (also resets interrupt flag)
    TACCTL1 &= ~CCIE;                             // disable CCR1 interrupt
+}
+
+//--- CCR2 capture timer
+
+void ieee154e_timer_clearCaptureOverflow() {
+   volatile uint16_t dummy;
+   dummy    =  TACCR2;
+   TACCTL2 &= ~COV;
+   TACCTL2 &= ~CCIFG;
+}
+
+void ieee154e_timer_enableCaptureInterrupt() {
+   TACCTL2 |=  CCIE;
 }
 
 /**
@@ -107,7 +122,6 @@ void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite) {
    timestampToWrite->timestamp = TACCR2;
 }
 
-void ieee15e_timer_clear_capture_overflow(){
-   TACCTL2 &= ~0x02;
+void ieee154e_timer_disableCaptureInterrupt() {
+   TACCTL2 &= ~CCIE;
 }
-

@@ -78,7 +78,7 @@ void apptcpinject_connectDone(error_t error) {
 void apptcpinject_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPTCPINJECT;
    if (msg->creator!=COMPONENT_APPTCPINJECT) {
-      openserial_printError(COMPONENT_APPTCPINJECT,ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND,0,0);
+      openserial_printError(COMPONENT_APPTCPINJECT,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    tcp_close();
    openqueue_freePacketBuffer(msg);

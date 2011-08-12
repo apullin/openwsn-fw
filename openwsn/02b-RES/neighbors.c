@@ -49,7 +49,7 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
          if (isThisRowMatching(&(msg->l2_nextORpreviousHop),i)) {
             //memcpy(&(neighbors[i].addr_128b),&(msg->l3_destinationORsource),sizeof(open_addr_t));//removed to save RAM
             neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
-            //poipoipoipoipoi forces single hop
+            //poipoi forces single hop
             if (neighbors[i].DAGrank==0x00) {
                neighbors[i].parentPreference=MAXPREFERENCE;
                if (neighbors[i].numTxACK==0) {
@@ -65,7 +65,7 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
    } else {
       registerNewNeighbor(&(msg->l2_nextORpreviousHop),*((uint8_t*)(msg->payload)) );
    }
-   //neighbors_updateMyDAGrankAndNeighborPreference(); poipoipoipoipoi forces single hop
+   //neighbors_updateMyDAGrankAndNeighborPreference(); poipoi forces single hop
 }
 
 void neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi) {

@@ -18,6 +18,7 @@
 #include "scheduler.h"
 #include "timers.h"
 #include "ieee154e_timer.h"
+#include "IEEE802154E.h"
 #include "i2c.h"
 #include "openserial.h"
 
@@ -105,7 +106,7 @@ void scheduler_push_task(int8_t task_id) {
 
 #pragma vector = PORT2_VECTOR
 __interrupt void PORT2_ISR (void) {
-   CAPTURE_TIME;
+   CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef ISR_BUTTON
    //interrupt from button connected to P2.7
@@ -121,8 +122,8 @@ __interrupt void PORT2_ISR (void) {
 // TimerB CCR0 interrupt service routine
 #pragma vector = TIMERB0_VECTOR
 __interrupt void TIMERB0_ISR (void) {
-      CAPTURE_TIME;
-      DEBUG_PIN_ISR_SET();
+   CAPTURE_TIME();
+   DEBUG_PIN_ISR_SET();
 #ifdef ISR_TIMERS
    if (timers_continuous[0]==TRUE) {
       TBCCR0 += timers_period[0];                // continuous timer: schedule next instant
@@ -139,7 +140,7 @@ __interrupt void TIMERB0_ISR (void) {
 // TimerB CCR1-6 interrupt service routine
 #pragma vector = TIMERB1_VECTOR
 __interrupt void TIMERB1through6_ISR (void) {
-   CAPTURE_TIME;
+   CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef ISR_TIMERS
    uint16_t tbiv_temp = TBIV;                    // read only once because accessing TBIV resets it
@@ -215,7 +216,7 @@ __interrupt void TIMERB1through6_ISR (void) {
 
 #pragma vector = PORT1_VECTOR
 __interrupt void PORT1_ISR (void) {
-    CAPTURE_TIME;
+    CAPTURE_TIME();
     DEBUG_PIN_ISR_SET();
 #ifdef ISR_RADIO
    //interrupt from radio through IRQ_RF connected to P1.6
@@ -230,7 +231,7 @@ __interrupt void PORT1_ISR (void) {
 // TimerA CCR0 interrupt service routine
 #pragma vector = TIMERA0_VECTOR
 __interrupt void TIMERA0_ISR (void) {
-   CAPTURE_TIME;
+   CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef OPENWSN_STACK
    ieee154e_newSlot();
@@ -241,15 +242,16 @@ __interrupt void TIMERA0_ISR (void) {
 // TimerA CCR1-2 interrupt service routine
 #pragma vector = TIMERA1_VECTOR
 __interrupt void TIMERA1and2_ISR (void) {
-   CAPTURE_TIME;
+   CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef OPENWSN_STACK
    uint16_t taiv_temp = TAIV;                    // read only once because accessing TAIV resets it
    switch (taiv_temp) {
-      case 0x0002: // timerA CCR1
+      case 0x0002: // timerA CCR1 compare
          ieee154e_timerFires();
          break;
-      case 0x000A: // timer overflow
+      case 0x0004: // timerA CCR2 capture
+         ieee154e_timerCaptures();
          break;
       default:
          while(1);                               // this should not happen
@@ -269,7 +271,7 @@ __interrupt void TIMERA1and2_ISR (void) {
 
 #pragma vector = USCIAB1TX_VECTOR
 __interrupt void USCIAB1TX_ISR(void) {
-   CAPTURE_TIME;
+   CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1TXIFG) && (UC1IE & UCB1TXIE)) ||
@@ -287,7 +289,7 @@ __interrupt void USCIAB1TX_ISR(void) {
 
 #pragma vector = USCIAB1RX_VECTOR
 __interrupt void USCIAB1RX_ISR(void) {
-   CAPTURE_TIME;
+   CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1RXIFG) && (UC1IE & UCB1RXIE)) ||
@@ -306,7 +308,7 @@ __interrupt void USCIAB1RX_ISR(void) {
 
 #pragma vector = USCIAB0RX_VECTOR
 __interrupt void USCIAB0RX_ISR (void) {
-    CAPTURE_TIME;
+    CAPTURE_TIME();
     DEBUG_PIN_ISR_SET();
 #ifdef ISR_SPI
    if ( (IFG2 & UCA0RXIFG) && (IE2 & UCA0RXIE) ) {
@@ -328,7 +330,7 @@ __interrupt void USCIAB0RX_ISR (void) {
 
 #pragma vector = ADC12_VECTOR
 __interrupt void ADC12_ISR (void) {
-    CAPTURE_TIME;
+    CAPTURE_TIME();
     DEBUG_PIN_ISR_SET();
 #ifdef ISR_ADC
    ADC12IFG &= ~0x1F;                            // clear interrupt flags

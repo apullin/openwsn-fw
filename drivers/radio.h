@@ -8,6 +8,7 @@
 #ifndef __RADIO_H
 #define __RADIO_H
 
+#include "openwsn.h"
 #include "msp430x26x.h"
 #include "atmel.h"
 
@@ -64,7 +65,7 @@ two antennas to use.
 enum radio_antennaselection_enum {
    RADIO_UFL_ANTENNA              = 0x06,   // always use the U.FL antenna
    RADIO_CHIP_ANTENNA             = 0x05,   // always use the chip antenna
-}
+};
 
 //===================================== public prototypes =====================
 

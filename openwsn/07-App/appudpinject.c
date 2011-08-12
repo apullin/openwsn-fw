@@ -62,7 +62,7 @@ void appudpinject_trigger() {
 void appudpinject_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPINJECT;
    if (msg->creator!=COMPONENT_APPUDPINJECT) {
-      openserial_printError(COMPONENT_APPUDPINJECT,ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND,0,0);
+      openserial_printError(COMPONENT_APPUDPINJECT,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
 }

@@ -56,7 +56,7 @@ void openbridge_trigger() {
 void openbridge_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_OPENBRIDGE;
    if (msg->creator!=COMPONENT_OPENBRIDGE) {
-      openserial_printError(COMPONENT_OPENBRIDGE,ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND,
+      openserial_printError(COMPONENT_OPENBRIDGE,ERR_UNEXPECTED_SENDDONE,
             (errorparameter_t)0,
             (errorparameter_t)0);
    }
