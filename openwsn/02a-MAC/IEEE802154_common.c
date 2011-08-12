@@ -1,8 +1,8 @@
 void prependIEEE802154header(OpenQueueEntry_t* msg,
-      uint8_t      frameType,
-      bool         securityEnabled,
-      uint8_t      sequenceNumber,
-      open_addr_t* nextHop) {
+                             uint8_t           frameType,
+                             bool              securityEnabled,
+                             uint8_t           sequenceNumber,
+                             open_addr_t*      nextHop) {
    uint8_t temp_8b;
    //previousHop address
    if (frameType!=IEEE154_TYPE_ACK) {
@@ -75,6 +75,7 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
       }
    }
    packetfunctions_reserveHeaderSize(msg,sizeof(uint8_t));
+   //fcf (1st byte)
    *((uint8_t*)(msg->payload)) = temp_8b;
    temp_8b              = 0;
    temp_8b             |= frameType                       << IEEE154_FCF_FRAME_TYPE;

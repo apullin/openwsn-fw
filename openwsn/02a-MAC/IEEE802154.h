@@ -8,7 +8,7 @@ enum {
    INFITE_RX             =  FALSE,
 };
 
-/*----------------------------- IEEE802.15.4  -------------------------------------------*/
+//===================================== packet formats ========================
 
 typedef struct ieee802154_header_iht { //iht for "internal header type"
    uint8_t     headerLength;    //including the length field
@@ -18,7 +18,6 @@ typedef struct ieee802154_header_iht { //iht for "internal header type"
    bool        ackRequested;
    bool        panIDCompression;
    uint8_t     dsn;
-   //source and destination address modes contained in open_addr_t structs
    open_addr_t panid;
    open_addr_t dest;
    open_addr_t src;
@@ -67,5 +66,14 @@ enum IEEE802154_fcf_addr_mode_enums {
    IEEE154_ADDR_SHORT                  = 2,
    IEEE154_ADDR_EXT                    = 3,
 };
+
+//===================================== public prototypes =====================
+
+void prependIEEE802154header(OpenQueueEntry_t* msg,
+                             uint8_t           frameType,
+                             bool              securityEnabled,
+                             uint8_t           sequenceNumber,
+                             open_addr_t*      nextHop)
+ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg);
 
 #endif
