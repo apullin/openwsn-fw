@@ -339,7 +339,7 @@ inline void activity_synchronize_startOfFrame() {
 }
 
 void ieee154e_timerCaptures() {
-   DEBUG_PIN_RADIO_CLR();
+   DEBUG_PIN_RADIO_CLR();//poipoi
    
    // get the captured time 
    ieee154etimer_getCapturedTime(&capturedTime);
@@ -350,7 +350,7 @@ void ieee154e_timerCaptures() {
    // disable the capture ISR
    ieee154etimer_disableCaptureInterrupt();
    
-   DEBUG_PIN_RADIO_SET();   
+   DEBUG_PIN_RADIO_SET();//poipoi   
 }
 
 inline void activity_synchronize_endOfFrame() {
