@@ -18,6 +18,7 @@ enum {
 //===================================== packet formats ========================
 
 typedef struct ieee802154_header_iht { //iht for "internal header type"
+   bool        valid;
    uint8_t     headerLength;    //including the length field
    uint8_t     frameType;
    bool        securityEnabled;
@@ -76,11 +77,12 @@ enum IEEE802154_fcf_addr_mode_enums {
 
 //===================================== public prototypes =====================
 
-void prependIEEE802154header(OpenQueueEntry_t* msg,
-                             uint8_t           frameType,
-                             bool              securityEnabled,
-                             uint8_t           sequenceNumber,
-                             open_addr_t*      nextHop);
-ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg);
+void prependIEEE802154header  (OpenQueueEntry_t*      msg,
+                               uint8_t                frameType,
+                               bool                   securityEnabled,
+                               uint8_t                sequenceNumber,
+                               open_addr_t*           nextHop);
+void retrieveIEEE802154header (OpenQueueEntry_t*      msg,
+                               ieee802154_header_iht* ieee802514_header);
 
 #endif

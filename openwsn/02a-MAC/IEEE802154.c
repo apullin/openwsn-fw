@@ -108,28 +108,33 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
    *((uint8_t*)(msg->payload)) = temp_8b;
 }
 
-ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg) {
-   ieee802154_header_iht ieee802514_header;
+void retrieveIEEE802154header(OpenQueueEntry_t*      msg,
+                              ieee802154_header_iht* ieee802514_header) {
    uint8_t temp_8b;
-   uint8_t offset = 0;
+   
+   ieee802514_header->valid=FALSE;
+   
+   ieee802514_header->headerLength = 0;
+   if (ieee802514_header->headerLength>msg->length) {  return; }
    //fcf
-   temp_8b = *((uint8_t*)(msg->payload)+offset);
-   ieee802514_header.frameType         = (temp_8b >> IEEE154_FCF_FRAME_TYPE      ) & 0x07;//3b
-   ieee802514_header.securityEnabled   = (temp_8b >> IEEE154_FCF_SECURITY_ENABLED) & 0x01;//1b
-   ieee802514_header.framePending      = (temp_8b >> IEEE154_FCF_FRAME_PENDING   ) & 0x01;//1b
-   ieee802514_header.ackRequested      = (temp_8b >> IEEE154_FCF_ACK_REQ         ) & 0x01;//1b
-   ieee802514_header.panIDCompression  = (temp_8b >> IEEE154_FCF_INTRAPAN        ) & 0x01;//1b
-   offset += 1;
-   temp_8b = *((uint8_t*)(msg->payload)+offset);
+   temp_8b = *((uint8_t*)(msg->payload)+ieee802514_header->headerLength);
+   ieee802514_header->frameType         = (temp_8b >> IEEE154_FCF_FRAME_TYPE      ) & 0x07;//3b
+   ieee802514_header->securityEnabled   = (temp_8b >> IEEE154_FCF_SECURITY_ENABLED) & 0x01;//1b
+   ieee802514_header->framePending      = (temp_8b >> IEEE154_FCF_FRAME_PENDING   ) & 0x01;//1b
+   ieee802514_header->ackRequested      = (temp_8b >> IEEE154_FCF_ACK_REQ         ) & 0x01;//1b
+   ieee802514_header->panIDCompression  = (temp_8b >> IEEE154_FCF_INTRAPAN        ) & 0x01;//1b
+   ieee802514_header->headerLength += 1;
+   if (ieee802514_header->headerLength>msg->length) {  return; }
+   temp_8b = *((uint8_t*)(msg->payload)+ieee802514_header->headerLength);
    switch ( (temp_8b >> IEEE154_FCF_DEST_ADDR_MODE ) & 0x03 ) {
       case IEEE154_ADDR_NONE:
-         ieee802514_header.dest.type = ADDR_NONE;
+         ieee802514_header->dest.type = ADDR_NONE;
          break;
       case IEEE154_ADDR_SHORT:
-         ieee802514_header.dest.type = ADDR_16B;
+         ieee802514_header->dest.type = ADDR_16B;
          break;
       case IEEE154_ADDR_EXT:
-         ieee802514_header.dest.type = ADDR_64B;
+         ieee802514_header->dest.type = ADDR_64B;
          break;
       default:
          openserial_printError(COMPONENT_IEEE802154,ERR_IEEE154_UNSUPPORTED,
@@ -139,13 +144,13 @@ ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg) {
    }
    switch ( (temp_8b >> IEEE154_FCF_SRC_ADDR_MODE ) & 0x03 ) {
       case IEEE154_ADDR_NONE:
-         ieee802514_header.src.type = ADDR_NONE;
+         ieee802514_header->src.type = ADDR_NONE;
          break;
       case IEEE154_ADDR_SHORT:
-         ieee802514_header.src.type = ADDR_16B;
+         ieee802514_header->src.type = ADDR_16B;
          break;
       case IEEE154_ADDR_EXT:
-         ieee802514_header.src.type = ADDR_64B;
+         ieee802514_header->src.type = ADDR_64B;
          break;
       default:
          openserial_printError(COMPONENT_IEEE802154,ERR_IEEE154_UNSUPPORTED,
@@ -153,43 +158,65 @@ ieee802154_header_iht retrieveIEEE802154header(OpenQueueEntry_t* msg) {
                (errorparameter_t)(temp_8b >> IEEE154_FCF_SRC_ADDR_MODE ) & 0x03);
          break;
    }
-   offset += 1;
+   ieee802514_header->headerLength += 1;
+   if (ieee802514_header->headerLength>msg->length) {  return; }
    //sequenceNumber
-   ieee802514_header.dsn  = *((uint8_t*)(msg->payload)+offset);
-   offset += 1;
+   ieee802514_header->dsn  = *((uint8_t*)(msg->payload)+ieee802514_header->headerLength);
+   ieee802514_header->headerLength += 1;
+   if (ieee802514_header->headerLength>msg->length) {  return; }
    //panID
-   if (ieee802514_header.frameType == IEEE154_TYPE_ACK) {
-      ieee802514_header.panid.type = ADDR_NONE;
+   if (ieee802514_header->frameType == IEEE154_TYPE_ACK) {
+      ieee802514_header->panid.type = ADDR_NONE;
    } else {
-      packetfunctions_readAddress(((uint8_t*)(msg->payload)+offset),ADDR_PANID,&ieee802514_header.panid,LITTLE_ENDIAN);
-      offset += 2;
+      packetfunctions_readAddress(((uint8_t*)(msg->payload)+ieee802514_header->headerLength),
+                                  ADDR_PANID,
+                                  &ieee802514_header->panid,
+                                  LITTLE_ENDIAN);
+      ieee802514_header->headerLength += 2;
+      if (ieee802514_header->headerLength>msg->length) {  return; }
    }
    //dest
-   switch (ieee802514_header.dest.type) {
+   switch (ieee802514_header->dest.type) {
       case ADDR_NONE:
          break;
       case ADDR_16B:
-         packetfunctions_readAddress(((uint8_t*)(msg->payload)+offset),ADDR_16B,&ieee802514_header.dest,LITTLE_ENDIAN);
-         offset += 2;
+         packetfunctions_readAddress(((uint8_t*)(msg->payload)+ieee802514_header->headerLength),
+                                     ADDR_16B,
+                                     &ieee802514_header->dest,
+                                     LITTLE_ENDIAN);
+         ieee802514_header->headerLength += 2;
+         if (ieee802514_header->headerLength>msg->length) {  return; }
          break;
       case ADDR_64B:
-         packetfunctions_readAddress(((uint8_t*)(msg->payload)+offset),ADDR_64B,&ieee802514_header.dest,LITTLE_ENDIAN);
-         offset += 8;
+         packetfunctions_readAddress(((uint8_t*)(msg->payload)+ieee802514_header->headerLength),
+                                     ADDR_64B,
+                                     &ieee802514_header->dest,
+                                     LITTLE_ENDIAN);
+         ieee802514_header->headerLength += 8;
+         if (ieee802514_header->headerLength>msg->length) {  return; }
          break;
    }
    //src
-   switch (ieee802514_header.src.type) {
+   switch (ieee802514_header->src.type) {
       case ADDR_NONE:
          break;
       case ADDR_16B:
-         packetfunctions_readAddress(((uint8_t*)(msg->payload)+offset),ADDR_16B,&ieee802514_header.src,LITTLE_ENDIAN);
-         offset += 2;
+         packetfunctions_readAddress(((uint8_t*)(msg->payload)+ieee802514_header->headerLength),
+                                     ADDR_16B,
+                                     &ieee802514_header->src,
+                                     LITTLE_ENDIAN);
+         ieee802514_header->headerLength += 2;
+         if (ieee802514_header->headerLength>msg->length) {  return; }
          break;
       case ADDR_64B:
-         packetfunctions_readAddress(((uint8_t*)(msg->payload)+offset),ADDR_64B,&ieee802514_header.src,LITTLE_ENDIAN);
-         offset += 8;
+         packetfunctions_readAddress(((uint8_t*)(msg->payload)+ieee802514_header->headerLength),
+                                     ADDR_64B,
+                                     &ieee802514_header->src,
+                                     LITTLE_ENDIAN);
+         ieee802514_header->headerLength += 8;
+         if (ieee802514_header->headerLength>msg->length) {  return; }
          break;
    }
-   ieee802514_header.headerLength = offset;
-   return ieee802514_header;
+   // if you reach this, the header is valid
+   ieee802514_header->valid=TRUE;
 }

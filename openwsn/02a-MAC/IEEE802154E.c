@@ -2,7 +2,7 @@
  * IEEE802.15.4e TSCH
  *
  * Authors:
- * Branko Kerkez   <bkerkeze@berkeley.edu>, March 2011
+ * Branko Kerkez   <bkerkez@berkeley.edu>, March 2011
  * Fabien Chraim   <chraim@eecs.berkeley.edu>, June 2011
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
  */
@@ -32,6 +32,8 @@ OpenQueueEntry_t*  dataToSend;         // pointer to the data to send
 OpenQueueEntry_t*  dataReceived;       // pointer to the data received
 OpenQueueEntry_t*  ackToSend;          // pointer to the ack to send
 OpenQueueEntry_t*  ackReceived;        // pointer to the ack received
+
+bool               radioStartofFrame;
 
 //===================================== prototypes ============================
 
@@ -104,7 +106,11 @@ void mac_init() {
    ackReceived               = NULL;
    capturedTime.valid        = TRUE;
    capturedTime.timestamp    = 0;
-   isSync                    = FALSE;
+   if (idmanager_getIsDAGroot()==TRUE) {
+      isSync                 = TRUE;
+   } else {
+      isSync                 = FALSE;
+   }
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
@@ -236,16 +242,12 @@ void ieee154e_timerFires() {
    }
 }
 
-/**
-\brief Indicates the radio just received the first byte of a packet.
-
-This function executes in ISR mode.
-*/
-void ieee154e_startOfFrame() {
-   if (isSync==FALSE) {
-      activity_synchronize_startOfFrame();
-   } else {
+void ieee154e_timerCaptures() {
+   if (radioStartofFrame==TRUE) {
       switch (ieee154e_state) {
+         case S_SYNCHRONIZING:
+            activity_synchronize_startOfFrame();
+            break;
          case S_TXDATADELAY:
             activity_ti4();
             break;
@@ -268,19 +270,11 @@ void ieee154e_startOfFrame() {
             endSlot();
             break;
       }
-   }
-}
-
-/**
-\brief Indicates the radio just received the last byte of a packet.
-
-This function executes in ISR mode.
-*/
-void ieee154e_endOfFrame() {
-   if (isSync==FALSE) {
-      activity_synchronize_endOfFrame();
    } else {
       switch (ieee154e_state) {
+         case S_SYNCHRONIZING:
+            activity_synchronize_endOfFrame();
+            break;
          case S_TXDATA:
             activity_ti5();
             break;
@@ -304,6 +298,26 @@ void ieee154e_endOfFrame() {
             break;
       }
    }
+}
+
+/**
+\brief Indicates the radio just received the first byte of a packet.
+
+This function executes in ISR mode.
+*/
+void ieee154e_startOfFrame() {
+   radioStartofFrame = TRUE;
+   ieee154etimer_enableCaptureInterrupt();
+}
+
+/**
+\brief Indicates the radio just received the last byte of a packet.
+
+This function executes in ISR mode.
+*/
+void ieee154e_endOfFrame() {
+   radioStartofFrame = FALSE;
+   ieee154etimer_enableCaptureInterrupt();
 }
 
 //===================================== SYNCHRONIZING =========================
@@ -331,15 +345,6 @@ inline void activity_synchronize_newSlot() {
 }
 
 inline void activity_synchronize_startOfFrame() {
-   // remember the last capture time, i.e. the
-   // time the SFD was received, we'll use it to synchronnize
-   // when the packet is fully received
-   ieee154etimer_enableCaptureInterrupt();
-}
-
-void ieee154e_timerCaptures() {
-   DEBUG_PIN_RADIO_CLR();//poipoi
-   
    // get the captured time 
    ieee154etimer_getCapturedTime(&capturedTime);
    
@@ -348,11 +353,10 @@ void ieee154e_timerCaptures() {
    
    // disable the capture ISR
    ieee154etimer_disableCaptureInterrupt();
-   
-   DEBUG_PIN_RADIO_SET();//poipoi   
 }
 
 inline void activity_synchronize_endOfFrame() {
+   ieee802154_header_iht ieee802514_header;
    
    // get a buffer to put the (received) frame in
    dataReceived = openqueue_getFreePacketBuffer();
@@ -370,17 +374,27 @@ inline void activity_synchronize_endOfFrame() {
    // retrieve the packet from the radio's Rx buffer
    radio_getReceivedFrame(dataReceived);
    
-   // parse the packet to decide whether it's an ADV we like
-   // TODO
+   // parse the packet
+   retrieveIEEE802154header(dataReceived,&ieee802514_header);
    
-   /*
-   // we can only synchronize if the captured time is valid
-   if (capturedTime.valid = TRUE) {
+   // if it's a valid ADV and I can use the timestamp, synchronize
+   if (ieee802514_header.valid==TRUE                                                       &&
+       ieee802514_header.frameType==IEEE154_TYPE_BEACON                                    &&
+       packetfunctions_sameAddress(&ieee802514_header.panid,idmanager_getMyID(ADDR_PANID)) &&
+       dataReceived->length==ieee802514_header.headerLength+sizeof(IEEE802154E_ADV_t)+2    &&
+       capturedTime.valid == TRUE ) {
+      
+      // toss the IEEE802.15.4 header
+      packetfunctions_tossHeader(dataReceived,ieee802514_header.headerLength);
+      
       // synchronize the slots to the sender's
       // TODO
+         
+      // record the ASN
+      asn = ((IEEE802154E_ADV_t*)(dataReceived->payload))->asn;
       
-      // declare yourselve as synchronized
-      isSync = TRUE;
+      // declare synchronized
+      //poipoiisSync = TRUE;
       
       // turn radio off
       radio_rfOff();
@@ -388,7 +402,6 @@ inline void activity_synchronize_endOfFrame() {
       // change state
       change_state(S_SLEEP);
    }
-   */
    
    // free the received data buffer so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(dataReceived);
@@ -527,6 +540,9 @@ inline void activity_ti3() {
    // give the 'go' to transmit
    radio_txNow();
    
+   // clear the timer overflow flag
+   ieee154etimer_clearCaptureOverflow();
+   
    // arm tt3
    ieee154etimer_schedule(DURATION_tt3);
    
@@ -557,6 +573,9 @@ inline void activity_ti4() {
 
    // record the captured time
    ieee154etimer_getCapturedTime(&capturedTime);
+   
+   // clear the timer overflow flag
+   ieee154etimer_clearCaptureOverflow();
 
    // arm tt4
    ieee154etimer_schedule(DURATION_tt4);

@@ -12,10 +12,8 @@
 
 // this is a workaround from the fact that the interrupt pin for the radio is
 // not connected to a pin on the MSP which allows time capture.
-#define CAPTURE_TIME() DEBUG_PIN_FRAME_SET(); \
-                       TACCTL2 |=  CCIS0;     \
-                       TACCTL2 &= ~CCIS0;     \
-                       DEBUG_PIN_FRAME_CLR();
+#define CAPTURE_TIME() TACCTL2 |=  CCIS0;     \
+                       TACCTL2 &= ~CCIS0;
 
 typedef struct timestamp_t {
    bool      valid;

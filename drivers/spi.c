@@ -140,9 +140,9 @@ void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive) {
 // this implemetation busy waits for each byte to be sent
 void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive) {
    //register spi frame to send
-   spi_tx_buffer =  spaceToSend;
-   spi_rx_buffer =  spaceToReceive;
-   num_bytes     =  len;
+   spi_tx_buffer = spaceToSend;
+   spi_rx_buffer = spaceToReceive;
+   num_bytes     = len;
    // SPI CS (and P4.6) down
    P4OUT&=~0x01;P4OUT&=~0x40;                    // SPI CS (and P4.6) down
    // write all bytes
