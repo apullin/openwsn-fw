@@ -1900,7 +1900,7 @@
       <name>$PROJ_DIR$\..\drivers\i2c.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\drivers\ieee154e_timer.c</name>
+      <name>$PROJ_DIR$\..\drivers\ieee154etimer.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\drivers\large_range_accel.c</name>

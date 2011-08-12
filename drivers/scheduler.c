@@ -17,7 +17,7 @@
 
 #include "scheduler.h"
 #include "timers.h"
-#include "ieee154e_timer.h"
+#include "ieee154etimer.h"
 #include "IEEE802154E.h"
 #include "i2c.h"
 #include "openserial.h"

@@ -48,7 +48,7 @@
 #include "openqueue.h"
 #include "openserial.h"
 //misc
-#include "ieee154e_timer.h"
+#include "ieee154etimer.h"
 #include "timers.h"
 #endif
 
@@ -67,7 +67,7 @@ void openwsn_init() {
    scheduler_init();
 #ifdef OPENWSN_STACK
    timer_init();
-   ieee154e_timer_init();
+   ieee154etimer_init();
    // cross-layer
    idmanager_init();
    openqueue_init();
