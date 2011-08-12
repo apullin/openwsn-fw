@@ -10,7 +10,7 @@
 #include "packetfunctions.h"
 #include "openqueue.h"
 #include "IEEE802154E.h"
-#include "ieee154e_timer.h"
+#include "ieee154etimer.h"
 #include "spi.h"
 #include "openserial.h"
 
@@ -173,7 +173,7 @@ void radio_rxEnable() {
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON);
    
    // clear timestamp overflow bit (used for timestamping incoming packets)
-   ieee154e_timer_clearCaptureOverflow();
+   ieee154etimer_clearCaptureOverflow();
    
    // change state
    radio_state = RADIOSTATE_LISTENING;

@@ -5,8 +5,8 @@
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
  */
 
-#ifndef __IEEE154E_TIMER_H
-#define __IEEE154E_TIMER_H
+#ifndef __IEEE154ETIMER_H
+#define __IEEE154ETIMER_H
 
 #include "openwsn.h"
 
@@ -23,14 +23,14 @@ typedef struct timestamp_t {
 } timestamp_t;
 
 // callable functions
-void ieee154e_timer_init();
+void ieee154etimer_init();
 // compare
-void ieee154e_timer_schedule(uint16_t offset);
-void ieee154e_timer_cancel();
+void ieee154etimer_schedule(uint16_t offset);
+void ieee154etimer_cancel();
 
-void ieee154e_timer_clearCaptureOverflow();
-void ieee154e_timer_enableCaptureInterrupt();
-void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite);
-void ieee154e_timer_disableCaptureInterrupt();
+void ieee154etimer_clearCaptureOverflow();
+void ieee154etimer_enableCaptureInterrupt();
+void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite);
+void ieee154etimer_disableCaptureInterrupt();
 
 #endif

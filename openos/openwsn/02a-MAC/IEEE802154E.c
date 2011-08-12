@@ -16,7 +16,7 @@
 #include "openserial.h"
 #include "openqueue.h"
 #include "schedule.h"
-#include "ieee154e_timer.h"
+#include "ieee154etimer.h"
 #include "packetfunctions.h"
 #include "neighbors.h"
 #include "res.h"
@@ -108,7 +108,7 @@ void mac_init() {
    isSync                    = FALSE;
    
    // initialize (and start) IEEE802.15.4e timer
-   ieee154e_timer_init();
+   ieee154etimer_init();
 }
 
 /**
@@ -311,7 +311,7 @@ void ieee154e_endOfFrame() {
 
 inline void activity_synchronize_newSlot() {
    // clear the timer overflow flag
-   ieee154e_timer_clearCaptureOverflow();
+   ieee154etimer_clearCaptureOverflow();
    
    // if this is the first time I call this function while not synchronized,
    // switch on the radio in Rx mode
@@ -335,20 +335,20 @@ inline void activity_synchronize_startOfFrame() {
    // remember the last capture time, i.e. the
    // time the SFD was received, we'll use it to synchronnize
    // when the packet is fully received
-   ieee154e_timer_enableCaptureInterrupt();
+   ieee154etimer_enableCaptureInterrupt();
 }
 
 void ieee154e_timerCaptures() {
    DEBUG_PIN_RADIO_CLR();
    
    // get the captured time 
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
    
    // clear the capture overflow, if any
-   ieee154e_timer_clearCaptureOverflow();
+   ieee154etimer_clearCaptureOverflow();
    
    // disable the capture ISR
-   ieee154e_timer_disableCaptureInterrupt();
+   ieee154etimer_disableCaptureInterrupt();
    
    DEBUG_PIN_RADIO_SET();   
 }
@@ -443,13 +443,13 @@ inline void activity_ti1ORri1() {
             // change state
             change_state(S_RXDATAOFFSET);
             // arm rt1
-            ieee154e_timer_schedule(DURATION_rt1);
+            ieee154etimer_schedule(DURATION_rt1);
          } else {
             // I will be sending an ADV
             // change state
             change_state(S_TXDATAOFFSET);
             // arm tt1
-            ieee154e_timer_schedule(DURATION_tt1);
+            ieee154etimer_schedule(DURATION_tt1);
          }
          break;
       case CELLTYPE_TX:
@@ -460,7 +460,7 @@ inline void activity_ti1ORri1() {
             // change state
             change_state(S_TXDATAOFFSET);
             // arm tt1
-            ieee154e_timer_schedule(DURATION_tt1);
+            ieee154etimer_schedule(DURATION_tt1);
          } else {
             // abort
             endSlot();
@@ -471,7 +471,7 @@ inline void activity_ti1ORri1() {
          // change state
          change_state(S_RXDATAOFFSET);
          // arm rt1
-         ieee154e_timer_schedule(DURATION_rt1);
+         ieee154etimer_schedule(DURATION_rt1);
          break;
       default:
          // log the error
@@ -504,7 +504,7 @@ inline void activity_ti2() {
    radio_txEnable();
 
    // arm tt2
-   ieee154e_timer_schedule(DURATION_tt2);
+   ieee154etimer_schedule(DURATION_tt2);
 
    // change state
    change_state(S_TXDATAREADY);
@@ -529,7 +529,7 @@ inline void activity_ti3() {
    radio_txNow();
    
    // arm tt3
-   ieee154e_timer_schedule(DURATION_tt3);
+   ieee154etimer_schedule(DURATION_tt3);
    
    // The AT86RF231 does not generate an interrupt when the radio transmits the
    // SFD. If we leave this funtion like this, tt3 will expire, triggering tie2.
@@ -554,13 +554,13 @@ inline void activity_ti4() {
    change_state(S_TXDATA);
 
    // cancel the radio watchdog timer
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
 
    // arm tt4
-   ieee154e_timer_schedule(DURATION_tt4);
+   ieee154etimer_schedule(DURATION_tt4);
 }
 
 inline void activity_tie3() {
@@ -581,7 +581,7 @@ inline void activity_ti5() {
    change_state(S_RXACKOFFSET);
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
 
    // decides whether to listen for an ACK
    if (packetfunctions_isBroadcastMulticast(&dataToSend->l2_nextORpreviousHop)==TRUE) {
@@ -592,7 +592,7 @@ inline void activity_ti5() {
 
    if (listenForAck==TRUE) {
       // arm tt5
-      ieee154e_timer_schedule(DURATION_tt5);
+      ieee154etimer_schedule(DURATION_tt5);
    } else {
       // indicate that the packet was sent successfully
       res_sendDone(dataToSend,E_SUCCESS);
@@ -619,7 +619,7 @@ inline void activity_ti6() {
    radio_rxEnable();
 
    // arm tt6
-   ieee154e_timer_schedule(DURATION_tt6);
+   ieee154etimer_schedule(DURATION_tt6);
 }
 
 inline void activity_tie4() {
@@ -641,7 +641,7 @@ inline void activity_ti7() {
    radio_rxNow();
 
    // arm tt7
-   ieee154e_timer_schedule(DURATION_tt7);
+   ieee154etimer_schedule(DURATION_tt7);
 }
 
 inline void activity_tie5() {
@@ -665,13 +665,13 @@ inline void activity_ti8() {
    change_state(S_TXACK);
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
 
    // cancel tt7
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // arm tt8
-   ieee154e_timer_schedule(DURATION_tt8);
+   ieee154etimer_schedule(DURATION_tt8);
 }
 
 inline void activity_tie6() {
@@ -686,10 +686,10 @@ inline void activity_ti9() {
    change_state(S_TXPROC);
 
    // cancel tt8
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
    
    // get a buffer to put the (received) ACK in
    ackReceived = openqueue_getFreePacketBuffer();
@@ -745,7 +745,7 @@ inline void activity_ri2() {
    radio_rxEnable();
 
    // arm rt2
-   ieee154e_timer_schedule(DURATION_rt2);
+   ieee154etimer_schedule(DURATION_rt2);
 
    // change state
    change_state(S_RXDATAREADY);
@@ -770,7 +770,7 @@ inline void activity_ri3() {
    radio_rxNow();
 
    // arm rt3
-   ieee154e_timer_schedule(DURATION_rt3);
+   ieee154etimer_schedule(DURATION_rt3);
 }
 
 inline void activity_rie2() {
@@ -783,13 +783,13 @@ inline void activity_ri4() {
    change_state(S_RXDATA);
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
 
    // cancel rt3
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // arm rt4
-   ieee154e_timer_schedule(DURATION_rt4);
+   ieee154etimer_schedule(DURATION_rt4);
 }
 
 inline void activity_rie3() {
@@ -808,10 +808,10 @@ inline void activity_ri5() {
    change_state(S_TXACKOFFSET);
 
    // cancel rt4
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
 
    // get a buffer to put the (received) data in
    dataReceived = openqueue_getFreePacketBuffer();
@@ -845,7 +845,7 @@ inline void activity_ri5() {
    // check if ack requested
    if (ackRequested(dataReceived)==TRUE) {
       // arm rt5
-      ieee154e_timer_schedule(DURATION_rt5);
+      ieee154etimer_schedule(DURATION_rt5);
    } else {
       // indicate reception to upper layer
       res_receive(dataReceived);
@@ -895,7 +895,7 @@ inline void activity_ri6() {
    radio_txEnable();
 
    // arm rt6
-   ieee154e_timer_schedule(DURATION_rt6);
+   ieee154etimer_schedule(DURATION_rt6);
 
    // change state
    change_state(S_TXACKREADY);
@@ -920,7 +920,7 @@ inline void activity_ri7() {
    radio_txNow();
 
    // arm rt7
-   ieee154e_timer_schedule(DURATION_rt7);
+   ieee154etimer_schedule(DURATION_rt7);
 }
 
 inline void activity_rie5() {
@@ -939,13 +939,13 @@ inline void activity_ri8() {
    change_state(S_TXACK);
 
    // cancel rt7
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
 
    // arm rt8
-   ieee154e_timer_schedule(DURATION_rt8);
+   ieee154etimer_schedule(DURATION_rt8);
 }
 
 inline void activity_rie6() {
@@ -964,10 +964,10 @@ inline void activity_ri9() {
    change_state(S_RXPROC);
 
    // cancel rt8
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_timer_getCapturedTime(&capturedTime);
+   ieee154etimer_getCapturedTime(&capturedTime);
 
    // free the ack we just sent so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ackToSend);
@@ -1107,7 +1107,7 @@ void endSlot() {
    radio_rfOff();
    
    // clear any pending timer
-   ieee154e_timer_cancel();
+   ieee154etimer_cancel();
 
    // reset capturedTime
    capturedTime.valid     = TRUE;

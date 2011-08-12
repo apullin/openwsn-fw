@@ -16,7 +16,7 @@
  */
 
 #include "msp430x26x.h"
-#include "ieee154e_timer.h"
+#include "ieee154etimer.h"
 #include "IEEE802154e.h"
 
 //=========================== variables =======================================
@@ -28,7 +28,7 @@
 /**
 \brief Initialize the IEEE802.15.4e timer.
 */
-void ieee154e_timer_init() {
+void ieee154etimer_init() {
    
    // source ACLK from 32kHz crystal
    BCSCTL3 |= LFXT1S_0;
@@ -62,7 +62,7 @@ Calling this function cancels all running timers
 \param [in] offset The time at which to fire, relative to the current slot start
                    time, in 32-kHz ticks.
 */
-void ieee154e_timer_schedule(uint16_t offset) {
+void ieee154etimer_schedule(uint16_t offset) {
    // offset when to fire
    TACCR1   =  offset;
    // enable CCR1 interrupt (this also cancels any pending interrupts)
@@ -74,21 +74,21 @@ void ieee154e_timer_schedule(uint16_t offset) {
 
 This function has no effect if no timer is running.
 */
-void ieee154e_timer_cancel() {
+void ieee154etimer_cancel() {
    TACCR1   =  0;                                // reset CCR1 value (also resets interrupt flag)
    TACCTL1 &= ~CCIE;                             // disable CCR1 interrupt
 }
 
 //--- CCR2 capture timer
 
-void ieee154e_timer_clearCaptureOverflow() {
+void ieee154etimer_clearCaptureOverflow() {
    volatile uint16_t dummy;
    dummy    =  TACCR2;
    TACCTL2 &= ~COV;
    TACCTL2 &= ~CCIFG;
 }
 
-void ieee154e_timer_enableCaptureInterrupt() {
+void ieee154etimer_enableCaptureInterrupt() {
    TACCTL2 |=  CCIE;
 }
 
@@ -107,7 +107,7 @@ is valid.
 \param [out] timestampToWrite Variable in which this function returns the
                               timestamp.
 */
-void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite) {
+void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite) {
    uint8_t overflown;
    overflown = (TACCTL2 & 0x02) >> 1;
  
@@ -122,6 +122,6 @@ void ieee154e_timer_getCapturedTime(timestamp_t* timestampToWrite) {
    timestampToWrite->timestamp = TACCR2;
 }
 
-void ieee154e_timer_disableCaptureInterrupt() {
+void ieee154etimer_disableCaptureInterrupt() {
    TACCTL2 &= ~CCIE;
 }
