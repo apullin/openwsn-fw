@@ -212,14 +212,15 @@ enum {
    COMPONENT_NEIGHBORS        = 0x18,
    COMPONENT_SCHEDULE         = 0x19,
    //l2a
-   COMPONENT_MAC              = 0x1a,
+   COMPONENT_IEEE802154       = 0x1a,
+   COMPONENT_IEEE802154E      = 0x1b,
    //phy
-   COMPONENT_RADIO            = 0x1b,
+   COMPONENT_RADIO            = 0x1c,
    //cross-layer
-   COMPONENT_IDMANAGER        = 0x1c,
-   COMPONENT_OPENQUEUE        = 0x1d,
-   COMPONENT_OPENSERIAL       = 0x1e,
-   COMPONENT_PACKETFUNCTIONS  = 0x1f,
+   COMPONENT_IDMANAGER        = 0x1d,
+   COMPONENT_OPENQUEUE        = 0x1e,
+   COMPONENT_OPENSERIAL       = 0x1f,
+   COMPONENT_PACKETFUNCTIONS  = 0x20,
 };
 
 //============================================ debug ======================================
