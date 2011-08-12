@@ -242,12 +242,16 @@ void ieee154e_timerFires() {
    }
 }
 
-void ieee154e_timerCaptures() {
-   if (radioStartofFrame==TRUE) {
+/**
+\brief Indicates the radio just received the first byte of a packet.
+
+This function executes in ISR mode.
+*/
+void ieee154e_startOfFrame() {
+   if (isSync==FALSE) {
+      activity_synchronize_startOfFrame();
+   } else {
       switch (ieee154e_state) {
-         case S_SYNCHRONIZING:
-            activity_synchronize_startOfFrame();
-            break;
          case S_TXDATADELAY:
             activity_ti4();
             break;
@@ -270,11 +274,19 @@ void ieee154e_timerCaptures() {
             endSlot();
             break;
       }
+   }
+}
+
+/**
+\brief Indicates the radio just received the last byte of a packet.
+
+This function executes in ISR mode.
+*/
+void ieee154e_endOfFrame() {
+   if (isSync==FALSE) {
+      activity_synchronize_endOfFrame();
    } else {
       switch (ieee154e_state) {
-         case S_SYNCHRONIZING:
-            activity_synchronize_endOfFrame();
-            break;
          case S_TXDATA:
             activity_ti5();
             break;
@@ -298,26 +310,6 @@ void ieee154e_timerCaptures() {
             break;
       }
    }
-}
-
-/**
-\brief Indicates the radio just received the first byte of a packet.
-
-This function executes in ISR mode.
-*/
-void ieee154e_startOfFrame() {
-   radioStartofFrame = TRUE;
-   ieee154etimer_enableCaptureInterrupt();
-}
-
-/**
-\brief Indicates the radio just received the last byte of a packet.
-
-This function executes in ISR mode.
-*/
-void ieee154e_endOfFrame() {
-   radioStartofFrame = FALSE;
-   ieee154etimer_enableCaptureInterrupt();
 }
 
 //===================================== SYNCHRONIZING =========================
