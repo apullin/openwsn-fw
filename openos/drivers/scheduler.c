@@ -250,9 +250,11 @@ __interrupt void TIMERA1and2_ISR (void) {
       case 0x0002: // timerA CCR1 compare
          ieee154e_timerFires();
          break;
+      /*
       case 0x0004: // timerA CCR2 capture
          ieee154e_timerCaptures();
          break;
+      */
       default:
          while(1);                               // this should not happen
    }

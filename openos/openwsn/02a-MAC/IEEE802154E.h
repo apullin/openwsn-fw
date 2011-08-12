@@ -116,7 +116,4 @@ bool    mac_debugPrint();
 void    ieee154e_startOfFrame();
 void    ieee154e_endOfFrame();
 
-// called from the timer module
-void    ieee154e_timerCaptures();
-
 #endif
