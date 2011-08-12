@@ -79,7 +79,7 @@ void icmpv6echo_trigger() {
 void icmpv6echo_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_ICMPv6ECHO;
    if (msg->creator!=COMPONENT_ICMPv6ECHO) {//that was a packet I had not created
-      openserial_printError(COMPONENT_ICMPv6ECHO,ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND,0,0);
+      openserial_printError(COMPONENT_ICMPv6ECHO,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
    icmpv6echo_busySending = FALSE;

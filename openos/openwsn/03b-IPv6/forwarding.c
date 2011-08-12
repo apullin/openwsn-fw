@@ -111,7 +111,7 @@ void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
    } else {
       neighbors_getPreferredParent(addressToWrite64b,ADDR_64B); //destination is remote
    }*/
-   //poipoipoi
+   //poipoi
    addressToWrite64b->type = ADDR_64B;
    addressToWrite64b->addr_64b[0] = 0x14;
    addressToWrite64b->addr_64b[1] = 0x15;

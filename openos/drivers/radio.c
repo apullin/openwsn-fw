@@ -10,7 +10,9 @@
 #include "packetfunctions.h"
 #include "openqueue.h"
 #include "IEEE802154E.h"
+#include "ieee154e_timer.h"
 #include "spi.h"
+#include "openserial.h"
 
 //=========================== variables =======================================
 
@@ -171,7 +173,7 @@ void radio_rxEnable() {
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON);
    
    // clear timestamp overflow bit (used for timestamping incoming packets)
-   CLEAR_TIMER_OVERFLOW();
+   ieee154e_timer_clearCaptureOverflow();
    
    // change state
    radio_state = RADIOSTATE_LISTENING;
@@ -273,7 +275,9 @@ void isr_radio() {
          ieee154e_endOfFrame();
          break;
       default:
-         // print error poipoipoi
+         openserial_printError(COMPONENT_PACKETFUNCTIONS,ERR_WRONG_IRQ_STATUS,
+            (errorparameter_t)irq_status,
+            (errorparameter_t)0);
          break;
    }
 }

@@ -262,7 +262,7 @@ void ieee154e_startOfFrame() {
          default:
             // log the error
             openserial_printError(COMPONENT_MAC,
-                                  ERR_WRONG_STATE_IN_STARTOFFRAME,
+                                  ERR_WRONG_STATE_IN_NEWSLOT,
                                   ieee154e_state,
                                   asn%SCHEDULELENGTH);
             // abort
@@ -270,7 +270,6 @@ void ieee154e_startOfFrame() {
             break;
       }
    }
-   
 }
 
 /**
@@ -312,7 +311,7 @@ void ieee154e_endOfFrame() {
 
 inline void activity_synchronize_newSlot() {
    // clear the timer overflow flag
-   ieee15e_timer_clear_capture_overflow();
+   ieee154e_timer_clearCaptureOverflow();
    
    // if this is the first time I call this function while not synchronized,
    // switch on the radio in Rx mode
@@ -334,21 +333,50 @@ inline void activity_synchronize_newSlot() {
 
 inline void activity_synchronize_startOfFrame() {
    // remember the last capture time, i.e. the
-   // time the SFD was received, we'll use it when the
-   // packet is fully received
+   // time the SFD was received, we'll use it to synchronnize
+   // when the packet is fully received
+   ieee154e_timer_enableCaptureInterrupt();
+}
+
+void ieee154e_timerCaptures() {
+   DEBUG_PIN_RADIO_CLR();
+   
+   // get the captured time 
    ieee154e_timer_getCapturedTime(&capturedTime);
+   
+   // clear the capture overflow, if any
+   ieee154e_timer_clearCaptureOverflow();
+   
+   // disable the capture ISR
+   ieee154e_timer_disableCaptureInterrupt();
+   
+   DEBUG_PIN_RADIO_SET();   
 }
 
 inline void activity_synchronize_endOfFrame() {
-   __no_operation();
+   
+   // get a buffer to put the (received) frame in
+   dataReceived = openqueue_getFreePacketBuffer();
+   if (dataReceived==NULL) {
+      // log the error
+      openserial_printError(COMPONENT_MAC,
+                            ERR_NO_FREE_PACKET_BUFFER,
+                            0,
+                            0);
+      // abort
+      endSlot();
+      return;
+   }
+   
    // retrieve the packet from the radio's Rx buffer
-   radio_getReceivedFrame();
+   radio_getReceivedFrame(dataReceived);
    
    // parse the packet to decide whether it's an ADV we like
    // TODO
    
+   /*
    // we can only synchronize if the captured time is valid
-   if (capturedTime->valid = TRUE) {
+   if (capturedTime.valid = TRUE) {
       // synchronize the slots to the sender's
       // TODO
       
@@ -361,6 +389,11 @@ inline void activity_synchronize_endOfFrame() {
       // change state
       change_state(S_SLEEP);
    }
+   */
+   
+   // free the received data buffer so corresponding RAM memory can be recycled
+   openqueue_freePacketBuffer(dataReceived);
+   
 }
 
 //===================================== TX ====================================
@@ -658,6 +691,19 @@ inline void activity_ti9() {
    // record the captured time
    ieee154e_timer_getCapturedTime(&capturedTime);
    
+   // get a buffer to put the (received) ACK in
+   ackReceived = openqueue_getFreePacketBuffer();
+   if (ackReceived==NULL) {
+      // log the error
+      openserial_printError(COMPONENT_MAC,
+                            ERR_NO_FREE_PACKET_BUFFER,
+                            0,
+                            0);
+      // abort
+      endSlot();
+      return;
+   }
+   
    // retrieve the ACK frame
    radio_getReceivedFrame(ackReceived);
 
@@ -668,7 +714,7 @@ inline void activity_ti9() {
       validAck = FALSE;
    }
 
-   // free the received frame so corresponding RAM memory can be recycled
+   // free the received ack so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ackReceived);
 
    // if packet sent successfully, inform upper layer
@@ -767,12 +813,25 @@ inline void activity_ri5() {
    // record the captured time
    ieee154e_timer_getCapturedTime(&capturedTime);
 
-   // retrieve the ACK frame
+   // get a buffer to put the (received) data in
+   dataReceived = openqueue_getFreePacketBuffer();
+   if (dataReceived==NULL) {
+      // log the error
+      openserial_printError(COMPONENT_MAC,
+                            ERR_NO_FREE_PACKET_BUFFER,
+                            0,
+                            0);
+      // abort
+      endSlot();
+      return;
+   }
+   
+   // retrieve the data frame
    radio_getReceivedFrame(dataReceived);
 
    // if data frame invalid, stop
    if (isDataValid(dataReceived)==FALSE) {
-      // free the buffer
+      // free the received data so corresponding RAM memory can be recycled
       openqueue_freePacketBuffer(dataReceived);
       
       // clear local variable
@@ -803,15 +862,21 @@ inline void activity_ri6() {
    // change state
    change_state(S_TXACKPREPARE);
 
-   // get a buffer to put the ack in
+   // get a buffer to put the ack to send in
    ackToSend = openqueue_getFreePacketBuffer();
    if (ackToSend==NULL) {
+      // log the error
+      openserial_printError(COMPONENT_MAC,
+                            ERR_NO_FREE_PACKET_BUFFER,
+                            0,
+                            0);
       // indicate we received a packet (we don't want to loose any)
       res_receive(dataReceived);
       // free local variable
       dataReceived = NULL;
       // abort
       endSlot();
+      return;
    }
 
    // create the ACK
@@ -904,6 +969,9 @@ inline void activity_ri9() {
    // record the captured time
    ieee154e_timer_getCapturedTime(&capturedTime);
 
+   // free the ack we just sent so corresponding RAM memory can be recycled
+   openqueue_freePacketBuffer(ackToSend);
+   
    // inform upper layer of reception
    res_receive(dataReceived);
 
@@ -1070,7 +1138,7 @@ void endSlot() {
 
    // clean up ackToSend
    if (ackToSend!=NULL) {
-      // free ackToSend
+      // free ackToSend so corresponding RAM memory can be recycled
       openqueue_freePacketBuffer(ackToSend);
       // reset local variable
       ackToSend = NULL;
@@ -1078,7 +1146,7 @@ void endSlot() {
 
    // clean up ackReceived
    if (ackReceived!=NULL) {
-      // free ackReceived
+      // free ackReceived so corresponding RAM memory can be recycled
       openqueue_freePacketBuffer(ackReceived);
       // reset local variable
       ackReceived = NULL;

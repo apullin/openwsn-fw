@@ -22,6 +22,7 @@
 //===================================== variables ==============================
 
 uint16_t res_periodMaintenance;
+bool     res_busySending;
 
 //===================================== prototypes =============================
 
@@ -29,6 +30,7 @@ uint16_t res_periodMaintenance;
 
 void res_init() {
    res_periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
+   res_busySending       = FALSE;
    timer_startPeriodic(TIMER_RES,res_periodMaintenance);
 }
 
@@ -47,6 +49,8 @@ void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
    if (msg->creator == COMPONENT_RES) {
       // discard (ADV) packets this component has created
       openqueue_freePacketBuffer(msg);
+      // I can send the next ADV
+      res_busySending = FALSE;
    } else {
       // send the rest up the stack
       iphc_sendDone(msg,error);
@@ -79,30 +83,36 @@ bool res_debugPrint() {
 void timer_res_fired() {
    OpenQueueEntry_t* adv;
    
-   // get a free packet buffer
-   adv = openqueue_getFreePacketBuffer();
-   if (adv==NULL) {
-      openserial_printError(ERR_NO_FREE_PACKET_BUFFER,
-                            COMPONENT_RES,
-                            0,
-                            0);
-      return;
+   // only send a packet if I received a sendDone for the previous.
+   // the packet might be stuck in the queue for a long time for
+   // example while the mote is synchronizing
+   if (res_busySending==FALSE) {
+      // get a free packet buffer
+      adv = openqueue_getFreePacketBuffer();
+      if (adv==NULL) {
+         openserial_printError(ERR_NO_FREE_PACKET_BUFFER,
+                               COMPONENT_RES,
+                               0,
+                               0);
+         return;
+      }
+      
+      // declare ownership over that packet
+      adv->creator = COMPONENT_RES;
+      adv->owner   = COMPONENT_RES;
+      
+      // add ADV-specific header
+      packetfunctions_reserveHeaderSize(adv,2);
+      // TODO put some bytes
+      
+      // some l2 information about this packet
+      adv->l2_frameType = IEEE154_TYPE_BEACON;
+      adv->l2_nextORpreviousHop.type = ADDR_16B;
+      adv->l2_nextORpreviousHop.addr_16b[0] = 0xff;
+      adv->l2_nextORpreviousHop.addr_16b[1] = 0xff;
+      
+      // send to MAC
+      mac_send(adv);
+      res_busySending = TRUE;
    }
-   
-   // declare ownership over that packet
-   adv->creator = COMPONENT_RES;
-   adv->owner   = COMPONENT_RES;
-   
-   // add ADV-specific header
-   packetfunctions_reserveHeaderSize(adv,2);
-   // TODO put some bytes
-   
-   // some l2 information about this packet
-   adv->l2_frameType = IEEE154_TYPE_BEACON;
-   adv->l2_nextORpreviousHop.type = ADDR_16B;
-   adv->l2_nextORpreviousHop.addr_16b[0] = 0xff;
-   adv->l2_nextORpreviousHop.addr_16b[1] = 0xff;
-   
-   // send to MAC
-   mac_send(adv);
 }

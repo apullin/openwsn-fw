@@ -143,30 +143,6 @@ enum ieee154e_ADV_defaults_enums {
    IEEE154E_ADV_LINKINFO2_DEFAULT     = 0x00010001,
 };
 
-/*----------------------------- poipoipoi REMOVE THE FOLLOWING? -------------*/
-
-enum {
-   FRAME_BASED_RESYNC = TRUE,
-   ACK_BASED_RESYNC   = FALSE,
-};
-
-enum {
-   WAS_ACKED = TRUE,
-   WAS_NOT_ACKED = FALSE,
-};
-
-//timer wait times (in 1/32768 seconds)
-//for now, we will use 40ms (10*4) slots
-enum {
-   PERIODICTIMERPERIOD   =    326*5,// 10 ms  //uses TIMER_MAC_PERIODIC
-   MINBACKOFF            =    65*5,// 2ms     //uses TIMER_MAC_BACKOFF 
-                                            //will add EXTRA_WAIT_TIME later if receiving 
-   GUARDTIME             =    130*5,//4 ms    //uses TIMER_MAC_WATCHDOG
-   ACK_WAIT_TIME         =    195*5,// 6ms    //uses TIMER_MAC_BACKOFF 
-                                            //will add EXTRA_WAIT_TIME later if receiving
-   EXTRA_WAIT_TIME       =    32*5, //1 ms    //this is used to add 1ms to the receiver for overlap
-};
-
 //===================================== public prototypes =====================
 
 // called from the upper layer
@@ -177,5 +153,8 @@ bool    mac_debugPrint();
 // called from the radio drivers
 void    ieee154e_startOfFrame();
 void    ieee154e_endOfFrame();
+
+// called from the timer module
+void    ieee154e_timerCaptures();
 
 #endif

@@ -60,7 +60,7 @@ void appudpgina_receive(OpenQueueEntry_t* msg) {
 void appudpgina_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPGINA;
    if (msg->creator!=COMPONENT_APPUDPGINA) {
-      openserial_printError(COMPONENT_APPUDPGINA,ERR_SENDDONE_FOR_MSG_I_DID_NOT_SEND,0,0);
+      openserial_printError(COMPONENT_APPUDPGINA,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
    if (appudpgina_mesurements_left>0) {
