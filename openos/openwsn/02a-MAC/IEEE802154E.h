@@ -59,7 +59,7 @@ enum ieee154e_atomicdurations_enum{
    TsSlotDuration            = 328,    // 10000us
    // execution speed related
    maxTxDataPrepare          =  33,    //  1000us (TBC)
-   maxRxAckPrepare           =  33,    //  1000us (TBC)
+   maxRxAckPrepare           =  10,    //   (TBC)
    maxRxDataPrepare          =  13,    //   400us (TBC)
    maxTxAckPrepare           =  29,    //   900us (TBC)
    // radio speed related
@@ -73,23 +73,23 @@ enum ieee154e_atomicdurations_enum{
 
 // FSM timer durations (combinations of atomic durations)
 // TX
-#define DURATION_tt1 ieee154e_vars.capturedTime.timestamp+TsTxOffset-delayRx-maxRxDataPrepare
-#define DURATION_tt2 ieee154e_vars.capturedTime.timestamp+TsTxOffset-delayTx
-#define DURATION_tt3 ieee154e_vars.capturedTime.timestamp+TsTxOffset-delayTx+wdRadioTx
-#define DURATION_tt4 ieee154e_vars.capturedTime.timestamp+wdDataDuration
-#define DURATION_tt5 ieee154e_vars.capturedTime.timestamp+TsTxAckDelay-TsShortGT-delayRx-maxRxAckPrepare
-#define DURATION_tt6 ieee154e_vars.capturedTime.timestamp+TsTxAckDelay-TsShortGT-delayRx
-#define DURATION_tt7 ieee154e_vars.capturedTime.timestamp+TsTxAckDelay+TsShortGT
-#define DURATION_tt8 ieee154e_vars.capturedTime.timestamp+wdAckDuration
+#define DURATION_tt1 ieee154e_vars.capturedTime+TsTxOffset-delayRx-maxRxDataPrepare
+#define DURATION_tt2 ieee154e_vars.capturedTime+TsTxOffset-delayTx
+#define DURATION_tt3 ieee154e_vars.capturedTime+TsTxOffset-delayTx+wdRadioTx
+#define DURATION_tt4 ieee154e_vars.capturedTime+wdDataDuration
+#define DURATION_tt5 ieee154e_vars.capturedTime+TsTxAckDelay-TsShortGT-delayRx-maxRxAckPrepare
+#define DURATION_tt6 ieee154e_vars.capturedTime+TsTxAckDelay-TsShortGT-delayRx
+#define DURATION_tt7 ieee154e_vars.capturedTime+TsTxAckDelay+TsShortGT
+#define DURATION_tt8 ieee154e_vars.capturedTime+wdAckDuration
 // RX
-#define DURATION_rt1 ieee154e_vars.capturedTime.timestamp+TsTxOffset-TsLongGT-delayRx-maxRxDataPrepare
-#define DURATION_rt2 ieee154e_vars.capturedTime.timestamp+TsTxOffset-TsLongGT-delayRx
-#define DURATION_rt3 ieee154e_vars.capturedTime.timestamp+TsTxOffset+TsLongGT
-#define DURATION_rt4 ieee154e_vars.capturedTime.timestamp+wdDataDuration
-#define DURATION_rt5 ieee154e_vars.capturedTime.timestamp+TsTxAckDelay-delayTx-maxTxAckPrepare
-#define DURATION_rt6 ieee154e_vars.capturedTime.timestamp+TsTxAckDelay-delayTx
-#define DURATION_rt7 ieee154e_vars.capturedTime.timestamp+TsTxAckDelay-delayTx+wdRadioTx
-#define DURATION_rt8 ieee154e_vars.capturedTime.timestamp+wdAckDuration
+#define DURATION_rt1 ieee154e_vars.capturedTime+TsTxOffset-TsLongGT-delayRx-maxRxDataPrepare
+#define DURATION_rt2 ieee154e_vars.capturedTime+TsTxOffset-TsLongGT-delayRx
+#define DURATION_rt3 ieee154e_vars.capturedTime+TsTxOffset+TsLongGT
+#define DURATION_rt4 ieee154e_vars.capturedTime+wdDataDuration
+#define DURATION_rt5 ieee154e_vars.capturedTime+TsTxAckDelay-delayTx-maxTxAckPrepare
+#define DURATION_rt6 ieee154e_vars.capturedTime+TsTxAckDelay-delayTx
+#define DURATION_rt7 ieee154e_vars.capturedTime+TsTxAckDelay-delayTx+wdRadioTx
+#define DURATION_rt8 ieee154e_vars.capturedTime+wdAckDuration
 
 //===================================== packet formats ========================
 
@@ -113,7 +113,7 @@ error_t mac_send(OpenQueueEntry_t* msg);
 bool    mac_debugPrint();
 
 // called from the radio drivers
-void    ieee154e_startOfFrame();
-void    ieee154e_endOfFrame();
+void    ieee154e_startOfFrame(uint16_t capturedTime);
+void    ieee154e_endOfFrame(uint16_t capturedTime);
 
 #endif
