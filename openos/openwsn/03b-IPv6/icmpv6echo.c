@@ -1,9 +1,8 @@
-/*
- * ICMPv6 echo (ping) implementation
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief ICMPv6 echo (ping) implementation
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "icmpv6echo.h"
@@ -12,15 +11,15 @@
 #include "openqueue.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 bool        icmpv6echo_busySending;
 open_addr_t icmpv6echo_hisAddress;
 uint16_t    icmpv6echo_seq=0;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void icmpv6echo_init() {
    icmpv6echo_busySending = FALSE;
@@ -118,4 +117,4 @@ bool icmpv6echo_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

@@ -1,9 +1,8 @@
-/*
- * GINA's board service package
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief GINA's board service package
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "gina.h"
 #include "leds.h"
@@ -12,11 +11,11 @@
 #include "i2c.h"
 #endif
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void gina_init() {
    WDTCTL  = WDTPW + WDTHOLD;                    // disable watchdog timer
@@ -33,4 +32,4 @@ void gina_init() {
    __bis_SR_register(GIE);                       // set 'general interrupt enable' bit
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

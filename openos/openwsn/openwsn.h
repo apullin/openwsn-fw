@@ -1,13 +1,14 @@
-/*
- * General OpenWSN definitions
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief General OpenWSN definitions
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #ifndef __OPENWSN_H
 #define __OPENWSN_H
+
+//=========================== define ==========================================
 
 //general
 #include "msp430x26x.h"
@@ -71,16 +72,6 @@ enum {
    MAXPREFERENCE                   =      2,
 };
 
-typedef uint16_t  slotOffset_t;
-typedef uint16_t  shortnodeid_t;
-typedef uint64_t  longnodeid_t;
-typedef uint32_t  timervalue_t;
-typedef uint16_t  errorparameter_t;
-typedef uint8_t   dagrank_t;
-typedef uint16_t  asn_t;
-
-typedef uint8_t   error_t;
-
 enum {
    E_SUCCESS      =  0,          
    E_FAIL         =  1,
@@ -94,17 +85,6 @@ enum {
    ADDR_PANID  = 4,
    ADDR_PREFIX = 5,
 };
-
-typedef struct open_addr_t {                     //always written big endian, i.e. MSB in addr[0]
-   uint8_t type;
-   union {
-      uint8_t addr_16b[2];
-      uint8_t addr_64b[8];
-      uint8_t addr_128b[16];
-      uint8_t panid[2];
-      uint8_t prefix[8];
-   };
-} open_addr_t;
 
 enum {
    LITTLE_ENDIAN = TRUE,
@@ -148,35 +128,6 @@ enum {
    WKP_UDP_SENSOR     = 2189,
    WKP_UDP_WARPWING   = 2194,
 };
-
-//OpenQueue entry definition
-typedef struct OpenQueueEntry_t {
-   //admin
-   uint8_t       creator;                        //the component which called getFreePacketBuffer()
-   uint8_t       owner;                          //the component which currently owns the entry
-   uint8_t*      payload;                        //pointer to the start of the payload within 'packet'
-   uint8_t       length;                         //length in bytes of the payload
-   //l4
-   uint8_t       l4_protocol;                    //l4 protocol to be used
-   uint16_t      l4_sourcePortORicmpv6Type;      //l4 source port
-   uint16_t      l4_destination_port;            //l4 destination port
-   uint8_t*      l4_payload;                     //pointer to the start of the payload of l4 (used for retransmits)
-   uint8_t       l4_length;                      //length of the payload of l4 (used for retransmits)
-   //l3
-   open_addr_t   l3_destinationORsource;         //128b IPv6 destination (down stack) or source address (up)
-   //l2
-   open_addr_t   l2_nextORpreviousHop;           //64b IEEE802.15.4 next (down stack) or previous (up) hop address
-   uint8_t       l2_frameType;                   //beacon, data, ack, cmd
-   uint8_t       l2_retriesLeft;
-   //l1 (drivers)
-   uint8_t       l1_txPower;
-   uint8_t       l1_rssi;
-   uint8_t       l1_lqi;
-   bool          l1_crc;
-   uint32_t      l1_rxTimestamp;
-   //the packet
-   uint8_t       packet[1+1+125+2+1];            // 1B spi address, 1B length, 125B data, 2B CRC, 1B LQI
-} OpenQueueEntry_t;
 
 //component identifiers
 enum {
@@ -222,8 +173,6 @@ enum {
    COMPONENT_OPENSERIAL       = 0x1f,
    COMPONENT_PACKETFUNCTIONS  = 0x20,
 };
-
-//============================================ debug ======================================
 
 //status elements
 enum {
@@ -282,7 +231,58 @@ enum {
    ERR_INPUTBUFFER_LENGTH         = 0x25, // input length problem              [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location   
 };
 
-//=========================== global variable =================================
+//=========================== typedef =========================================
+
+typedef uint16_t  slotOffset_t;
+typedef uint16_t  shortnodeid_t;
+typedef uint64_t  longnodeid_t;
+typedef uint32_t  timervalue_t;
+typedef uint16_t  errorparameter_t;
+typedef uint8_t   dagrank_t;
+typedef uint16_t  asn_t;
+typedef uint8_t   error_t;
+
+typedef struct open_addr_t {                     //always written big endian, i.e. MSB in addr[0]
+   uint8_t type;
+   union {
+      uint8_t addr_16b[2];
+      uint8_t addr_64b[8];
+      uint8_t addr_128b[16];
+      uint8_t panid[2];
+      uint8_t prefix[8];
+   };
+} open_addr_t;
+
+//OpenQueue entry definition
+typedef struct OpenQueueEntry_t {
+   //admin
+   uint8_t       creator;                        //the component which called getFreePacketBuffer()
+   uint8_t       owner;                          //the component which currently owns the entry
+   uint8_t*      payload;                        //pointer to the start of the payload within 'packet'
+   uint8_t       length;                         //length in bytes of the payload
+   //l4
+   uint8_t       l4_protocol;                    //l4 protocol to be used
+   uint16_t      l4_sourcePortORicmpv6Type;      //l4 source port
+   uint16_t      l4_destination_port;            //l4 destination port
+   uint8_t*      l4_payload;                     //pointer to the start of the payload of l4 (used for retransmits)
+   uint8_t       l4_length;                      //length of the payload of l4 (used for retransmits)
+   //l3
+   open_addr_t   l3_destinationORsource;         //128b IPv6 destination (down stack) or source address (up)
+   //l2
+   open_addr_t   l2_nextORpreviousHop;           //64b IEEE802.15.4 next (down stack) or previous (up) hop address
+   uint8_t       l2_frameType;                   //beacon, data, ack, cmd
+   uint8_t       l2_retriesLeft;
+   //l1 (drivers)
+   uint8_t       l1_txPower;
+   uint8_t       l1_rssi;
+   uint8_t       l1_lqi;
+   bool          l1_crc;
+   uint32_t      l1_rxTimestamp;
+   //the packet
+   uint8_t       packet[1+1+125+2+1];            // 1B spi address, 1B length, 125B data, 2B CRC, 1B LQI
+} OpenQueueEntry_t;
+
+//=========================== variables =======================================
 
 extern uint8_t openwsn_frequency_channel;
 

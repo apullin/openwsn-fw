@@ -1,9 +1,8 @@
-/*
- * Webpgages for Ohlone
- *
- * Authors:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief Webpgages for Ohlone
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #include "openwsn.h"
 #include "ohlone_webpages.h"
@@ -14,16 +13,16 @@
 #include "magnetometer.h"
 #include "sensitive_accel_temperature.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 uint16_t ohlone_replace_digit(uint8_t *buffer, uint16_t value, uint16_t place);
 void     ohlone_line_replace16(uint8_t *buffer, uint16_t value);
 uint8_t  ohlone_insert3sensors(uint8_t *buffer, uint8_t *sensors); 
 uint8_t  ohlone_insert4sensors(uint8_t *buffer, uint8_t *sensors); 
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void ohlone_webpages_init() {
      if (*(&eui64+3)==0x09) {                      // this is a GINA board (not a basestation)
@@ -99,7 +98,7 @@ uint8_t ohlone_webpage(uint8_t *getRequest, uint16_t chunk, uint8_t *packet) {
   return len;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 uint16_t ohlone_replace_digit(uint8_t *buffer, uint16_t value, uint16_t place) {
   uint8_t digit = '0';

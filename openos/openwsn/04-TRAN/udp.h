@@ -1,19 +1,13 @@
-/*
- * UDP implementation (as per http://tools.ietf.org/html/rfc768)
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief UDP implementation (as per http://tools.ietf.org/html/rfc768)
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __UDP_H
 #define __UDP_H
 
-typedef struct udp_ht {
-   uint16_t port_src;
-   uint16_t port_dest;
-   uint16_t length;
-   uint16_t checksum;
-} udp_ht;
+//=========================== define ==========================================
 
 enum UDP_enums {
    UDP_ID        = 3,
@@ -36,6 +30,19 @@ enum UDP_PORTS_enums {
    UDP_PORTS_8b_SRC_16b_DEST_INLINE  = 2,
    UDP_PORTS_4b_SRC_4b_DEST_INLINE   = 3,
 };
+
+//=========================== typedef =========================================
+
+typedef struct {
+   uint16_t port_src;
+   uint16_t port_dest;
+   uint16_t length;
+   uint16_t checksum;
+} udp_ht;
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void    udp_init();
 error_t udp_send(OpenQueueEntry_t* msg);

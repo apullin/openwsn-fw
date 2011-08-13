@@ -1,27 +1,28 @@
-/*
- * This is a standalone test program for the magnetometer of the GINA2.2b/c
- * board. Download the program to a GINA board, run it, and break after a few
- * seconds at the line indicated in the code. Use the Watch Window to see the 
- * value of the variables 'magnetometer_x', 'magnetometer_y' and 'magnetometer_z'.
- *
- * The digital connection is done through two-wire I2C serial bus:
- *    - P5.2: B1_I2C_SCL
- *    - P5.1: B1_I2C_SDA
- * 
- * The debug pins are:
- *    - P1.1: toggles at every measurement
- *    - P1.2: on during initial configuration, and toggles upon a new measurement
- *    - P1.3: toggles upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
- *    - P1.4: toggles upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
- *
- * Speed:
- *  - one measurement every ~242us (no data crunching, just the measurement)
- *  - one *new* measurement at 32Hz on average
- *
- * Authors:
- * Leo Keselman <lkeselman@berkeley.edu>, July 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief This is a standalone test program for the magnetometer of the GINA2.2b/c
+board.
+
+Download the program to a GINA board, run it, and break after a few
+seconds at the line indicated in the code. Use the Watch Window to see the 
+value of the variables 'magnetometer_x', 'magnetometer_y' and 'magnetometer_z'.
+
+The digital connection is done through two-wire I2C serial bus:
+   - P5.2: B1_I2C_SCL
+   - P5.1: B1_I2C_SDA
+ 
+The debug pins are:
+   - P1.1: toggles at every measurement
+   - P1.2: on during initial configuration, and toggles upon a new measurement
+   - P1.3: toggles upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
+   - P1.4: toggles upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
+
+Speed:
+   - one measurement every ~242us (no data crunching, just the measurement)
+   - one *new* measurement at 32Hz on average
+
+\author Leo Keselman <lkeselman@berkeley.edu>, July 2010
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
+*/
 
 #include "msp430x26x.h"
 #include "stdint.h"

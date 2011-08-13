@@ -1,9 +1,8 @@
-/*
- * Driver for the push button of the GINA2.2b/c boards.
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Driver for the push button of the GINA2.2b/c boards.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "button.h"
 

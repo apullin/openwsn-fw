@@ -1,14 +1,13 @@
-/*
- * Drivers for the magnetometer of the GINA2.2b/c board.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Drivers for the magnetometer of the GINA2.2b/c board.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "magnetometer.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 //register backup variables
 uint8_t reg_CONF_A;
@@ -20,9 +19,9 @@ uint8_t reg_ID_B;
 uint8_t reg_ID_C;
 bool magnetometer_configured = FALSE;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void magnetometer_init() {
    i2c_write_register(1,MAGNETOMETER_I2C_ADDR,
@@ -70,4 +69,4 @@ void magnetometer_get_measurement(uint8_t* spaceToWrite) {
    }
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

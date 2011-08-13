@@ -1,14 +1,13 @@
-/*
- * Drivers for the gyroscope of the GINA2.2b/c board.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Drivers for the gyroscope of the GINA2.2b/c board.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "gyro.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 //register backup variables
 uint8_t reg_WHO_AM_I;
@@ -19,9 +18,9 @@ uint8_t reg_INT_STATUS;
 uint8_t reg_PWR_MGM;
 bool gyro_configured = FALSE;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void gyro_init() {
    i2c_write_register(1,GYRO_I2C_ADDR, GYRO_REG_SMPLRT_DIV_ADDR, GYRO_REG_SMPLRT_DIV_SETTING);
@@ -57,4 +56,4 @@ void gyro_get_measurement(uint8_t* spaceToWrite) {
    }
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

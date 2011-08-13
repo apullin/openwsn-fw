@@ -1,32 +1,33 @@
-/*
- * This is a standalone program which retrieves all the IMU sensors values on the
- * GINA2.2b/c board: gyro, large range accel, magnetometer, sensitive accel,
- * temperature and sends this data over the radio (30 byte payload, no headers).
- * Download the program to a GINA board, run it, and use a sniffer to see the packets
- * fly through the air.
- *
- * The digital connection to the gyro, large range accel and magnetometeris is 
- * done through a two-wire I2C serial bus:
- *    - P5.2: B1_I2C_SCL
- *    - P5.1: B1_I2C_SDA
- *
- * In addition:
- *    - P1.5: interrupt pin from the gyro (not used)
- *    - P1.7: interrupt pin from the large range accelerometer (not used)
- *    - P5.4: output to configure the I2C mode of the large range accelerometer (keep high)
- * 
- * The debug pins are:
- *    - P1.1: toggles at every measurement
- *    - P1.2: on during initial configuration and pulses at a new measurement
- *    - P1.3: toggles upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
- *    - P1.4: toggles upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
- *
- * Speed:
- *    - one measurement every ~2.787ms
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone program which retrieves all the IMU sensors values on the
+       GINA2.2b/c board
+
+That is, gyro, large range accel, magnetometer, sensitive accel,
+temperature and sends this data over the radio (30 byte payload, no headers).
+Download the program to a GINA board, run it, and use a sniffer to see the packets
+fly through the air.
+
+The digital connection to the gyro, large range accel and magnetometeris is 
+done through a two-wire I2C serial bus:
+   - P5.2: B1_I2C_SCL
+   - P5.1: B1_I2C_SDA
+
+In addition:
+   - P1.5: interrupt pin from the gyro (not used)
+   - P1.7: interrupt pin from the large range accelerometer (not used)
+   - P5.4: output to configure the I2C mode of the large range accelerometer (keep high)
+
+The debug pins are:
+   - P1.1: toggles at every measurement
+   - P1.2: on during initial configuration and pulses at a new measurement
+   - P1.3: toggles upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
+   - P1.4: toggles upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
+
+Speed:
+   - one measurement every ~2.787ms
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 //board
 #include "gina.h"

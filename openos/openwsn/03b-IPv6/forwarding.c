@@ -1,9 +1,8 @@
-/*
- * Forwarding engine
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Forwarding engine
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "forwarding.h"
@@ -17,14 +16,14 @@
 #include "udp.h"
 #include "tcp.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void getNextHop(open_addr_t* destination, open_addr_t* addressToWrite);
 error_t fowarding_send_internal(OpenQueueEntry_t *msg);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void forwarding_init() {
 }
@@ -87,7 +86,7 @@ bool forwarding_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ================================
+//=========================== private =========================================
 
 error_t fowarding_send_internal(OpenQueueEntry_t *msg) {
    getNextHop(&(msg->l3_destinationORsource),&(msg->l2_nextORpreviousHop));

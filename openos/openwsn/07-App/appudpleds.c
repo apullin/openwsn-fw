@@ -1,9 +1,8 @@
-/*
- * UDP LEDs application
- *
- * Authors:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief UDP LEDs application
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #include "openwsn.h"
 #include "appudpleds.h"
@@ -13,11 +12,11 @@
 #include "openserial.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void appudpleds_init() {
    P2DIR  |=  0x0F;                              // P2.0-3 output
@@ -58,4 +57,4 @@ bool appudpleds_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

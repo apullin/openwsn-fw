@@ -1,19 +1,18 @@
-/*
- * Driver for the IEEE802.15.4e timers.
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- *
- * These timers are dedicated to IEEE802.15.4e. IEEE802.15.4e uses TimerA,
- * clocked from the 32kHz crystal, in up mode, with interrupts enabled.
- * The counter resetting corresponds to the slot edge.
- *
- * IEEE802.15.4e only uses the following registers:
- * - CCR0 holds the slot duration; it will cause the counter to reset
- * - CCR1 is used in compare mode to time the MAC FSM
- * - CCR2 is used in capture mode to timestamp the arrival of a packet for
- *   synchronization.
- */
+/**
+\brief Driver for the IEEE802.15.4e timers.
+
+These timers are dedicated to IEEE802.15.4e. IEEE802.15.4e uses TimerA,
+clocked from the 32kHz crystal, in up mode, with interrupts enabled.
+The counter resetting corresponds to the slot edge.
+
+IEEE802.15.4e only uses the following registers:
+- CCR0 holds the slot duration; it will cause the counter to reset
+- CCR1 is used in compare mode to time the MAC FSM
+- CCR2 is used in capture mode to timestamp the arrival of a packet for
+  synchronization.
+  
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #include "msp430x26x.h"
 #include "ieee154etimer.h"
@@ -115,5 +114,6 @@ void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite) {
 void ieee154etimer_disableCaptureInterrupt() {
    TACCTL2 &= ~CCIE;
 }
+*/
 
 //=========================== private =========================================

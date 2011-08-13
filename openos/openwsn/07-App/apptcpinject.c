@@ -1,9 +1,8 @@
-/*
- * TCP Inject application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief TCP Inject application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "apptcpinject.h"
@@ -12,16 +11,16 @@
 #include "tcp.h"
 #include "openqueue.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 OpenQueueEntry_t* apptcpinject_pkt;
 bool              apptcpinject_sending;
 open_addr_t       apptcpinject_hisAddress;
 uint16_t          apptcpinject_hisPort;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void apptcpinject_init() {
 }
@@ -91,4 +90,4 @@ bool apptcpinject_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

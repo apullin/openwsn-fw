@@ -1,18 +1,18 @@
-/*
- * Driver for the I2C bus, initialy downloaded from Texas Instruments,
- * heavily modified since.
- *
- * Authors:
- * Uli Kretzschmar, Texas Instruments Deutschland GmbH, November 2007
- * Hoam Chung, June 2010
- * Leo Keselman <lkeselman@berkeley.edu>, July 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Driver for the I2C bus, initialy downloaded from Texas Instruments,
+       heavily modified since.
+
+\author Uli Kretzschmar, Texas Instruments Deutschland GmbH, November 2007
+\author Hoam Chung, June 2010
+\author Leo Keselman <lkeselman@berkeley.edu>, July 2010
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "msp430x26x.h"
 #include "i2c.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
+
 struct {
    volatile unsigned char* ctl0[2];
    volatile unsigned char* ctl1[2];
@@ -40,7 +40,7 @@ unsigned char *TI_transmit_field;
 unsigned char *TI_receive_field;
 signed   char byteCtr;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void i2c_init_transmit(int bus_num,unsigned char slave_address);
 void i2c_transmit(int bus_num,unsigned char byteCount, unsigned char *field);
@@ -48,12 +48,11 @@ void i2c_init_receive(int bus_num,unsigned char slave_address);
 void i2c_receive(int bus_num,unsigned char byteCount, unsigned char *field);
 unsigned char i2c_busy(int bus_num);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 //#define bus_num 1
 
-void i2c_init()
-{
+void i2c_init() {
    i2c_control.ctl0[0]=&UCB0CTL0;
    i2c_control.ctl0[1]=&UCB1CTL0;
    i2c_control.ctl1[0]=&UCB0CTL1;
@@ -247,10 +246,10 @@ unsigned char i2c_busy(int bus_num) {
    return (*i2c_control.stat[bus_num] & UCBBUSY);
 }
 
-//=========================== interrupt ISR handler ===========================
+//=========================== interrupt handlers ==============================
 
 //executed in ISR, called from scheduler.c
-void i2c_rxInterrupt(int bus_num) {
+void isr_i2c_rx(int bus_num) {
    // fires when a data byte is received from the slave
    if (*i2c_control.stat[bus_num] & UCNACKIFG) {                   // if slave does not send ACK (only happens after I send addr)
       *i2c_control.ctl1[bus_num] |=  UCTXSTP;                      // send STOP
@@ -259,7 +258,7 @@ void i2c_rxInterrupt(int bus_num) {
 }
 
 //executed in ISR, called from scheduler.c
-void i2c_txInterrupt(int bus_num) {
+void isr_i2c_tx(int bus_num) {
    // fires when a byte of data (including START) is written
    // from the register to the USCI shift register
    if (*i2c_control.iflag[bus_num] & i2c_control.iflagrx[bus_num]){                      // I received something

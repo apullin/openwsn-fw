@@ -1,12 +1,19 @@
-/*
- * UDP WARPWING application
- *
- * Author:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, October 2010
- */
+/**
+\brief UDP WARPWING application
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, October 2010
+*/
 
 #ifndef __APPUDPWARPWING_H
 #define __APPUDPWARPWING_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void appudpwarpwing_init();
 void appudpwarpwing_trigger();

@@ -1,36 +1,35 @@
-/*
- * Driver for the general purpose timers.
- *
- * Authors:
- * Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- *
- * This file drives all timers off of TimerB clocked from the 32kHz crystal, in
- * continuous mode.
- *
- * It's a really simple implementation, in which each module which needs a timer
- * is assigned one of the 7 TimerB compare registers. This means that at most 7
- * modules can be assigned a timer.
- * 
- * When we'll need more, we'll have implement some software fanciness which will
- * run all timer off of a single compare register, offer dynamic timer creation,
- * etc, etc.
- *
- * For now, KISS.
- */
+/**
+\brief Driver for the general purpose timers.
+
+This file drives all timers off of TimerB clocked from the 32kHz crystal, in
+continuous mode.
+
+It's a really simple implementation, in which each module which needs a timer
+is assigned one of the 7 TimerB compare registers. This means that at most 7
+modules can be assigned a timer.
+
+When we'll need more, we'll have implement some software fanciness which will
+run all timer off of a single compare register, offer dynamic timer creation,
+etc, etc.
+
+For now, KISS.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
+*/
 
 #include "msp430x26x.h"
 #include "timers.h"
 #include "scheduler.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint16_t timers_period[TIMER_COUNT];
 bool     timers_continuous[TIMER_COUNT];
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void timer_init() {
    uint8_t i;
@@ -103,7 +102,7 @@ void timer_stop(uint8_t timer_id) {
    }
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void timer_start(uint8_t timer_id, uint16_t duration, bool continuous) {
    timers_period[timer_id]     = duration;

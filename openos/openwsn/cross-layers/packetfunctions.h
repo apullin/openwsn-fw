@@ -1,14 +1,21 @@
-/*
- * A library of functions useful for manipulating packets and addresses
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief A library of functions useful for manipulating packets and addresses
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __PACKETFUNCTIONS_H
 #define __PACKETFUNCTIONS_H
 
 #include "openwsn.h"
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 // address translation
 void     packetfunctions_ip128bToMac64b(open_addr_t* ip128b,open_addr_t* prefix64btoWrite,open_addr_t* mac64btoWrite);
@@ -33,11 +40,11 @@ void     packetfunctions_reserveFooterSize(OpenQueueEntry_t* pkt, uint8_t header
 void     packetfunctions_tossFooter(OpenQueueEntry_t* pkt, uint8_t header_length);
 
 //calculate CRC
-void packetfunctions_calculateCRC(OpenQueueEntry_t* msg);
-bool packetfunctions_checkCRC(OpenQueueEntry_t* msg);
+void     packetfunctions_calculateCRC(OpenQueueEntry_t* msg);
+bool     packetfunctions_checkCRC(OpenQueueEntry_t* msg);
 
 //calculate checksum
-void packetfunctions_calculateChecksum(OpenQueueEntry_t* msg, uint8_t* checksum_ptr);
+void     packetfunctions_calculateChecksum(OpenQueueEntry_t* msg, uint8_t* checksum_ptr);
 
 // endianness
 void     packetfunctions_htons( uint16_t val, uint8_t* dest );

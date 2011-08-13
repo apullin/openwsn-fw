@@ -1,9 +1,8 @@
-/*
- * Drivers for the large range accelerometer of the GINA2.2b/c board.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Drivers for the large range accelerometer of the GINA2.2b/c board.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __LARGE_RANGE_ACCEL_H
 #define __LARGE_RANGE_ACCEL_H
@@ -12,7 +11,7 @@
 #include "stdint.h"
 #include "i2c.h"
 
-//===================================== define ================================
+//=========================== define ==========================================
 
 //address
 #define LARGE_RANGE_ACCEL_I2C_ADDR               0x18 // b0011000_
@@ -52,7 +51,11 @@
                                                       // 0bxxxxx0xx: MOTlen        : no motion wakeup feature
                                                       // 0bxxxxxx00: unused
 
-//===================================== prototypes ============================
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void large_range_accel_init();
 void large_range_accel_disable();

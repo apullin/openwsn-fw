@@ -1,25 +1,15 @@
-/*
- * TCP implementation (as per http://tools.ietf.org/html/rfc793)
- * See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief TCP implementation (as per http://tools.ietf.org/html/rfc793)
+
+See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __TCP_H
 #define __TCP_H
 
-typedef struct tcp_ht {
-   uint16_t source_port;
-   uint16_t destination_port;
-   uint32_t sequence_number;
-   uint32_t ack_number;
-   uint8_t  data_offset;
-   uint8_t  control_bits;
-   uint16_t window_size;
-   uint16_t checksum;
-   uint16_t urgent_pointer;
-} tcp_ht;
+//=========================== define ==========================================
 
 enum {
    TCP_INITIAL_SEQNUM             = 100,
@@ -94,6 +84,24 @@ enum TCP_FLAG_POSITIONS_enum {
    TCP_SYN                        = 1,
    TCP_FIN                        = 0,
 };
+
+//=========================== typedef =========================================
+
+typedef struct {
+   uint16_t source_port;
+   uint16_t destination_port;
+   uint32_t sequence_number;
+   uint32_t ack_number;
+   uint8_t  data_offset;
+   uint8_t  control_bits;
+   uint16_t window_size;
+   uint16_t checksum;
+   uint16_t urgent_pointer;
+} tcp_ht;
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void     tcp_init();
 error_t  tcp_connect(open_addr_t* dest, uint16_t param_hisPort, uint16_t param_myPort);

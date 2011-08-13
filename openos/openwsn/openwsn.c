@@ -1,10 +1,9 @@
-/*
- * General OpenWSN definitions
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief General OpenWSN definitions
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #include "openwsn.h"
 #include "scheduler.h"
@@ -52,15 +51,15 @@
 #include "timers.h"
 #endif
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint8_t openwsn_frequency_channel;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void openwsn_init();
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void openwsn_init() {
    openwsn_frequency_channel = DEFAULTCHANNEL;
@@ -109,4 +108,4 @@ void openwsn_init() {
 #endif
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

@@ -1,9 +1,8 @@
-/*
- * UDP GINA application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief UDP GINA application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
+*/
 
 #include "openwsn.h"
 #include "appudpgina.h"
@@ -18,17 +17,17 @@
 #include "openserial.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint8_t           appudpgina_mesurements_left;
 OpenQueueEntry_t* appudpgina_pktReceived;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void appudpgina_send();
 void appudpgina_reset();
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void appudpgina_init() {
    if (*(&eui64+3)==0x09) {                      // this is a GINA board (not a basestation)
@@ -74,7 +73,7 @@ bool appudpgina_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void appudpgina_send() {
    OpenQueueEntry_t* packetToSend;

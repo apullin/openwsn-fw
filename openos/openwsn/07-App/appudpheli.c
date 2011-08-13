@@ -1,10 +1,9 @@
-/*
- * UDP Helicopter application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief UDP Helicopter application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #include "openwsn.h"
 #include "appudpheli.h"
@@ -18,14 +17,14 @@
 #define MOTORMAX    MOTORPERIOD
 #define MOTORMIN    0
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void appudpheli_setmotor(uint8_t which, uint16_t value);
 uint16_t appudpheli_threshold(uint16_t value);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void appudpheli_init() {
    P1DIR   |= 0x0C;                              // P1.2,3 output
@@ -75,7 +74,7 @@ bool appudpheli_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void appudpheli_setmotor(uint8_t which, uint16_t value) {
    /*if (value < MOTORMIN) {

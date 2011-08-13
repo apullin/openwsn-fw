@@ -1,9 +1,8 @@
-/*
- * Drivers for the magnetometer of the GINA2.2b/c board.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Drivers for the magnetometer of the GINA2.2b/c board.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __MAGNETOMETER_H
 #define __MAGNETOMETER_H
@@ -12,7 +11,7 @@
 #include "stdint.h"
 #include "i2c.h"
 
-//===================================== define ================================
+//=========================== define ==========================================
 
 //address
 #define MAGNETOMETER_I2C_ADDR               0x1E //b0011000_
@@ -46,7 +45,12 @@
 #define MAGNETOMETER_REG_MODE_SLEEP         0x03 // 0b000000xx: unused
                                                  // 0bxxxxxx11: sleep mode
 
-//===================================== prototypes ============================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void magnetometer_init();
 void magnetometer_enable();

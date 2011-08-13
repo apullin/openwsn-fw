@@ -1,8 +1,5 @@
-/*
-Driver for the SPI bus.
-
-Authors:
-Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+/**
+\brief Driver for the SPI bus.
 
 This driver can be used in two modes:
 - When ISR_SPI is defined, the driver enables the USCI_A0 RX/TX interrupt by
@@ -22,6 +19,8 @@ This driver can be used in two modes:
   anything else, it also means the execution is perfectly deterministic if the 
   initial function is called from ISR. Hence the recommended use of that mode
   when using IEEE802.15.4e.
+  
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
 */
 
 #include "msp430x26x.h"
@@ -29,7 +28,7 @@ This driver can be used in two modes:
 #include "radio.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint8_t* spi_tx_buffer;
 uint8_t* spi_rx_buffer;
@@ -46,22 +45,11 @@ struct {
    volatile unsigned char* rxbuf[2];
 } spi_control;
 
-/*
- * CTL0
- * CTL1
- * BR0
- * BR1
- * P4PINS
- * IE2
- * TXBUF
- * RXBUF
- */
-
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void spi_init() {
    UCA0CTL1  =  UCSSEL1 + UCSSEL0 + UCSWRST;     // SMCLK, reset
@@ -119,7 +107,7 @@ void spi_read_buffer(OpenQueueEntry_t* packet, uint8_t length) {
 #endif
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 #ifdef ISR_SPI
 // this implemetation uses interrupts to signal that a byte was sent
@@ -166,11 +154,11 @@ void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive) {
 }
 #endif
 
-//=========================== interrupt ISR handler ===========================
+//=========================== interrupt handlers ==============================
 
 #ifdef ISR_SPI
 //executed in ISR, called from scheduler.c
-void spi_rxInterrupt() {
+void isr_spi_rx() {
    *spi_rx_buffer = UCA0RXBUF;
    spi_rx_buffer++;
    if (num_bytes>0) {

@@ -1,12 +1,19 @@
-/*
- * UDP Echo application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief UDP Echo application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __APPUDPECHO_H
 #define __APPUDPECHO_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void appudpecho_init();
 void appudpecho_receive(OpenQueueEntry_t* msg);

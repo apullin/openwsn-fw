@@ -1,9 +1,8 @@
-/*
- * The component which managing input/output over the serial port
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief The component which managing input/output over the serial port
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "openserial.h"
@@ -305,10 +304,10 @@ uint16_t output_buffer_index_read_increment() {
    return temp_openserial_output_buffer_index_read;
 }
 
-//=========================== interrupt ISR handler ===========================
+//=========================== interrupt handlers ==============================
 
 //executed in ISR, called from scheduler.c
-void openserial_txInterrupt() {
+void isr_openserial_tx() {
    UC1IFG &= ~UCA1TXIFG; // TODO: do not clear, but disable when done
    switch (openserial_mode) {
       case MODE_INPUT:
@@ -334,7 +333,7 @@ void openserial_txInterrupt() {
 }
 
 //executed in ISR, called from scheduler.c
-void openserial_rxInterrupt() {
+void isr_openserial_rx() {
    UC1IFG &= ~UCA1RXIFG;  // TODO: do not clear, but disable when done
    if (openserial_mode==MODE_INPUT) {
       if (openserial_ready_receive_command==TRUE) {

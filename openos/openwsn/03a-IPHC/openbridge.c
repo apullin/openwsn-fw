@@ -1,10 +1,9 @@
-/*
- * OpenBridge allows any OpenWSN node to act like a bridge between
- * the wireless sensor network and the Internet.
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief OpenBridge allows any OpenWSN node to act like a bridge between
+       the wireless sensor network and the Internet.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "openbridge.h"
@@ -14,11 +13,11 @@
 #include "idmanager.h"
 #include "openqueue.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void openbridge_init() {
 }
@@ -72,4 +71,4 @@ bool openbridge_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

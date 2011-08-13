@@ -1,10 +1,9 @@
-/*
- * Minimal FCFS scheduler for the GINA2.2b/c boards.
- *
- * Authors:
- * Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Minimal FCFS scheduler for the GINA2.2b/c boards.
+
+\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 //ISR_RADIO
 //ISR_BUTTON
@@ -22,15 +21,15 @@
 #include "i2c.h"
 #include "openserial.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint8_t task_list[MAX_NUM_TASKS];
 uint8_t index_first_task;
 uint8_t num_tasks;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void scheduler_init() {
    uint8_t task_counter;
@@ -102,7 +101,9 @@ void scheduler_push_task(int8_t task_id) {
    num_tasks++;
 }
 
-//=========================== interrupts handled as tasks =====================
+//=========================== interrupt handlers ==============================
+
+//======= handled as tasks
 
 #pragma vector = PORT2_VECTOR
 __interrupt void PORT2_ISR (void) {
@@ -212,7 +213,7 @@ __interrupt void TIMERB1through6_ISR (void) {
    DEBUG_PIN_ISR_CLR();
 }
 
-//=========================== interrupts handled in ISR mode ===================
+//======= handled in ISR mode
 
 #pragma vector = PORT1_VECTOR
 __interrupt void PORT1_ISR (void) {
@@ -234,7 +235,7 @@ __interrupt void TIMERA0_ISR (void) {
    CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef OPENWSN_STACK
-   ieee154e_newSlot();
+   isr_ieee154e_newSlot();
 #endif
    DEBUG_PIN_ISR_CLR();
 }
@@ -248,13 +249,8 @@ __interrupt void TIMERA1and2_ISR (void) {
    uint16_t taiv_temp = TAIV;                    // read only once because accessing TAIV resets it
    switch (taiv_temp) {
       case 0x0002: // timerA CCR1 compare
-         ieee154e_timerFires();
+         isr_ieee154e_timer();
          break;
-      /*
-      case 0x0004: // timerA CCR2 capture
-         ieee154e_timerCaptures();
-         break;
-      */
       default:
          while(1);                               // this should not happen
    }
@@ -278,12 +274,12 @@ __interrupt void USCIAB1TX_ISR(void) {
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1TXIFG) && (UC1IE & UCB1TXIE)) ||
         ((UC1IFG & UCB1RXIFG) && (UC1IE & UCB1RXIE)) ) {
-      i2c_txInterrupt(1);                         // implemented in I2C driver
+      isr_i2c_tx(1);                         // implemented in I2C driver
    }
 #endif
 #ifdef ISR_SERIAL
    if ( (UC1IFG & UCA1TXIFG) && (UC1IE & UCA1TXIE) ){
-      openserial_txInterrupt();                  // implemented in serial driver
+      isr_openserial_tx();                       // implemented in serial driver
    }
 #endif
    DEBUG_PIN_ISR_CLR();
@@ -296,13 +292,13 @@ __interrupt void USCIAB1RX_ISR(void) {
 #ifdef ISR_I2C
    if ( ((UC1IFG & UCB1RXIFG) && (UC1IE & UCB1RXIE)) ||
          (UCB1STAT & UCNACKIFG) ) {
-      i2c_rxInterrupt(1);                         // implemented in I2C driver
+      isr_i2c_rx(1);                             // implemented in I2C driver
    }
 #endif
 
 #ifdef ISR_SERIAL
    if ( (UC1IFG & UCA1RXIFG) && (UC1IE & UCA1RXIE) ){
-      openserial_rxInterrupt();                  // implemented in serial driver
+      isr_openserial_rx();                  // implemented in serial driver
    }
 #endif
    DEBUG_PIN_ISR_CLR();
@@ -314,19 +310,19 @@ __interrupt void USCIAB0RX_ISR (void) {
     DEBUG_PIN_ISR_SET();
 #ifdef ISR_SPI
    if ( (IFG2 & UCA0RXIFG) && (IE2 & UCA0RXIE) ) {
-      spi_rxInterrupt();                         // implemented in SPI driver
+      isr_spi_rx();                         // implemented in SPI driver
    }
 #endif
 #ifdef ISR_I2C
    if ( ((IFG2 & UCB0RXIFG) && (IE2 & UCB0RXIE)) ||
         (UCB0STAT & UCNACKIFG) ) {
-      i2c_rxInterrupt(0);                         // implemented in I2C driver
+      isr_i2c_rx(0);                             // implemented in I2C driver
    }
 #endif
    DEBUG_PIN_ISR_CLR();
 }
 
-//=========================== interrupts handled as CPUOFF ====================
+//======= handled as CPUOFF
 
 // TODO: this is bad practice, should redo, even a busy wait is better
 

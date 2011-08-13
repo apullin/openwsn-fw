@@ -1,12 +1,19 @@
-/*
- * UDP Timer application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief UDP Timer application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __APPUDPTIMER_H
 #define __APPUDPTIMER_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void appudptimer_init();
 void appudptimer_trigger();

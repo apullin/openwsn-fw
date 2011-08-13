@@ -1,9 +1,8 @@
-/*
- * Radio driver for the Atmel AT86RF231 IEEE802.15.4-compliant radio
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief Radio driver for the Atmel AT86RF231 IEEE802.15.4-compliant radio
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #ifndef __RADIO_H
 #define __RADIO_H
@@ -11,6 +10,8 @@
 #include "openwsn.h"
 #include "msp430x26x.h"
 #include "atmel.h"
+
+//=========================== define ==========================================
 
 /**
 \brief Possible values for the status of the radio.
@@ -67,7 +68,11 @@ enum radio_antennaselection_enum {
    RADIO_CHIP_ANTENNA             = 0x05,   // always use the chip antenna
 };
 
-//===================================== public prototypes =====================
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 // called from the MAC layer
 void radio_init();
@@ -80,7 +85,7 @@ void radio_rxNow();
 void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer);
 void radio_rfOff();
 
-// called from the scheduler
+// interrupt handlers
 void isr_radio();
 
 #endif

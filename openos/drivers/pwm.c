@@ -1,4 +1,8 @@
-// TIMER B
+/**
+\brief Drivers for configuring the timer in Pulse Width Modulation mode
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "pwm.h"
 #include "leds.h"

@@ -1,11 +1,10 @@
-/*
- * IEEE802.15.4e TSCH
- *
- * Authors:
- * Branko Kerkez   <bkerkez@berkeley.edu>, March 2011
- * Fabien Chraim   <chraim@eecs.berkeley.edu>, June 2011
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief IEEE802.15.4e TSCH
+
+\author Branko Kerkez <bkerkez@berkeley.edu>, March 2011
+\author Fabien Chraim <chraim@eecs.berkeley.edu>, June 2011
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #include "openwsn.h"
 #include "IEEE802154E.h"
@@ -21,7 +20,7 @@
 #include "neighbors.h"
 #include "res.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 typedef struct {
    asn_t              asn;                // current absolute slot number
@@ -37,7 +36,7 @@ typedef struct {
 
 ieee154e_vars_t ieee154e_vars;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 // SYNCHRONIZING
 void    activity_synchronize_newSlot();
@@ -84,7 +83,7 @@ void    change_state(uint8_t newstate);
 void    endSlot();
 bool    mac_debugPrint();
 
-//===================================== public from upper layer ===============
+//======= from upper layer
 
 /**
 \brief This function initializes this module.
@@ -147,14 +146,14 @@ error_t mac_send(OpenQueueEntry_t* msg) {
    return E_SUCCESS;
 }
 
-//===================================== public (events) =======================
+//======= events
 
 /**
 \brief Indicates a new slot has just started.
 
 This function executes in ISR mode, when the new slot timer fires.
 */
-void ieee154e_newSlot() {
+void isr_ieee154e_newSlot() {
    if (ieee154e_vars.isSync==FALSE) {
       activity_synchronize_newSlot();
    } else {
@@ -167,7 +166,7 @@ void ieee154e_newSlot() {
 
 This function executes in ISR mode, when the FSM timer fires.
 */
-void ieee154e_timerFires() {
+void isr_ieee154e_timer() {
    switch (ieee154e_vars.state) {
       case S_TXDATAOFFSET:
          activity_ti2();
@@ -311,13 +310,13 @@ void ieee154e_endOfFrame(uint16_t capturedTime) {
    }
 }
 
-//===================================== public (misc) =========================
+//======= misc
 
 bool mac_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 //============ SYNCHRONIZING
 
@@ -983,7 +982,7 @@ inline void activity_ri9(uint16_t capturedTime) {
    endSlot();
 }
 
-//===================================== helper functions ======================
+//=========================== private =========================================
 
 /**
 \brief Calculates the frequency to transmit on, based on the 

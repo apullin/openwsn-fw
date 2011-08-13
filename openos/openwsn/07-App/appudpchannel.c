@@ -1,11 +1,11 @@
-/*
- * UDP application to change the channel of a mote. If the mote is connected to 
- * a computer, one can trigger this application, specifying the IPv6 address of
- * a remote node.
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief UDP application to change the channel of a mote.
+
+If the mote is connected to a computer, one can trigger this application,
+specifying the IPv6 address of a remote node.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "appudpchannel.h"
@@ -14,15 +14,15 @@
 #include "packetfunctions.h"
 #include "udp.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint8_t appudpchannel_new_channel;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void appudpchannel_change_channel(uint8_t new_channel);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void appudpchannel_init() {
    appudpchannel_new_channel = 0;
@@ -83,7 +83,7 @@ bool appudpchannel_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void appudpchannel_change_channel(uint8_t new_channel) {
    if (new_channel>=11 && new_channel<=26) {

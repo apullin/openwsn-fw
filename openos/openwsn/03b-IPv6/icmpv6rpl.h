@@ -1,12 +1,19 @@
-/*
- * ICMPv6 RPL implementation
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief ICMPv6 RPL implementation
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __ICMPv6RPL_H
 #define __ICMPv6RPL_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void icmpv6rpl_init();
 void icmpv6rpl_trigger();

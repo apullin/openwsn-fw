@@ -1,9 +1,8 @@
-/*
- * IEEE802.15.4 header manipulation funtions
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief IEEE802.15.4 header manipulation funtions
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #include "openwsn.h"
 #include "IEEE802154.h"
@@ -11,11 +10,11 @@
 #include "idmanager.h"
 #include "openserial.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void prependIEEE802154header(OpenQueueEntry_t* msg,
                              uint8_t           frameType,
@@ -223,4 +222,4 @@ void retrieveIEEE802154header(OpenQueueEntry_t*      msg,
    ieee802514_header->valid=TRUE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

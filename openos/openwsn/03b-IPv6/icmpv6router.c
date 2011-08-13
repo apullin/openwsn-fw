@@ -1,9 +1,8 @@
-/*
- * ICMPv6 router advertisement implementation
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief ICMPv6 router advertisement implementation
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "icmpv6router.h"
@@ -13,15 +12,15 @@
 #include "packetfunctions.h"
 #include "idmanager.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 bool        icmpv6router_busySending;
 open_addr_t icmpv6router_hisAddress;
 uint16_t    icmpv6router_seq=0;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void icmpv6router_init() {
    icmpv6router_busySending = FALSE;
@@ -123,4 +122,4 @@ bool icmpv6router_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

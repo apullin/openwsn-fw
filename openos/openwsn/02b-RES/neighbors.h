@@ -1,14 +1,17 @@
-/*
- * Implementation of neighbors
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Implementation of neighbors
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __NEIGHBORS_H
 #define __NEIGHBORS_H
 
-typedef struct neighborEntry_t {
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+typedef struct {
    bool             used;
    uint8_t          parentPreference;
    bool             stableNeighbor;
@@ -24,10 +27,14 @@ typedef struct neighborEntry_t {
    timervalue_t     timestamp;
 } neighborEntry_t;
 
-typedef struct debugNeighborEntry_t {
+typedef struct {
    slotOffset_t    row;
    neighborEntry_t neighborEntry;
 } debugNeighborEntry_t;
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void      neighbors_init();
 void      neighbors_receiveDIO(OpenQueueEntry_t* msg);

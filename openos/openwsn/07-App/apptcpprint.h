@@ -1,12 +1,19 @@
-/*
- * TCP Echo Inject
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief TCP Echo Inject
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __APPTCPPRINT_H
 #define __APPTCPPRINT_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void apptcpprint_init();
 bool apptcpprint_shouldIlisten();
