@@ -19,6 +19,8 @@ uint8_t reg_INT_STATUS;
 uint8_t reg_PWR_MGM;
 bool gyro_configured = FALSE;
 
+//===================================== prototypes ============================
+
 //===================================== public ================================
 
 void gyro_init() {
@@ -54,3 +56,5 @@ void gyro_get_measurement(uint8_t* spaceToWrite) {
       }
    }
 }
+
+//===================================== private ===============================

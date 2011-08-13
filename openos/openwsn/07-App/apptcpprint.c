@@ -40,3 +40,5 @@ void apptcpprint_sendDone(OpenQueueEntry_t* msg, error_t error) {
 bool apptcpprint_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

@@ -12,7 +12,7 @@
 #include "msp430x26x.h"
 #include "i2c.h"
 
-//=========================== variables ===========================================
+//===================================== variables =============================
 struct {
    volatile unsigned char* ctl0[2];
    volatile unsigned char* ctl1[2];
@@ -40,7 +40,7 @@ unsigned char *TI_transmit_field;
 unsigned char *TI_receive_field;
 signed   char byteCtr;
 
-//=========================== prototypes ==========================================
+//===================================== prototypes ============================
 
 void i2c_init_transmit(int bus_num,unsigned char slave_address);
 void i2c_transmit(int bus_num,unsigned char byteCount, unsigned char *field);
@@ -48,7 +48,7 @@ void i2c_init_receive(int bus_num,unsigned char slave_address);
 void i2c_receive(int bus_num,unsigned char byteCount, unsigned char *field);
 unsigned char i2c_busy(int bus_num);
 
-//=========================== public ==============================================
+//===================================== public ================================
 
 //#define bus_num 1
 
@@ -118,7 +118,7 @@ void i2c_read_registers(uint8_t bus_num, uint8_t slave_addr, uint8_t reg_addr, u
    __delay_cycles(I2C_BUS_FREE_TIME);
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // unsigned char i2c_slave_present(unsigned char slave_address)
 //
 // This function is used to look for a slave address on the I2C bus.  
@@ -127,7 +127,7 @@ void i2c_read_registers(uint8_t bus_num, uint8_t slave_addr, uint8_t reg_addr, u
 // IN:   unsigned char slave_address  =>  Slave Address
 // OUT:  unsigned char                =>  0: address was not found, 
 //                                        1: address found
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 unsigned char i2c_slave_present(int bus_num, unsigned char slave_address) {
    unsigned char uc1ie_bak, slaveadr_bak, ucb1i2cie_bak, returnValue;
    //store state
@@ -154,15 +154,15 @@ unsigned char i2c_slave_present(int bus_num, unsigned char slave_address) {
    return returnValue;                           // return whether or not 
 }
 
-//=========================== helper functions ====================================
+//=========================== private =========================================
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // void i2c_init_transmit(unsigned char slave_address)
 //
 // This function initializes the USCI module for master-transmit operation. 
 //
 // IN:   unsigned char slave_address   =>  Slave Address
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void i2c_init_transmit(int bus_num, unsigned char slave_address){
    *i2c_control.port[bus_num]     |=  SDA_PIN + SCL_PIN;              // Assign I2C pins to USCI_B1
    *i2c_control.ctl1[bus_num]   =  UCSWRST;                        // set SW reset on USCI module
@@ -176,21 +176,21 @@ void i2c_init_transmit(int bus_num, unsigned char slave_address){
    *i2c_control.ie[bus_num]      =  i2c_control.ietx[bus_num];                       // USCI_B1 transmit interrupt enabled
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // void i2c_transmit(unsigned char byteCount, unsigned char *field)
 //
 // This function is used to start an I2C commuincation in master-transmit mode. 
 //
 // IN:   unsigned char byteCount  =>  number of bytes that should be transmitted
 //       unsigned char *field     =>  array variable. Its content will be sent.
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void i2c_transmit(int bus_num, unsigned char byteCount, unsigned char *field) {
    TI_transmit_field = field;
    byteCtr   = byteCount;
    *i2c_control.ctl1[bus_num] |= UCTR + UCTXSTT;                   // I2C transmitter, transmit start condition
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // void i2c_init_receive(unsigned char slave_address)
 //
 // This function initializes the USCI module for master-receive operation. 
@@ -210,14 +210,14 @@ void i2c_init_receive(int bus_num, unsigned char slave_address) {
    *i2c_control.ie[bus_num]      =  i2c_control.ierx[bus_num];                       // Enable RX interrupt
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // void i2c_receive(unsigned char byteCount, unsigned char *field)
 //
 // This function is used to start an I2C commuincation in master-receiver mode. 
 //
 // IN:   unsigned char byteCount  =>  number of bytes that should be read
 //       unsigned char *field     =>  array variable used to store received data
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void i2c_receive(int bus_num, unsigned char byteCount, unsigned char *field) {
    TI_receive_field = field;
    if ( byteCount == 1 ){
@@ -235,14 +235,14 @@ void i2c_receive(int bus_num, unsigned char byteCount, unsigned char *field) {
    }
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // unsigned char i2c_busy()
 //
 // This function is used to check if there is commuincation in progress. 
 //
 // OUT:  unsigned char  =>  0: I2C bus is idle, 
 //                          1: communication is in progress
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 unsigned char i2c_busy(int bus_num) {
    return (*i2c_control.stat[bus_num] & UCBBUSY);
 }

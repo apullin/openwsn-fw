@@ -1,5 +1,5 @@
 /*
- * OpenWSN IPManager
+ * OpenWSN IDManager
  *
  * Authors:
  * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
@@ -212,3 +212,5 @@ bool idmanager_debugPrint() {
    openserial_printStatus(STATUS_IDMANAGER_ID,(uint8_t*)&output,sizeof(debugIDManagerEntry_t));
    return TRUE;
 }
+
+//===================================== private ===============================

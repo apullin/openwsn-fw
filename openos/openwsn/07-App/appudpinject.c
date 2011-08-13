@@ -74,3 +74,5 @@ void appudpinject_receive(OpenQueueEntry_t* msg) {
 bool appudpinject_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

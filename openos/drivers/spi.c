@@ -29,7 +29,7 @@ This driver can be used in two modes:
 #include "radio.h"
 #include "packetfunctions.h"
 
-//=========================== variables ===========================================
+//===================================== variables =============================
 
 uint8_t* spi_tx_buffer;
 uint8_t* spi_rx_buffer;
@@ -56,11 +56,12 @@ struct {
  * TXBUF
  * RXBUF
  */
-//=========================== prototypes ==========================================
+
+//===================================== prototypes ============================
 
 void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive);
 
-//=========================== public ==============================================
+//===================================== public ================================
 
 void spi_init() {
    UCA0CTL1  =  UCSSEL1 + UCSSEL0 + UCSWRST;     // SMCLK, reset
@@ -118,7 +119,7 @@ void spi_read_buffer(OpenQueueEntry_t* packet, uint8_t length) {
 #endif
 }
 
-//=========================== private =============================================
+//===================================== private ===============================
 
 #ifdef ISR_SPI
 // this implemetation uses interrupts to signal that a byte was sent

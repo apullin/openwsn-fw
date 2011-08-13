@@ -91,7 +91,7 @@ bool icmpv6rpl_debugPrint() {
    return FALSE;
 }
 
-//===================================== RPL timer fires =======================
+//===================================== public (timer) ========================
 
 void timer_rpl_fired() {
    res_delayDIO = (res_delayDIO+1)%5; //send on average every 10s

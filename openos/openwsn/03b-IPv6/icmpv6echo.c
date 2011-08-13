@@ -117,3 +117,5 @@ void icmpv6echo_receive(OpenQueueEntry_t* msg) {
 bool icmpv6echo_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

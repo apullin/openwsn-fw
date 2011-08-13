@@ -23,7 +23,7 @@
 
 //=========================== prototypes ======================================
 
-//=========================== interface =======================================
+//=========================== public ==========================================
 
 /**
 \brief Initialize the IEEE802.15.4e timer.
@@ -115,4 +115,5 @@ void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite) {
 void ieee154etimer_disableCaptureInterrupt() {
    TACCTL2 &= ~CCIE;
 }
-*/
+
+//=========================== private =========================================

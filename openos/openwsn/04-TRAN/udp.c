@@ -127,3 +127,5 @@ void udp_receive(OpenQueueEntry_t* msg) {
 bool udp_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

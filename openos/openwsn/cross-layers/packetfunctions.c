@@ -9,11 +9,13 @@
 #include "openserial.h"
 #include "idmanager.h"
 
-//=========================== prototypes ======================================
+//===================================== variables =============================
+
+//===================================== prototypes ============================
 
 void onesComplementSum(uint8_t* global_sum, uint8_t* ptr, int length);
 
-//=========================== address translation =============================
+//===================================== public (address translation) ==========
 
 //assuming an ip128b is a concatenation of prefix64b followed by a mac64b
 void packetfunctions_ip128bToMac64b(
@@ -80,7 +82,7 @@ void packetfunctions_mac16bToMac64b(open_addr_t* mac16b, open_addr_t* mac64btoWr
    mac64btoWrite->addr_64b[7] = mac16b->addr_16b[1];
 }
 
-//=========================== address recognition =============================
+//===================================== public (address recognition) ==========
 
 bool packetfunctions_isBroadcastMulticast(open_addr_t* address) {
    uint8_t i;
@@ -190,7 +192,7 @@ bool packetfunctions_sameAddress(open_addr_t* address_1, open_addr_t* address_2)
    return FALSE;
 }
 
-//=========================== read/write addresses ============================
+//===================================== public (address read/write) ===========
 
 void packetfunctions_readAddress(uint8_t* payload, uint8_t type, open_addr_t* writeToAddress, bool littleEndian) {
    uint8_t i;
@@ -255,7 +257,7 @@ void packetfunctions_writeAddress(OpenQueueEntry_t* msg, open_addr_t* address, b
    }
 }
 
-//=========================== reserving/tossing headers =======================
+//===================================== public (reserving/tossing headers) ====
 
 void packetfunctions_reserveHeaderSize(OpenQueueEntry_t* pkt, uint8_t header_length) {
    pkt->payload -= header_length;
@@ -293,7 +295,7 @@ void packetfunctions_tossFooter(OpenQueueEntry_t* pkt, uint8_t header_length) {
    }
 }
 
-//=========================== CRC calculation =================================
+//===================================== public (CRC calculation) ==============
 
 void packetfunctions_calculateCRC(OpenQueueEntry_t* msg) {
    uint16_t crc;
@@ -339,7 +341,7 @@ bool packetfunctions_checkCRC(OpenQueueEntry_t* msg) {
        }
 }
 
-//=========================== checksum calculation ============================
+//===================================== public (checksum calculation) =========
 
 //see http://www-net.cs.umass.edu/kurose/transport/UDP.html, or http://tools.ietf.org/html/rfc1071
 //see http://en.wikipedia.org/wiki/User_Datagram_Protocol#IPv6_PSEUDO-HEADER
@@ -408,7 +410,7 @@ void onesComplementSum(uint8_t* global_sum, uint8_t* ptr, int length) {
    global_sum[1] = sum & 0xFF;
 }
 
-//=========================== endianness =====================================
+//===================================== public (endianness) ===================
 
 void packetfunctions_htons( uint16_t val, uint8_t* dest ) {
    dest[0] = (val & 0xff00) >> 8;
@@ -432,3 +434,5 @@ uint32_t packetfunctions_ntohl( uint8_t* src ) {
       (((uint32_t) src[3])
       );
 }
+
+//===================================== private ===============================

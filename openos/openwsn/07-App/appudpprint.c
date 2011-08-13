@@ -32,3 +32,5 @@ void appudpprint_receive(OpenQueueEntry_t* msg) {
 bool appudpprint_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

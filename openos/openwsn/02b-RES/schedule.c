@@ -9,12 +9,14 @@
 #include "schedule.h"
 #include "openserial.h"
 
-//===================================== variables ==============================
+//===================================== variables =============================
 
 cellUsageInformation_t cellTable[SCHEDULELENGTH];
 slotOffset_t           debugPrintSlotOffset;
 
-//===================================== prototypes =============================
+//===================================== prototypes ============================
+
+//===================================== public ================================
 
 void schedule_init() {
    uint8_t slotCounter;
@@ -63,11 +65,13 @@ cellType_t schedule_getType(asn_t asn_param) {
    slotOffset = asn_param%SCHEDULELENGTH;
    return cellTable[slotOffset].type;
 }
+
 channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
    return cellTable[slotOffset].channelOffset;
 }
+
 void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
@@ -99,3 +103,5 @@ bool schedule_debugPrint() {
                           sizeof(debugCellUsageInformation_t));
    return TRUE;
 }
+
+//===================================== private ===============================

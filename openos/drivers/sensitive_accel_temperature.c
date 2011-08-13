@@ -12,6 +12,8 @@
 
 bool sensitive_accel_temperature_configured = FALSE;
 
+//===================================== prototypes ============================
+
 //===================================== public ================================
 
 void sensitive_accel_temperature_init() {
@@ -71,3 +73,5 @@ void sensitive_accel_temperature_get_measurement(uint8_t* spaceToWrite) {
       }
    }
 }
+
+//===================================== private ===============================
