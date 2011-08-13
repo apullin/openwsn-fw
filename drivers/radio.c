@@ -153,6 +153,12 @@ void radio_txNow() {
    // send packet by pulsing the RF_SLP_TR_CNTL pin
    P4OUT |=  0x80;
    P4OUT &= ~0x80;
+   
+   // The AT86RF231 does not generate an interrupt when the radio transmits the
+   // SFD. If we leave this funtion like this, tt3 will expire, triggering tie2.
+   // Instead, we will cheat an mimick a start of frame event by calling
+   // ieee154e_startOfFrame from here
+   ieee154e_startOfFrame(ieee154etimer_getCapturedTime());
 }
 
 //=========================== receiving a packet ==============================
@@ -175,9 +181,6 @@ void radio_rxEnable() {
    
    //busy wait until radio status is PLL_ON
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON);
-   
-   // clear timestamp overflow bit (used for timestamping incoming packets)
-   ieee154etimer_clearCaptureOverflow();
    
    // change state
    radio_vars.state = RADIOSTATE_LISTENING;
@@ -262,7 +265,10 @@ by checking the contents of the RG_IRQ_STATUS register off the radio.
 Reading this register also lowers the IRQ_RF pin.
 */
 void isr_radio() {
+   uint8_t capturedTime;
    uint8_t irq_status;
+   // capture the time
+   capturedTime = ieee154etimer_getCapturedTime();
    // reading IRQ_STATUS causes IRQ_RF (P1.6) to go low
    irq_status = spi_read_register(RG_IRQ_STATUS);
    switch (irq_status) {
@@ -270,13 +276,13 @@ void isr_radio() {
          // change state
          radio_vars.state = RADIOSTATE_RECEIVING;
          // call MAC layer
-         ieee154e_startOfFrame();
+         ieee154e_startOfFrame(capturedTime);
          break;
       case AT_IRQ_TRX_END:
          // change state
          radio_vars.state = RADIOSTATE_TXRX_DONE;
          // call MAC layer
-         ieee154e_endOfFrame();
+         ieee154e_endOfFrame(capturedTime);
          break;
       default:
          openserial_printError(COMPONENT_PACKETFUNCTIONS,ERR_WRONG_IRQ_STATUS,

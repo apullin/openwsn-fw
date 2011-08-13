@@ -81,6 +81,11 @@ void ieee154etimer_cancel() {
 
 //--- CCR2 capture timer
 
+inline uint16_t ieee154etimer_getCapturedTime() {
+   return TAR;
+}
+
+/*
 void ieee154etimer_clearCaptureOverflow() {
    volatile uint16_t dummy;
    dummy    =  TACCR2;
@@ -92,21 +97,6 @@ void ieee154etimer_enableCaptureInterrupt() {
    TACCTL2 |=  CCIE;
 }
 
-/**
-\brief Read the last captured time.
-
-This function puts the last captured timestemp in the timestampToWrite structure
-passed as a parameter. This structure contains a field which indicates whether
-the timestamp is valid.
-
-It is not valid if the overflow flag is set in the hardware timer.
-
-This function returns the value of the captured time regardless of whether it
-is valid.
-
-\param [out] timestampToWrite Variable in which this function returns the
-                              timestamp.
-*/
 void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite) {
    uint8_t overflown;
    overflown = (TACCTL2 & 0x02) >> 1;
@@ -125,3 +115,4 @@ void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite) {
 void ieee154etimer_disableCaptureInterrupt() {
    TACCTL2 &= ~CCIE;
 }
+*/

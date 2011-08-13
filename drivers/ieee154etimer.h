@@ -21,14 +21,11 @@ typedef struct timestamp_t {
 } timestamp_t;
 
 // callable functions
-void ieee154etimer_init();
+void     ieee154etimer_init();
 // compare
-void ieee154etimer_schedule(uint16_t offset);
-void ieee154etimer_cancel();
-
-void ieee154etimer_clearCaptureOverflow();
-void ieee154etimer_enableCaptureInterrupt();
-void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite);
-void ieee154etimer_disableCaptureInterrupt();
+void     ieee154etimer_schedule(uint16_t offset);
+void     ieee154etimer_cancel();
+// capture
+uint16_t ieee154etimer_getCapturedTime();
 
 #endif

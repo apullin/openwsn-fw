@@ -27,7 +27,7 @@ typedef struct {
    asn_t              asn;                // current absolute slot number
    uint8_t            state;              // state of the FSM
    uint8_t            dsn;                // data sequence number
-   timestamp_t        capturedTime;       // last captures time
+   uint16_t           capturedTime;       // last captures time
    bool               isSync;             // TRUE iff mote synchronized to network
    OpenQueueEntry_t*  dataToSend;         // pointer to the data to send
    OpenQueueEntry_t*  dataReceived;       // pointer to the data received
@@ -41,39 +41,39 @@ ieee154e_vars_t ieee154e_vars;
 
 // SYNCHRONIZING
 void    activity_synchronize_newSlot();
-void    activity_synchronize_startOfFrame();
-void    activity_synchronize_endOfFrame();
+void    activity_synchronize_startOfFrame(uint16_t capturedTime);
+void    activity_synchronize_endOfFrame(uint16_t capturedTime);
 // TX
 void    activity_ti1ORri1();
 void    activity_ti2();
 void    activity_tie1();
 void    activity_ti3();
 void    activity_tie2();
-void    activity_ti4();
+void    activity_ti4(uint16_t capturedTime);
 void    activity_tie3();
-void    activity_ti5();
+void    activity_ti5(uint16_t capturedTime);
 void    activity_ti6();
 void    activity_tie4();
 void    activity_ti7();
 void    activity_tie5();
-void    activity_ti8();
+void    activity_ti8(uint16_t capturedTime);
 void    activity_tie6();
-void    activity_ti9();
+void    activity_ti9(uint16_t capturedTime);
 // RX
 void    activity_ri2();
 void    activity_rie1();
 void    activity_ri3();
 void    activity_rie2();
-void    activity_ri4();
+void    activity_ri4(uint16_t capturedTime);
 void    activity_rie3();
-void    activity_ri5();
+void    activity_ri5(uint16_t capturedTime);
 void    activity_ri6();
 void    activity_rie4();
 void    activity_ri7();
 void    activity_rie5();
-void    activity_ri8();
+void    activity_ri8(uint16_t capturedTime);
 void    activity_rie6();
-void    activity_ri9();
+void    activity_ri9(uint16_t capturedTime);
 // helper
 uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset);
 bool    isAckValid(OpenQueueEntry_t* ackFrame);
@@ -106,8 +106,7 @@ void mac_init() {
    ieee154e_vars.dataReceived              = NULL;
    ieee154e_vars.ackToSend                 = NULL;
    ieee154e_vars.ackReceived               = NULL;
-   ieee154e_vars.capturedTime.valid        = TRUE;
-   ieee154e_vars.capturedTime.timestamp    = 0;
+   ieee154e_vars.capturedTime              = 0;
    if (idmanager_getIsDAGroot()==TRUE) {
       ieee154e_vars.isSync                 = TRUE;
    } else {
@@ -249,22 +248,22 @@ void ieee154e_timerFires() {
 
 This function executes in ISR mode.
 */
-void ieee154e_startOfFrame() {
+void ieee154e_startOfFrame(uint16_t capturedTime) {
    if (ieee154e_vars.isSync==FALSE) {
-      activity_synchronize_startOfFrame();
+      activity_synchronize_startOfFrame(capturedTime);
    } else {
       switch (ieee154e_vars.state) {
          case S_TXDATADELAY:
-            activity_ti4();
+            activity_ti4(capturedTime);
             break;
          case S_RXACKLISTEN:
-            activity_ti8();
+            activity_ti8(capturedTime);
             break;
          case S_RXDATALISTEN:
-            activity_ri4();
+            activity_ri4(capturedTime);
             break;
          case S_TXACKDELAY:
-            activity_ri8();
+            activity_ri8(capturedTime);
             break;
          default:
             // log the error
@@ -284,22 +283,22 @@ void ieee154e_startOfFrame() {
 
 This function executes in ISR mode.
 */
-void ieee154e_endOfFrame() {
+void ieee154e_endOfFrame(uint16_t capturedTime) {
    if (ieee154e_vars.isSync==FALSE) {
-      activity_synchronize_endOfFrame();
+      activity_synchronize_endOfFrame(capturedTime);
    } else {
       switch (ieee154e_vars.state) {
          case S_TXDATA:
-            activity_ti5();
+            activity_ti5(capturedTime);
             break;
          case S_RXACK:
-            activity_ti9();
+            activity_ti9(capturedTime);
             break;
          case S_RXDATA:
-            activity_ri5();
+            activity_ri5(capturedTime);
             break;
          case S_TXACK:
-            activity_ri9();
+            activity_ri9(capturedTime);
             break;
          default:
             // log the error
@@ -317,9 +316,6 @@ void ieee154e_endOfFrame() {
 //===================================== SYNCHRONIZING =========================
 
 inline void activity_synchronize_newSlot() {
-   // clear the timer overflow flag
-   ieee154etimer_clearCaptureOverflow();
-   
    // if this is the first time I call this function while not synchronized,
    // switch on the radio in Rx mode
    if (ieee154e_vars.state!=S_SYNCHRONIZING) {
@@ -338,18 +334,12 @@ inline void activity_synchronize_newSlot() {
    }
 }
 
-inline void activity_synchronize_startOfFrame() {
+inline void activity_synchronize_startOfFrame(uint16_t capturedTime) {
    // get the captured time 
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
-   
-   // clear the capture overflow, if any
-   ieee154etimer_clearCaptureOverflow();
-   
-   // disable the capture ISR
-   ieee154etimer_disableCaptureInterrupt();
+   ieee154e_vars.capturedTime = capturedTime;
 }
 
-inline void activity_synchronize_endOfFrame() {
+inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    ieee802154_header_iht ieee802514_header;
    
    // get a buffer to put the (received) frame in
@@ -371,12 +361,11 @@ inline void activity_synchronize_endOfFrame() {
    // parse the packet
    retrieveIEEE802154header(ieee154e_vars.dataReceived,&ieee802514_header);
    
-   // if it's a valid ADV and I can use the timestamp, synchronize
+   // if it's a valid ADV, synchronize
    if (ieee802514_header.valid==TRUE                                                                    &&
        ieee802514_header.frameType==IEEE154_TYPE_BEACON                                                 &&
        packetfunctions_sameAddress(&ieee802514_header.panid,idmanager_getMyID(ADDR_PANID))              &&
-       ieee154e_vars.dataReceived->length==ieee802514_header.headerLength+sizeof(IEEE802154E_ADV_t)+2   &&
-       ieee154e_vars.capturedTime.valid == TRUE ) {
+       ieee154e_vars.dataReceived->length==ieee802514_header.headerLength+sizeof(IEEE802154E_ADV_t)+2) {
       
       // toss the IEEE802.15.4 header
       packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
@@ -534,17 +523,8 @@ inline void activity_ti3() {
    // give the 'go' to transmit
    radio_txNow();
    
-   // clear the timer overflow flag
-   ieee154etimer_clearCaptureOverflow();
-   
    // arm tt3
    ieee154etimer_schedule(DURATION_tt3);
-   
-   // The AT86RF231 does not generate an interrupt when the radio transmits the
-   // SFD. If we leave this funtion like this, tt3 will expire, triggering tie2.
-   // Instead, we will cheat an mimick a start of frame event by calling
-   // ieee154e_startOfFrame from here
-   ieee154e_startOfFrame();
 }
 
 inline void activity_tie2() {
@@ -558,7 +538,7 @@ inline void activity_tie2() {
    endSlot();
 }
 
-inline void activity_ti4() {
+inline void activity_ti4(uint16_t capturedTime) {
    // change state
    change_state(S_TXDATA);
 
@@ -566,11 +546,8 @@ inline void activity_ti4() {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
    
-   // clear the timer overflow flag
-   ieee154etimer_clearCaptureOverflow();
-
    // arm tt4
    ieee154etimer_schedule(DURATION_tt4);
 }
@@ -586,14 +563,17 @@ inline void activity_tie3() {
    endSlot();
 }
 
-inline void activity_ti5() {
+inline void activity_ti5(uint16_t capturedTime) {
    bool listenForAck;
    
    // change state
    change_state(S_RXACKOFFSET);
+   
+   // turn off the radio
+   radio_rfOff();
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
 
    // decides whether to listen for an ACK
    if (packetfunctions_isBroadcastMulticast(&ieee154e_vars.dataToSend->l2_nextORpreviousHop)==TRUE) {
@@ -619,7 +599,7 @@ inline void activity_ti6() {
    uint8_t frequency;
    
    // change state
-   change_state(S_RXACKREADY);
+   change_state(S_RXACKPREPARE);
 
    // calculate the frequency to transmit on
    frequency = calculateFrequency(ieee154e_vars.asn, schedule_getChannelOffset(ieee154e_vars.asn));
@@ -632,6 +612,9 @@ inline void activity_ti6() {
 
    // arm tt6
    ieee154etimer_schedule(DURATION_tt6);
+   
+   // change state
+   change_state(S_RXACKREADY);
 }
 
 inline void activity_tie4() {
@@ -672,12 +655,12 @@ inline void activity_tie5() {
    endSlot();
 }
 
-inline void activity_ti8() {
+inline void activity_ti8(uint16_t capturedTime) {
    // change state
    change_state(S_TXACK);
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
 
    // cancel tt7
    ieee154etimer_cancel();
@@ -691,7 +674,7 @@ inline void activity_tie6() {
    endSlot();
 }
 
-inline void activity_ti9() {
+inline void activity_ti9(uint16_t capturedTime) {
    bool validAck;
    
    // change state
@@ -701,7 +684,7 @@ inline void activity_ti9() {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
    
    // get a buffer to put the (received) ACK in
    ieee154e_vars.ackReceived = openqueue_getFreePacketBuffer();
@@ -790,12 +773,12 @@ inline void activity_rie2() {
    endSlot();
 }
 
-inline void activity_ri4() {
+inline void activity_ri4(uint16_t capturedTime) {
    // change state
    change_state(S_RXDATA);
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
 
    // cancel rt3
    ieee154etimer_cancel();
@@ -815,7 +798,7 @@ inline void activity_rie3() {
    endSlot();
 }
 
-inline void activity_ri5() {
+inline void activity_ri5(uint16_t capturedTime) {
    // change state
    change_state(S_TXACKOFFSET);
 
@@ -823,7 +806,7 @@ inline void activity_ri5() {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
 
    // get a buffer to put the (received) data in
    ieee154e_vars.dataReceived = openqueue_getFreePacketBuffer();
@@ -946,7 +929,7 @@ inline void activity_rie5() {
    endSlot();
 }
 
-inline void activity_ri8() {
+inline void activity_ri8(uint16_t capturedTime) {
    // change state
    change_state(S_TXACK);
 
@@ -954,7 +937,7 @@ inline void activity_ri8() {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
 
    // arm rt8
    ieee154etimer_schedule(DURATION_rt8);
@@ -971,7 +954,7 @@ inline void activity_rie6() {
    endSlot();
 }
 
-inline void activity_ri9() {
+inline void activity_ri9(uint16_t capturedTime) {
    // change state
    change_state(S_RXPROC);
 
@@ -979,7 +962,7 @@ inline void activity_ri9() {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154etimer_getCapturedTime(&ieee154e_vars.capturedTime);
+   ieee154e_vars.capturedTime = capturedTime;
 
    // free the ack we just sent so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.ackToSend);
@@ -1069,13 +1052,13 @@ void change_state(uint8_t newstate) {
    ieee154e_vars.state = newstate;
    // wiggle the FSM debug pin
    switch (ieee154e_vars.state) {
-      case S_SLEEP:
-      case S_RXDATAOFFSET:
-         DEBUG_PIN_FSM_CLR();
-         break;
       case S_SYNCHRONIZING:
       case S_TXDATAOFFSET:
          DEBUG_PIN_FSM_SET();
+         break;
+      case S_SLEEP:
+      case S_RXDATAOFFSET:
+         DEBUG_PIN_FSM_CLR();
          break;
       case S_TXDATAPREPARE:
       case S_TXDATAREADY:
@@ -1122,8 +1105,7 @@ void endSlot() {
    ieee154etimer_cancel();
 
    // reset capturedTime
-   ieee154e_vars.capturedTime.valid     = TRUE;
-   ieee154e_vars.capturedTime.timestamp = 0;
+   ieee154e_vars.capturedTime = 0;
 
    // clean up dataToSend
    if (ieee154e_vars.dataToSend!=NULL) {
