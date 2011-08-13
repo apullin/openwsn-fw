@@ -1,12 +1,19 @@
-/*
- * TCP Echo application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief TCP Echo application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __APPTCPECHO_H
 #define __APPTCPECHO_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void apptcpecho_init();
 bool apptcpecho_shouldIlisten();

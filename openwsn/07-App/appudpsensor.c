@@ -1,9 +1,8 @@
-/*
- * UDP Sensor application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief UDP Sensor application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "appudpsensor.h"
@@ -12,11 +11,11 @@
 #include "openserial.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void appudpsensor_init() {
 }
@@ -75,4 +74,4 @@ bool appudpsensor_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

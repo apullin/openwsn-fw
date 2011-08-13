@@ -1,17 +1,15 @@
-/*
- * Manages the IEEE802.15.4e schedule
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief Manages the IEEE802.15.4e schedule
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #ifndef __SCHEDULE_H
 #define __SCHEDULE_H
 
 #include "openwsn.h"
 
-typedef uint8_t   cellType_t;
-typedef uint8_t   channelOffset_t;
+//=========================== define ==========================================
 
 enum {
    CELLTYPE_OFF         = 0,
@@ -21,7 +19,12 @@ enum {
    CELLTYPE_RXSERIAL    = 4
 };
 
-typedef struct cellUsageInformation_t {
+//=========================== typedef =========================================
+
+typedef uint8_t   cellType_t;
+typedef uint8_t   channelOffset_t;
+
+typedef struct {
    uint8_t        type;
    uint8_t        channelOffset;
    open_addr_t    neighbor;
@@ -30,10 +33,14 @@ typedef struct cellUsageInformation_t {
    timervalue_t   timestamp;
 } cellUsageInformation_t;
 
-typedef struct debugCellUsageInformation_t {
+typedef struct {
    uint8_t                row;
    cellUsageInformation_t cellUsage;
 } debugCellUsageInformation_t;
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void            schedule_init();
 cellType_t      schedule_getType(asn_t asn_param);

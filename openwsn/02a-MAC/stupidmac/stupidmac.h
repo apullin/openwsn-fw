@@ -1,9 +1,8 @@
-/*
- * Implementation of stupidMAC
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Implementation of stupidMAC
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __STUPIDMAC_H
 #define __STUPIDMAC_H

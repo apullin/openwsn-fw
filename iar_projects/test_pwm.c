@@ -1,12 +1,11 @@
-/*
- * This is a standalone test program for 8 outputting Pulse Width Modulated (PWM)
- * digital signals through the expansion ports of the GINA2.2b/c boards.
- *
- * The digital output pins are: TBC
- *
- * Authors:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program for 8 outputting Pulse Width Modulated (PWM)
+       digital signals through the expansion ports of the GINA2.2b/c boards.
+
+The digital output pins are: TBC
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
+*/
 
 #include "drivers/gina.h"
 #include "commands/commands.h"

@@ -1,11 +1,8 @@
-/*
- * UDP Timer application
- * 
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- * 
- */
+/**
+\brief UDP Timer application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "appudptimer.h"
@@ -15,13 +12,13 @@
 #include "packetfunctions.h"
 #include "timers.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 bool appudptimer_busySending;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void appudptimer_init() {
    appudptimer_busySending = FALSE;
@@ -95,4 +92,4 @@ bool appudptimer_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

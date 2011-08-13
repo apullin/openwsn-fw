@@ -1,24 +1,25 @@
-/*
- * This is a standalone test program for the LEDs of the GINA2.2b/c
- * board. Download the program to a GINA board, run it, you should see
- * the 4 LEDs blinking in sequence with a 500ms period.
- *
- * The digital outputs are:
- *    - P2.0: red LED
- *    - P2.1: green LED
- *    - P2.2: blue LED
- *    - P2.3: red LED
- *
- * The "inputs" are:
- *    - XIN, XOUT: 32768Hz crystal oscillator
- *
- * The debug pins are:
- *    - P5.6 output the ACLK (should be 32768Hz)
- *    - P1.1 toggles when interrupt TIMERA0_VECTOR fires
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program for the LEDs of the GINA2.2b/c
+       board.
+       
+Download the program to a GINA board, run it, you should see
+the 4 LEDs blinking in sequence with a 500ms period.
+
+The digital outputs are:
+   - P2.0: red LED
+   - P2.1: green LED
+   - P2.2: blue LED
+   - P2.3: red LED
+
+The "inputs" are:
+   - XIN, XOUT: 32768Hz crystal oscillator
+
+The debug pins are:
+   - P5.6 output the ACLK (should be 32768Hz)
+   - P1.1 toggles when interrupt TIMERA0_VECTOR fires
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "msp430x26x.h"
 #include "stdint.h"

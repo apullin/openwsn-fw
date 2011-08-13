@@ -1,9 +1,8 @@
-/*
- * UDP WARPWING application
- *
- * Authors:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, October 2010
- */
+/**
+\brief UDP WARPWING application
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, October 2010
+*/
 
 #include "openwsn.h"
 #include "appudpwarpwing.h"
@@ -21,16 +20,16 @@
 #include "scheduler.h"
 #include "leds.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint8_t           appudpwarpwing_channel;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void appudpwarpwing_send();
 void appudpwarpwing_reset();
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void appudpwarpwing_init() {
    if (*(&eui64+3)==0x09) {                      // this is a GINA board (not a basestation)
@@ -88,7 +87,7 @@ void appudpwarpwing_task(uint16_t n) {
 }
 #endif
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void appudpwarpwing_send(uint16_t n) {
    OpenQueueEntry_t* packetToSend;

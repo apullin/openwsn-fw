@@ -1,12 +1,19 @@
-/*
- * UDP LEDs application
- *
- * Author:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief UDP LEDs application
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #ifndef __APPUDPLEDS_H
 #define __APPUDPLEDS_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void appudpleds_init();
 void appudpleds_trigger();

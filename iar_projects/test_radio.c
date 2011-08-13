@@ -1,36 +1,36 @@
-/*
- * This is a standalone test program for the radio on the GINA2.2b/c and GINA 
- * basestation boards.
- * Download the program to a platform, run it:
- *   - when you press the AUX button, a packet gets sent which contains 5 payload
- *     bytes: 0x0102030405. The LEDs should also circular-shift;
- *   - when the board receives a packet, the LEDs circular-shift.
- *
- * The SPI interface to the radio is:
- *    - P3.0:  A0_RF_SCLK
- *    - P3.4:  A0_RF_SIMO
- *    - P3.5:  A0_RF_SOMI
- *    - P4.0: /EN_RF, chip select (active low)
- *
- * Digital pins to the radio are:
- *    - P4.7: SLP_TR_CNTL, when high, forces radio to sleep mode (not used)
- * 
- * Interrupt pins from radio:
- *    - P1.6: IRQ_RF, programmable interrupt
- *
- * Other "debug" pins are:
- *    - P1.1: toggles at every sent packet
- *    - P1.2: high during configuration
- *    - P2.7: button
- *    - P4.6: mimicks the /EN_RF (P4.0) pin for scope-based debugging
- *    - P2.0: red LED
- *    - P2.1: green LED
- *    - P2.2: blue LED
- *    - P2.3: red LED
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program for the radio on the GINA2.2b/c and GINA 
+       basestation boards.
+
+Download the program to a platform, run it:
+  - when you press the AUX button, a packet gets sent which contains 5 payload
+    bytes: 0x0102030405. The LEDs should also circular-shift;
+  - when the board receives a packet, the LEDs circular-shift.
+
+The SPI interface to the radio is:
+   - P3.0:  A0_RF_SCLK
+   - P3.4:  A0_RF_SIMO
+   - P3.5:  A0_RF_SOMI
+   - P4.0: /EN_RF, chip select (active low)
+
+Digital pins to the radio are:
+   - P4.7: SLP_TR_CNTL, when high, forces radio to sleep mode (not used)
+
+Interrupt pins from radio:
+   - P1.6: IRQ_RF, programmable interrupt
+
+Other "debug" pins are:
+   - P1.1: toggles at every sent packet
+   - P1.2: high during configuration
+   - P2.7: button
+   - P4.6: mimicks the /EN_RF (P4.0) pin for scope-based debugging
+   - P2.0: red LED
+   - P2.1: green LED
+   - P2.2: blue LED
+   - P2.3: red LED
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 //board
 #include "gina.h"

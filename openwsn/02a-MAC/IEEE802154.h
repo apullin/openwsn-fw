@@ -1,30 +1,15 @@
-/*
- * IEEE802.15.4 header manipulation funtions
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief IEEE802.15.4 header manipulation funtions
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #ifndef __IEEE802154_H
 #define __IEEE802154_H
 
 #include "openwsn.h"
 
-//===================================== packet formats ========================
-
-typedef struct ieee802154_header_iht { //iht for "internal header type"
-   bool        valid;
-   uint8_t     headerLength;    //including the length field
-   uint8_t     frameType;
-   bool        securityEnabled;
-   bool        framePending;
-   bool        ackRequested;
-   bool        panIDCompression;
-   uint8_t     dsn;
-   open_addr_t panid;
-   open_addr_t dest;
-   open_addr_t src;
-} ieee802154_header_iht;
+//=========================== define ==========================================
 
 enum IEEE802154_fcf_enums {
    IEEE154_FCF_FRAME_TYPE              = 0,
@@ -70,7 +55,27 @@ enum IEEE802154_fcf_addr_mode_enums {
    IEEE154_ADDR_EXT                    = 3,
 };
 
-//===================================== prototypes ============================
+//=========================== typedef =========================================
+
+typedef struct {
+   bool        valid;
+   uint8_t     headerLength;    //including the length field
+   uint8_t     frameType;
+   bool        securityEnabled;
+   bool        framePending;
+   bool        ackRequested;
+   bool        panIDCompression;
+   uint8_t     dsn;
+   open_addr_t panid;
+   open_addr_t dest;
+   open_addr_t src;
+} ieee802154_header_iht; //iht for "internal header type"
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
+
+//=========================== prototypes ======================================
 
 void prependIEEE802154header  (OpenQueueEntry_t*      msg,
                                uint8_t                frameType,

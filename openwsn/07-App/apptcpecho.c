@@ -1,9 +1,8 @@
-/*
- * TCP Echo application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief TCP Echo application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "apptcpecho.h"
@@ -11,11 +10,11 @@
 #include "openserial.h"
 #include "tcp.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void apptcpecho_init() {
 }
@@ -55,4 +54,4 @@ bool apptcpecho_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

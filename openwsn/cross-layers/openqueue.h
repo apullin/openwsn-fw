@@ -1,20 +1,27 @@
-/*
- * The component which manages the pool of packet buffers.
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief The component which manages the pool of packet buffers.
 
-#ifndef OPENQUEUE_H
-#define OPENQUEUE_H
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
+
+#ifndef __OPENQUEUE_H
+#define __OPENQUEUE_H
 
 #include "openwsn.h"
 #include "IEEE802154.h"
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
 
 typedef struct debugOpenQueueEntry_t {
    uint8_t  creator;
    uint8_t  owner;
 } debugOpenQueueEntry_t;
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void               openqueue_init();
 OpenQueueEntry_t*  openqueue_getFreePacketBuffer();

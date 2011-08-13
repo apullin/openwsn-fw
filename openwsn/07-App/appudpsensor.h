@@ -1,12 +1,19 @@
-/*
- * UDP Sensor application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief UDP Sensor application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __APPUDPSENSOR_H
 #define __APPUDPSENSOR_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void appudpsensor_init();
 void appudpsensor_trigger();

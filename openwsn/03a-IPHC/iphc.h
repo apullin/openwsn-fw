@@ -1,22 +1,13 @@
-/*
- * Implementation of IPHC
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Implementation of IPHC
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __IPHC_H
 #define __IPHC_H
 
-typedef struct ipv6_header_iht { //iht for "internal header type"
-   uint8_t     traffic_class;
-   uint32_t    flow_label;
-   uint8_t     next_header;
-   uint8_t     hop_limit;
-   open_addr_t src;
-   open_addr_t dest;
-   uint8_t     header_length; //used to toss the header
-} ipv6_header_iht;
+//=========================== define ==========================================
 
 enum IPHC_enums {
    IPHC_DISPATCH             = 5,
@@ -87,6 +78,22 @@ enum IPHC_DAM_enums {
    IPHC_DAM_16B              = 2,
    IPHC_DAM_ELIDED           = 3,
 };
+
+//=========================== typedef =========================================
+
+typedef struct {
+   uint8_t     traffic_class;
+   uint32_t    flow_label;
+   uint8_t     next_header;
+   uint8_t     hop_limit;
+   open_addr_t src;
+   open_addr_t dest;
+   uint8_t     header_length; //used to toss the header
+} ipv6_header_iht; //iht for "internal header type"
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void    iphc_init();
 error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg);

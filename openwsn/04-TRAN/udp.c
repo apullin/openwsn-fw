@@ -1,10 +1,9 @@
-/*
- * UDP implementation (as per http://tools.ietf.org/html/rfc768)
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief UDP implementation (as per http://tools.ietf.org/html/rfc768)
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #include "openwsn.h"
 #include "udp.h"
@@ -23,11 +22,11 @@
 #include "appudpprint.h"
 #include "appudpsensor.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void udp_init() {
 }
@@ -128,4 +127,4 @@ bool udp_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

@@ -1,23 +1,22 @@
-/*
- * Drivers for the large range accelerometer of the GINA2.2b/c board.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Drivers for the large range accelerometer of the GINA2.2b/c board.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "large_range_accel.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 //register backup variables
 uint8_t reg_CTRL_REGC;
 uint8_t reg_CTRL_REGB;
 bool large_range_accel_configured = FALSE;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void large_range_accel_init() {
    P5OUT |=  0x10;                               // set P5.4 as output
@@ -64,4 +63,4 @@ void large_range_accel_get_measurement(uint8_t* spaceToWrite) {
    }
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

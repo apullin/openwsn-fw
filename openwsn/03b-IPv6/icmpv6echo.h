@@ -1,12 +1,19 @@
-/*
- * ICMPv6 echo (ping) implementation
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief ICMPv6 echo (ping) implementation
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __ICMPv6ECHO_H
 #define __ICMPv6ECHO_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void icmpv6echo_init();
 void icmpv6echo_trigger();

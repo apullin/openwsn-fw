@@ -1,9 +1,8 @@
-/*
- * ICMPv6 RPL implementation
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief ICMPv6 RPL implementation
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "icmpv6rpl.h"
@@ -14,7 +13,7 @@
 #include "neighbors.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint16_t res_periodDIO;
 uint8_t  res_delayDIO;
@@ -24,11 +23,11 @@ open_addr_t all_routers_multicast;
 bool        icmpv6rpl_busySending;
 uint16_t    icmpv6rpl_seq=0;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void sendDIO();
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void icmpv6rpl_init() {
    icmpv6rpl_busySending = FALSE;
@@ -91,7 +90,7 @@ bool icmpv6rpl_debugPrint() {
    return FALSE;
 }
 
-//===================================== public (timer) ========================
+//======= timer
 
 void timer_rpl_fired() {
    res_delayDIO = (res_delayDIO+1)%5; //send on average every 10s
@@ -103,7 +102,7 @@ void timer_rpl_fired() {
    }
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void sendDIO() {
    OpenQueueEntry_t* msg;

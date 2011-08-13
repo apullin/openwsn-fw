@@ -1,9 +1,8 @@
-/*
- * Implementation of the IEEE802.15.4e RES layer
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Implementation of the IEEE802.15.4e RES layer
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "res.h"
@@ -19,14 +18,14 @@
 #include "leds.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint16_t res_periodMaintenance;
 bool     res_busySending;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void res_init() {
    res_periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
@@ -34,7 +33,7 @@ void res_init() {
    //poipoi disabling ADV timer_startPeriodic(TIMER_RES,res_periodMaintenance);
 }
 
-//===================================== public (from upper) ===================
+//======= from upper layer
 
 error_t res_send(OpenQueueEntry_t *msg) {
    msg->owner        = COMPONENT_RES;
@@ -42,7 +41,7 @@ error_t res_send(OpenQueueEntry_t *msg) {
    return mac_send(msg);
 }
 
-//===================================== public (from lower) ===================
+//======= from lower layer
 
 void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_RES;
@@ -78,7 +77,7 @@ bool res_debugPrint() {
    return TRUE;
 }
 
-//===================================== public (timer) ========================
+//======= timer
 
 void timer_res_fired() {
    OpenQueueEntry_t* adv;
@@ -118,4 +117,4 @@ void timer_res_fired() {
    }
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

@@ -1,10 +1,9 @@
-/*
- * Minimal FCFS scheduler for the GINA2.2b/c boards.
- *
- * Authors:
- * Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Minimal FCFS scheduler for the GINA2.2b/c boards.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
+*/
 
 #ifndef __SCHEDULER_H
 #define __SCHEDULER_H
@@ -13,7 +12,7 @@
 #include "stdint.h"
 #include "radio.h"
 
-//===================================== define ================================
+//=========================== define ==========================================
 
 enum {
    TASKID_RES           = 0, // schedule by timerB CCR0 interrupt
@@ -27,16 +26,22 @@ enum {
    MAX_NUM_TASKS        = 8,
 };
 
-//===================================== prototypes ============================
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void scheduler_init();
 void scheduler_start();
 void scheduler_push_task(int8_t task_id);
+
+// interrupt handlers
 #ifdef OPENWSN_STACK
-void ieee154e_newSlot();
+void isr_ieee154e_newSlot();
 #endif
 #ifdef OPENWSN_STACK
-void ieee154e_timerFires();
+void isr_ieee154e_timer();
 #endif
 #ifdef ISR_ADC
 void isr_adc();

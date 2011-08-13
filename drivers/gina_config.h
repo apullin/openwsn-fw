@@ -1,5 +1,13 @@
+/**
+\brief General definitions for the GINA 2.2b/c boards.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
+
 #ifndef __GINA_CONFIG_H
 #define __GINA_CONFIG_H
+
+//=========================== define ==========================================
 
 #define IRQ_VECTOR   COMPARATORA_VECTOR
 #define IRQ_ENABLE   CACTL1 |=  CAIE
@@ -37,5 +45,11 @@ volatile char irq_ifg;
 #  define ADC_AZ3 INCH_6
 #  define ADC_TI  INCH_7
 #  define ADC_P6S 0xE6 // 1110 0110
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 #endif

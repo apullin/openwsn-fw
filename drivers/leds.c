@@ -1,18 +1,17 @@
-/*
- * Driver for the Leds of the GINA2.2b/c boards..
- *
- * Authors:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Driver for the Leds of the GINA2.2b/c boards..
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "leds.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void leds_init() {
    P2DIR  |=  0x0F;                              // P2DIR = 0bxxxx1111 for LEDs
@@ -43,4 +42,4 @@ void leds_increment() {
    P2OUT |=  led_counter & 0x0f; //LEDs on again
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

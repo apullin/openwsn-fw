@@ -1,22 +1,21 @@
-/*
- * The component which managing the buffer of packet
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief The component which managing the buffer of packet
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "openqueue.h"
 #include "openserial.h"
 #include "packetfunctions.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 OpenQueueEntry_t queue[QUEUELENGTH];
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void openqueue_init() {
    uint8_t i;
@@ -116,4 +115,4 @@ bool openqueue_debugPrint() {
    return TRUE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

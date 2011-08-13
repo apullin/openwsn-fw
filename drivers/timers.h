@@ -1,15 +1,16 @@
-/*
- * Driver for the timers.
- *
- * Authors:
- * Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Driver for the timers.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
+*/
 
 #ifndef __TIMERS_H
 #define __TIMERS_H
 
 #include "openwsn.h"
+
+//=========================== define ==========================================
 
 //timer ids
 enum {
@@ -30,10 +31,15 @@ enum {
    TIMER_COUNT               = 7,                // number of available timers
 };
 
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
 extern uint16_t timers_period[TIMER_COUNT];
 extern bool     timers_continuous[TIMER_COUNT];
 
-// callable functions
+//=========================== prototypes ======================================
+
 void timer_init();
 void timer_start(uint8_t timer_id, uint16_t duration, bool continuous);
 void timer_startOneShot(uint8_t timer_id, uint16_t duration);

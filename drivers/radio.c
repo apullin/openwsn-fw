@@ -1,9 +1,8 @@
-/*
- * Radio driver for the Atmel AT86RF231 IEEE802.15.4-compliant radio
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief Radio driver for the Atmel AT86RF231 IEEE802.15.4-compliant radio
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #include "gina_config.h"
 #include "radio.h"
@@ -66,7 +65,7 @@ void radio_init() {
    radio_vars.state = RADIOSTATE_RFOFF;
 }
 
-//===================================== public (sending a packet) =============
+//======= sending a packet
 
 /**
 \brief Set the radio frequency.
@@ -161,7 +160,7 @@ void radio_txNow() {
    ieee154e_startOfFrame(ieee154etimer_getCapturedTime());
 }
 
-//===================================== public (receiving a packet) ===========
+//======= receiving a packet
 
 /**
 \brief Enable the radio in RX mode.
@@ -230,7 +229,7 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
    }
 }
 
-//===================================== public (turning radio off) ============
+//======= Turning radio off
 
 /**
 \brief Turn the radio off.
@@ -254,9 +253,9 @@ void radio_rfOff() {
    radio_vars.state = RADIOSTATE_RFOFF;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
-//===================================== interrupt handler =====================
+//=========================== interrupt handlers ==============================
 
 /**
 \brief Radio interrupt handler function.

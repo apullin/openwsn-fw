@@ -1,9 +1,9 @@
-/*
- * This is a sandbox project to develop OpenWSN onto the GINA platform.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This project runs the full OpenWSN stack on the GINA2.2b/c and GINA
+       basestations platforms.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __TEST_OPENWSN_H
 #define __TEST_OPENWSN_H

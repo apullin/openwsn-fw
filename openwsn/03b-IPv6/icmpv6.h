@@ -1,14 +1,17 @@
-/*
- * ICMPv6 common definitions
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief ICMPv6 common definitions
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __ICMPv6_H
 #define __ICMPv6_H
 
-typedef struct ICMPv6_ht {
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+typedef struct {
    uint8_t     type;
    uint8_t     code;
    uint16_t    checksum;
@@ -16,7 +19,7 @@ typedef struct ICMPv6_ht {
    uint16_t    sequence_number;
 } ICMPv6_ht;
 
-typedef struct ICMPv6_RA_ht {
+typedef struct {
    uint8_t     type;
    uint8_t     code;
    uint16_t    checksum;
@@ -27,7 +30,7 @@ typedef struct ICMPv6_RA_ht {
    uint32_t    retransmission_timer;
 } ICMPv6_RA_ht;
 
-typedef struct ICMPv6_64bprefix_option_ht {
+typedef struct {
    uint8_t     option_type;
    uint8_t     option_length;
    uint8_t     prefix_length;
@@ -38,7 +41,9 @@ typedef struct ICMPv6_64bprefix_option_ht {
    uint8_t     prefix[16];
 } ICMPv6_64bprefix_option_ht;
 
-//===================================== prototypes ============================
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void    icmpv6_init();
 error_t icmpv6_send(OpenQueueEntry_t* msg);

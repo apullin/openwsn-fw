@@ -1,9 +1,8 @@
-/*
- * OpenWSN IDManager
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief OpenWSN IDManager
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "idmanager.h"
@@ -11,7 +10,7 @@
 #include "openserial.h"
 #include "neighbors.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 bool          idmanager_isDAGroot;
 bool          idmanager_isBridge;
@@ -20,9 +19,9 @@ open_addr_t   idmanager_my64bID;
 open_addr_t   idmanager_myPANID;
 open_addr_t   idmanager_myPrefix;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void idmanager_init() {
    idmanager_isDAGroot            = FALSE;
@@ -213,4 +212,4 @@ bool idmanager_debugPrint() {
    return TRUE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

@@ -1,20 +1,21 @@
-/*
- * This is a standalone test program for the button of the GINA2.2b/c
- * board. Download the program to a GINA board, run it, and when you press the AUX
- * button, the LEDs should shift circularly. Note that the RESET button is non
- * programmable, and always resets the MSP430.
- *
- * The digital outputs are:
- *    - P2.0: red LED
- *    - P2.1: green LED
- *    - P2.2: blue LED
- *    - P2.3: red LED
- *
- * The digital inputs are:
- *    - P2.7: button
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+/**
+\brief This is a standalone test program for the button of the GINA2.2b/c
+board.
+
+Download the program to a GINA board, run it, and when you press the AUX
+button, the LEDs should shift circularly. Note that the RESET button is non
+programmable, and always resets the MSP430.
+
+The digital outputs are:
+  - P2.0: red LED
+  - P2.1: green LED
+  - P2.2: blue LED
+  - P2.3: red LED
+ 
+ The digital inputs are:
+   - P2.7: button
+ 
+ \author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
  */
 
 #include "gina.h"

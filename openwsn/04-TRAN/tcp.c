@@ -1,10 +1,10 @@
-/*
- * TCP implementation (as per http://tools.ietf.org/html/rfc793)
- * See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief TCP implementation (as per http://tools.ietf.org/html/rfc793)
+
+See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "tcp.h"
@@ -19,7 +19,7 @@
 #include "apptcpohlone.h"
 #include "apptcpprint.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 uint8_t           tcp_state;
 uint32_t          tcp_mySeqNum;
@@ -30,14 +30,14 @@ open_addr_t       tcp_hisIPv6Address;
 OpenQueueEntry_t* tcp_dataToSend;
 OpenQueueEntry_t* tcp_dataReceived;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void prependTCPHeader(OpenQueueEntry_t* msg, bool ack, bool push, bool rst, bool syn, bool fin);
 bool containsControlBits(OpenQueueEntry_t* msg, uint8_t ack, uint8_t rst, uint8_t syn, uint8_t fin);
 void tcp_change_state(uint8_t new_state);
 void reset();
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void tcp_init() {
    reset();
@@ -605,14 +605,14 @@ bool tcp_debugPrint() {
    return FALSE;
 }
 
-//===================================== public (timer) ========================
+//======= timer
 
 //timer used to reset state when TCP state machine is stuck
 void timer_tcp_timeout_fired() {
    reset();
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void prependTCPHeader(OpenQueueEntry_t* msg,
       bool ack,

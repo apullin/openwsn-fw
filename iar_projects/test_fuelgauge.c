@@ -1,18 +1,17 @@
-/*
- * This is a standalone test program for the fuelgauge on the daughter card of
- * the GINA2.2b/c.
- *
- * The digital connection is done through two-wire I2C serial bus: TBC
- * 
- * The digital input is: TBC
- *
- * The debug pins are: TBC
- *
- * Speed: one measurement takes TBC
- *
- * Author:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program for the fuelgauge on the daughter card of
+       the GINA2.2b/c.
+
+The digital connection is done through two-wire I2C serial bus: TBC
+
+The digital input is: TBC
+
+The debug pins are: TBC
+
+Speed: one measurement takes TBC
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
+*/
 
 //!!!!!!!!!!THIS CODE IS STILL UNDER DVELOPMENT. DO NOT USE.
 

@@ -1,9 +1,8 @@
-/*
- * TCP Print application
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief TCP Print application
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "apptcpprint.h"
@@ -11,11 +10,11 @@
 #include "openqueue.h"
 #include "tcp.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void apptcpprint_init() {
 }
@@ -41,4 +40,4 @@ bool apptcpprint_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

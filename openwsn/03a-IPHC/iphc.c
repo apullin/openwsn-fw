@@ -1,9 +1,8 @@
-/*
- * Implementation of IPHC
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Implementation of IPHC
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "iphc.h"
@@ -15,9 +14,9 @@
 #include "neighbors.h"
 #include "openbridge.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 error_t prependIPv6Header(OpenQueueEntry_t* msg,
       uint8_t tf,
@@ -36,7 +35,7 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
 
 ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void iphc_init() {
 }
@@ -129,7 +128,7 @@ bool iphc_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 error_t prependIPv6Header(OpenQueueEntry_t* msg,
       uint8_t tf,

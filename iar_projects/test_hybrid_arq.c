@@ -1,9 +1,8 @@
-/*
- * This is a standalone test program for testing the hybrid ARQ concept
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief This is a standalone test program for testing the hybrid ARQ concept
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
+*/
 
 //board
 #include "gina.h"

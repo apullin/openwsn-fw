@@ -1,10 +1,9 @@
-/*
- * Ohlone, world's smaller web server
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
- */
+/**
+\brief Ohlone, world's smaller web server
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
+*/
 
 #include "openwsn.h"
 #include "apptcpohlone.h"
@@ -15,19 +14,19 @@
 
 #include "ohlone_webpages.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 OpenQueueEntry_t* apptcpohlone_pkt;
 bool              apptcpohlone_sending;
 uint16_t          apptcpohlone_httpChunk;
 uint8_t           apptcpohlone_getRequest[TCP_DEFAULT_WINDOW_SIZE];
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void apptcpohlone_sendpkt();
 bool apptcpohlone_check4chars(uint8_t c1[4], uint8_t c2[4]);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void apptcpohlone_init() {
    apptcpohlone_httpChunk = 0;
@@ -117,4 +116,4 @@ bool apptcpohlone_debugPrint() {
    return FALSE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

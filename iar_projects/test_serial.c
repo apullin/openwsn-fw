@@ -1,14 +1,13 @@
-/*
- * This is a standalone test program for serial communication between the GINA2.2b/c
- * and a computer using the breakout board.
- *
- * The digital UART interface is:
- *    - P3.7: A1_SOMI_RX
- *    - P3.8: A1_SOMI_TX
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program for serial communication between the GINA2.2b/c
+       and a computer using the breakout board.
+
+The digital UART interface is:
+   - P3.7: A1_SOMI_RX
+   - P3.8: A1_SOMI_TX
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "msp430x26x.h"
 #include "stdint.h"

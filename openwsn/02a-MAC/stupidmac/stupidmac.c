@@ -1,9 +1,8 @@
-/*
- * Implementation of stupidMAC
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Implementation of stupidMAC
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "openwsn.h"
 #include "stupidmac.h"
@@ -18,7 +17,7 @@
 #include "neighbors.h"
 #include "nores.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 OpenQueueEntry_t*  stupidmac_dataFrameToSend;     //  NULL at beginning and end of slot
 OpenQueueEntry_t*  stupidmac_packetACK;           //  NULL at beginning and end, free at end of slot
@@ -29,14 +28,14 @@ uint8_t            stupidmac_state;
 bool               stupidmac_serialInOutputMode;
 #endif
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 #include "IEEE802154_common.c"
 void packetReceived();
 void armRandomBackoffTimer();
 void change_state(uint8_t newstate);
 
-//===================================== public from upper layer ===============
+//======= from upper layer
 
 //in stupidMAC, the radio is always on, listening
 void stupidmac_init() {
@@ -72,7 +71,7 @@ error_t stupidmac_send(OpenQueueEntry_t* msg) {
    return E_SUCCESS;
 }
 
-//===================================== public from lower layer ===============
+//======= from lower layer
 
 void stupidmac_sendDone(OpenQueueEntry_t* pkt, error_t error) {
    switch (stupidmac_state) {
@@ -237,7 +236,7 @@ void radio_packet_received(OpenQueueEntry_t* msg) {
    }
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void packetReceived() {
    if (stupidmac_dataFrameReceived->length>0) {
@@ -276,7 +275,7 @@ bool stupidmac_debugPrint() {
    return FALSE;
 }
 
-//===================================== timers firing =========================
+//======= timers firing
 
 //periodic timer used to transmit, and to trigger serial input/output
 void timer_mac_periodic_fired() {

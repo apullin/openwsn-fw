@@ -1,5 +1,11 @@
+/**
+\brief Definitions for the Atmel AT86RF231 radio chip.
+*/
+ 
 #ifndef __ATMEL_H
 #define __ATMEL_H
+
+//=========================== define ==========================================
 
 #define HAVE_REGISTER_MAP (1)
 /** Offset for register TRX_STATUS
@@ -620,5 +626,10 @@
 # define RG_RX_CTRL                      (0x0a)
 //controls the sensitivity of the antenna diversity mode
 
+//=========================== typedef =========================================
 
-#endif /* PHY230_REGISTERMAP_EXTERNAL_H */
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
+
+#endif

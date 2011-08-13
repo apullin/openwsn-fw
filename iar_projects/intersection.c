@@ -1,9 +1,8 @@
-/*
- * Smart intersection application on GINA
- *
- * Authors:
- * Fabien Chraim <chraim@eecs.berkeley.edu>, October 2010
- */
+/**
+\brief Smart intersection application on GINA
+
+\author Fabien Chraim <chraim@eecs.berkeley.edu>, October 2010
+*/
 
 //board
 #include "gina.h"
@@ -225,7 +224,7 @@ void radio_packet_received(OpenQueueEntry_t* packetReceived) {
    openqueue_freePacketBuffer(packetReceived);
 }
 
-//===================================== INT timer fires =======================
+//======= INT timer fires
 
 int mul_int(int x, int y)           //    routine for multiplying two integers
 {

@@ -1,25 +1,29 @@
-/*
- * This is a standalone program to program the EUI-64 address of a the GINA and
- * basestation GINA boards. Set the variables 'board_type', 'board_version' and 
- * 'board_id', compile and run the program.
- *
- * It will store the corresponding EUI64 into the information memory space of
- * the MSP430, which does not get erased, ever. The available memory ranges are:
- *   - 0x10ee-0x10f5 [8B] to store the EUI64
- *   - 0x10c4-0x10d9 [22B] reserved for future use.
- *
- * The EUI-64 naming convention is: 14-15-92-xx yy-yy-zz-zz 
- * 
- * where:
- * - xx is the type of board:
- *   . 09 for GINA ('9' looks like a 'g')
- *   . 0b for basestation GINA
- * - yy-yy is the version, i.e. 022c for a GINA 2.2c
- * - zz-zz is the unique identifier of the board, in hex, big endian.
- * 
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone program to program the EUI-64 address of a the GINA and
+basestation GINA boards.
+
+Set the variables 'board_type', 'board_version' and 'board_id', compile and run the
+program.
+
+It will store the corresponding EUI64 into the information memory space of
+the MSP430, which does not get erased, ever. The available memory ranges are:
+  - 0x10ee-0x10f5 [8B] to store the EUI64
+  - 0x10c4-0x10d9 [22B] reserved for future use.
+
+The EUI-64 naming convention is: 14-15-92-xx yy-yy-zz-zz 
+where:
+- xx is the type of board:
+  . 0x09 for GINA ('9' looks like a 'g')
+  . 0x0b for basestation GINA
+- yy-yy is the version
+  . 0x022b for a GINA 2.2b
+  . 0x022c for a GINA 2.2c
+  . 0x0301 for a GINA basestation MSP1 ('3' looks like a rotated 'm')
+- zz-zz is the unique identifier of the board, in hex, big endian (the one 
+  printed on the sticker).
+ 
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __PROGRAM_EUI64_H
 #define __PROGRAM_EUI64_H

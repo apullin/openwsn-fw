@@ -1,9 +1,8 @@
-/*
- * Drivers for the gyroscope of the GINA2.2b/c board.
- *
- * Author:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Drivers for the gyroscope of the GINA2.2b/c board.
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __GYRO_H
 #define __GYRO_H
@@ -12,7 +11,7 @@
 #include "stdint.h"
 #include "i2c.h"
 
-//===================================== define ================================
+//=========================== define ==========================================
 
 //address
 #define GYRO_I2C_ADDR                  0x68 //b1101000_
@@ -33,7 +32,6 @@
 #define GYRO_REG_GYRO_ZOUT_L_ADDR      0x22
 #define GYRO_REG_PWR_MGM_ADDR          0x3E
 
-
 //register settings
 #define GYRO_REG_SMPLRT_DIV_SETTING    0x01 //Sample Rate Divider set to 1
 #define GYRO_REG_DLPF_FS_SETTING       0x1E //full-scale range: +/-2000°/sec; digital low pass filter: 6
@@ -41,7 +39,9 @@
 #define GYRO_REG_PWR_MGM_SETTING       0x00 //no low-power modes used
 #define GYRO_REG_PWR_MGM_SLEEP         0x40 //sleep mode
 
-//===================================== prototypes ============================
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void gyro_init();
 void gyro_disable();

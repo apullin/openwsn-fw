@@ -1,31 +1,30 @@
-/*
- * This is a standalone test program for the large range accelerometer of the GINA2.2b/c
- * board. Download the program to a GINA board, run it, and break after a few
- * seconds at the line indicated in the code. Use the Watch Window to see the 
- * value of the variables 'large_range_accel_x', 'large_range_accel_y' and 'large_range_accel_z'.
- *
- * The digital connection is done through two-wire I2C serial bus:
- *    - P5.2: B1_I2C_SCL
- *    - P5.1: B1_I2C_SDA
- * 
- * The digital input is:
- *    - P1.7: interrupt (not used)
- *
- * The digital ouput is:
- *    - P5.4: keep high to configure the I2C mode of the large range accelerometer
- *
- * The debug pins are:
- *    - P1.1: toggles at every measurement
- *    - P1.2: on during initial configuration
- *    - P1.3: toggles upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
- *    - P1.4: toggles upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
- *
- * Speed: one measurement takes ~738us
- *
- * Authors:
- * Leo Keselman <lkeselman@berkeley.edu>, July 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program for the large range accelerometer of the GINA2.2b/c
+board. Download the program to a GINA board, run it, and break after a few
+seconds at the line indicated in the code. Use the Watch Window to see the 
+value of the variables 'large_range_accel_x', 'large_range_accel_y' and 'large_range_accel_z'.
+
+The digital connection is done through two-wire I2C serial bus:
+   - P5.2: B1_I2C_SCL
+   - P5.1: B1_I2C_SDA
+
+The digital input is:
+   - P1.7: interrupt (not used)
+
+The digital ouput is:
+   - P5.4: keep high to configure the I2C mode of the large range accelerometer
+
+The debug pins are:
+   - P1.1: toggles at every measurement
+   - P1.2: on during initial configuration
+   - P1.3: toggles upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
+   - P1.4: toggles upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
+
+Speed: one measurement takes ~738us
+
+\author Leo Keselman <lkeselman@berkeley.edu>, July 2010
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "msp430x26x.h"
 #include "stdint.h"

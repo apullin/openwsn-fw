@@ -1,9 +1,8 @@
-/*
- * Implementation of neighbors
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief Implementation of neighbors
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #include "openwsn.h"
 #include "neighbors.h"
@@ -13,20 +12,20 @@
 #include "openserial.h"
 #include "IEEE802154E.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 neighborEntry_t  neighbors[MAXNUMNEIGHBORS];
 dagrank_t        neighbors_myDAGrank;
 uint8_t          neighbors_debugRow;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
 void registerNewNeighbor(open_addr_t* neighborID,dagrank_t hisDAGrank);
 bool isNeighbor(open_addr_t* neighbor);
 void removeNeighbor(uint8_t neighborIndex);
 bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber);
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void neighbors_init() {
    uint8_t i;
@@ -222,7 +221,7 @@ bool neighbors_debugPrint() {
      return TRUE;*/
 }
 
-//===================================== private ===============================
+//=========================== private =========================================
 
 void registerNewNeighbor(open_addr_t* address,dagrank_t hisDAGrank) {
    /*open_addr_t temp_prefix;

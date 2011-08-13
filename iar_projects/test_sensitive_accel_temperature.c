@@ -1,33 +1,34 @@
-/*
- * This is a standalone test program for the sensitive accelometer and temperature
- * sensor of the GINA2.2b/c board. Measurement are typically done simultaneously 
- * because they both output analog voltages.
- * Download the program to a GINA board, run it, and break after a few
- * seconds at the line indicated in the code. Use the Watch Window to see the 
- * value of 'sensitive_accel_x', '..._y', '..._z1', '..._z2' and 'temperature'.
- *
- * The analog input are:
- *    - P6.1: Y axis
- *    - P6.2: X axis
- *    - P6.5: Z axis, after first order filter (abbreviated Z1)
- *    - P6.6: Z axis, after third order filter (abbreviated Z3)
- *    - P6.7: temperature
- * 
- * The digital outputs to the accelerometer are:
- *    - P6.3: pull high enables the accelerometer and analog filter
- *    - P6.4: full scale selection (0: +/-2g full-scale; 1: +/-6g full-scale)
- *
- * The debug pins are:
- *    - P1.1 toggles at every measurement
- *
- * Speed:
- *    - one measurement alone takes ~35s
- *    - one measurement followed by the conversion to real temperature takes ~65us
- *
- * Authors:
- * Leo Keselman <lkeselman@berkeley.edu>, July 2010
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program for the sensitive accelometer and temperature
+       sensor of the GINA2.2b/c board.
+
+Measurement are typically done simultaneously  because they both output analog voltages.
+
+Download the program to a GINA board, run it, and break after a few seconds at the line
+indicated in the code. Use the Watch Window to see the 
+value of 'sensitive_accel_x', '..._y', '..._z1', '..._z2' and 'temperature'.
+
+The analog input are:
+   - P6.1: Y axis
+   - P6.2: X axis
+   - P6.5: Z axis, after first order filter (abbreviated Z1)
+   - P6.6: Z axis, after third order filter (abbreviated Z3)
+   - P6.7: temperature
+
+The digital outputs to the accelerometer are:
+   - P6.3: pull high enables the accelerometer and analog filter
+   - P6.4: full scale selection (0: +/-2g full-scale; 1: +/-6g full-scale)
+
+The debug pins are:
+   - P1.1 toggles at every measurement
+
+Speed:
+   - one measurement alone takes ~35s
+   - one measurement followed by the conversion to real temperature takes ~65us
+
+\author Leo Keselman <lkeselman@berkeley.edu>, July 2010
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "msp430x26x.h"
 #include "stdint.h"

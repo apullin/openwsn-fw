@@ -1,22 +1,21 @@
-/*
- * Manages the IEEE802.15.4e schedule
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+/**
+\brief Manages the IEEE802.15.4e schedule
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+*/
 
 #include "OpenWSN.h"
 #include "schedule.h"
 #include "openserial.h"
 
-//===================================== variables =============================
+//=========================== variables =======================================
 
 cellUsageInformation_t cellTable[SCHEDULELENGTH];
 slotOffset_t           debugPrintSlotOffset;
 
-//===================================== prototypes ============================
+//=========================== prototypes ======================================
 
-//===================================== public ================================
+//=========================== public ==========================================
 
 void schedule_init() {
    uint8_t slotCounter;
@@ -104,4 +103,4 @@ bool schedule_debugPrint() {
    return TRUE;
 }
 
-//===================================== private ===============================
+//=========================== private =========================================

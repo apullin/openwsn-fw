@@ -1,12 +1,19 @@
-/*
- * Ohlone, world's smaller web server
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Ohlone, world's smaller web server
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #ifndef __APPTCPOHLONE_H
 #define __APPTCPOHLONE_H
+
+//=========================== define ==========================================
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
 
 void apptcpohlone_init();
 bool apptcpohlone_shouldIlisten();

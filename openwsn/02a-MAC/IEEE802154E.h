@@ -1,16 +1,17 @@
-/*
- * IEEE802.15.4e TSCH
- *
- * Authors:
- * Branko Kerkez   <bkerkez@berkeley.edu>, March 2011
- * Fabien Chraim   <chraim@eecs.berkeley.edu>, June 2011
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
+/**
+\brief IEEE802.15.4e TSCH
+
+\author Branko Kerkez   <bkerkez@berkeley.edu>, March 2011
+\author Fabien Chraim   <chraim@eecs.berkeley.edu>, June 2011
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
  */
 
 #ifndef __IEEE802154E_H
 #define __IEEE802154E_H
 
 #include "openwsn.h"
+
+//=========================== define ==========================================
 
 // this is the channel the mote will listen on to synchronize
 #define SYNCHRONIZING_CHANNEL 26
@@ -91,28 +92,31 @@ enum ieee154e_atomicdurations_enum{
 #define DURATION_rt7 ieee154e_vars.capturedTime+TsTxAckDelay-delayTx+wdRadioTx
 #define DURATION_rt8 ieee154e_vars.capturedTime+wdAckDuration
 
-//===================================== packet formats ========================
+//=========================== typedef =========================================
 
 //IEEE802.15.4E acknowledgement (ACK)
-
-typedef struct IEEE802154E_ACK_ht {
+typedef struct {
    uint16_t    timeCorrection;
 } IEEE802154E_ACK_ht;
 
 //IEEE802.15.4E advertisement (ADV)
-
-typedef struct IEEE802154E_ADV_t {
+typedef struct {
    uint16_t   asn;
 } IEEE802154E_ADV_t;
 
-//===================================== public prototypes =====================
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
+
 
 // from upper layer
 void    mac_init();
 error_t mac_send(OpenQueueEntry_t* msg);
+
 // events
 void    ieee154e_startOfFrame(uint16_t capturedTime);
 void    ieee154e_endOfFrame(uint16_t capturedTime);
+
 // misc
 bool    mac_debugPrint();
 

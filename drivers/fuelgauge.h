@@ -1,9 +1,8 @@
-/*
- * Driver for the fuelgauge of the GINA daughter card
- *
- * Author:
- * Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief Driver for the fuelgauge of the GINA daughter card
+
+\author Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
+*/
 
 //!!!!!!!!!!THIS CODE IS STILL UNDER DVELOPMENT. DO NOT USE.
 
@@ -13,13 +12,7 @@
 #include "msp430x26x.h"
 #include "i2c.h"
 
-//address
-#define FUELGAUGE_I2C_ADDR          0x55
-
-void fuelgauge_init(void);
-int  fuelgauge_test(void);
-void fuelgauge_config(void);
-int  fuelgauge_read(char);
+//=========================== define ==========================================
 
 // #define IR_PREP while(i2c_send(ir_str6, 1))
 // #define IR_READ(var) while(i2c_recv(var, 13))
@@ -57,5 +50,19 @@ int  fuelgauge_read(char);
 #define FUELGAUGE_REG_RSVD          0x28
 #define FUELGAUGE_REG_CC            0x2a
 #define FUELGAUGE_REG_SOC           0x2c
+
+//address
+#define FUELGAUGE_I2C_ADDR          0x55
+
+//=========================== typedef =========================================
+
+//=========================== variables =======================================
+
+//=========================== prototypes ======================================
+
+void fuelgauge_init(void);
+int  fuelgauge_test(void);
+void fuelgauge_config(void);
+int  fuelgauge_read(char);
 
 #endif

@@ -1,34 +1,35 @@
-/*
- * This is a standalone test program which tests which devices are attached to
- * the I2C bus by 'pinging' every possible address. Every I2C slave has a unique
- * address, indicated in its data sheet.
- * Download the program to a GINA board, run it, and break the line indicated
- * in the code. Use the Watch Window to see the value of the variables 'connected',
- * a bitmap of addresses. The LEDs also count the number of discovered devices.
- * On a completely assembled GINA 2.2b/c board, you should see three I2C slaves
- * attached:
- *   .  24 = 0x18 is the large-scale accelerometer (by Kionix)
- *   .  30 = 0x1e is the the magnetometer (by Honeywell)
- *   . 104 = 0x68 is the gyroscope (by Invensense)
- *
- * The digital connection is done through two-wire I2C serial bus:
- *    - P5.2: B1_I2C_SCL
- *    - P5.1: B1_I2C_SDA
- * Note: Bus Free Time Between STOP and START should be >1.3us
- * 
- * The debug pins are:
- *    - P1.1 toggle at every new address tested
- *    - P1.2 is on during the testing
- *    - P1.3 is toggled upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
- *    - P1.4 is toggled upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
- *
- * Speed:
- *   - checking one address takes 40us
- *   - the whole test takes 6.112ms
- *
- * Authors:
- * Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
- */
+/**
+\brief This is a standalone test program which tests which devices are attached to
+       the I2C bus
+       
+It does so by 'pinging' every possible address. Every I2C slave has a unique
+address, indicated in its data sheet.
+
+Download the program to a GINA board, run it, and break the line indicated
+in the code. Use the Watch Window to see the value of the variables 'connected',
+a bitmap of addresses. The LEDs also count the number of discovered devices.
+On a completely assembled GINA 2.2b/c board, you should see three I2C slaves
+attached:
+  .  24 = 0x18 is the large-scale accelerometer (by Kionix)
+  .  30 = 0x1e is the the magnetometer (by Honeywell)
+  . 104 = 0x68 is the gyroscope (by Invensense)
+The digital connection is done through two-wire I2C serial bus:
+   - P5.2: B1_I2C_SCL
+   - P5.1: B1_I2C_SDA
+Note: Bus Free Time Between STOP and START should be >1.3us
+
+The debug pins are:
+   - P1.1 toggle at every new address tested
+   - P1.2 is on during the testing
+   - P1.3 is toggled upon an USCIAB1TX_VECTOR interrupt (in ti_i2c.c)
+   - P1.4 is toggled upon an USCIAB1RX_VECTOR interrupt (in ti_i2c.c)
+
+Speed:
+  - checking one address takes 40us
+  - the whole test takes 6.112ms
+
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+*/
 
 #include "msp430x26x.h"
 #include "stdint.h"
