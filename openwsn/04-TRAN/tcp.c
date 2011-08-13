@@ -605,6 +605,13 @@ bool tcp_debugPrint() {
    return FALSE;
 }
 
+//===================================== public (timer) ========================
+
+//timer used to reset state when TCP state machine is stuck
+void timer_tcp_timeout_fired() {
+   reset();
+}
+
 //===================================== private ===============================
 
 void prependTCPHeader(OpenQueueEntry_t* msg,
@@ -679,11 +686,4 @@ void tcp_change_state(uint8_t new_tcp_state) {
    } else {
       timer_startOneShot(TIMER_TCP_TIMEOUT,TCP_TIMEOUT);
    }
-}
-
-//===================================== timers firing =========================
-
-//timer used to reset state when TCP state machine is stuck
-void timer_tcp_timeout_fired() {
-   reset();
 }

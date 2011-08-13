@@ -107,13 +107,13 @@ typedef struct IEEE802154E_ADV_t {
 
 //===================================== public prototypes =====================
 
-// called from the upper layer
+// from upper layer
 void    mac_init();
 error_t mac_send(OpenQueueEntry_t* msg);
-bool    mac_debugPrint();
-
-// called from the radio drivers
+// events
 void    ieee154e_startOfFrame(uint16_t capturedTime);
 void    ieee154e_endOfFrame(uint16_t capturedTime);
+// misc
+bool    mac_debugPrint();
 
 #endif

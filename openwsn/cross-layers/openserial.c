@@ -287,7 +287,7 @@ bool openserial_debugPrint() {
    return TRUE;
 }
 
-//=========================== private ======================================
+//=========================== private =========================================
 
 uint16_t output_buffer_index_write_increment() {
    __disable_interrupt();

@@ -10,11 +10,6 @@
 
 #include "openwsn.h"
 
-enum {
-   TIME_LIMITED_RX       =   TRUE,
-   INFITE_RX             =  FALSE,
-};
-
 //===================================== packet formats ========================
 
 typedef struct ieee802154_header_iht { //iht for "internal header type"
@@ -75,7 +70,7 @@ enum IEEE802154_fcf_addr_mode_enums {
    IEEE154_ADDR_EXT                    = 3,
 };
 
-//===================================== public prototypes =====================
+//===================================== prototypes ============================
 
 void prependIEEE802154header  (OpenQueueEntry_t*      msg,
                                uint8_t                frameType,

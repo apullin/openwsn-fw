@@ -45,3 +45,5 @@ void appudpecho_sendDone(OpenQueueEntry_t* msg, error_t error) {
 bool appudpecho_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

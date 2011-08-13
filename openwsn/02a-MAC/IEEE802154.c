@@ -13,7 +13,9 @@
 
 //===================================== variables =============================
 
-//===================================== implementation ========================
+//===================================== prototypes ============================
+
+//===================================== public ================================
 
 void prependIEEE802154header(OpenQueueEntry_t* msg,
                              uint8_t           frameType,
@@ -220,3 +222,5 @@ void retrieveIEEE802154header(OpenQueueEntry_t*      msg,
    // if you reach this, the header is valid
    ieee802514_header->valid=TRUE;
 }
+
+//===================================== private ===============================

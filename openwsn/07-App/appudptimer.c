@@ -94,3 +94,5 @@ void appudptimer_receive(OpenQueueEntry_t* msg) {
 bool appudptimer_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

@@ -54,3 +54,5 @@ void apptcpecho_connectDone() {
 bool apptcpecho_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

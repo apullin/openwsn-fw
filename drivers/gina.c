@@ -12,6 +12,12 @@
 #include "i2c.h"
 #endif
 
+//===================================== variables =============================
+
+//===================================== prototypes ============================
+
+//===================================== public ================================
+
 void gina_init() {
    WDTCTL  = WDTPW + WDTHOLD;                    // disable watchdog timer
    BCSCTL1 = CALBC1_16MHZ;                       // MCLK at 16MHz
@@ -26,3 +32,5 @@ void gina_init() {
 #endif
    __bis_SR_register(GIE);                       // set 'general interrupt enable' bit
 }
+
+//===================================== private ===============================

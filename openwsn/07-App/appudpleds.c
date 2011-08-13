@@ -57,3 +57,5 @@ void appudpleds_sendDone(OpenQueueEntry_t* msg, error_t error) {
 bool appudpleds_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

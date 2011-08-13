@@ -22,9 +22,9 @@ typedef struct {
 
 radio_vars_t radio_vars;
 
-//=========================== private prototypes ==============================
+//=========================== prototypes ======================================
 
-//=========================== interface =======================================
+//=========================== public ==========================================
 
 /**
 \brief This function initializes this module.
@@ -66,7 +66,7 @@ void radio_init() {
    radio_vars.state = RADIOSTATE_RFOFF;
 }
 
-//=========================== sending a packet ================================
+//===================================== public (sending a packet) =============
 
 /**
 \brief Set the radio frequency.
@@ -161,7 +161,7 @@ void radio_txNow() {
    ieee154e_startOfFrame(ieee154etimer_getCapturedTime());
 }
 
-//=========================== receiving a packet ==============================
+//===================================== public (receiving a packet) ===========
 
 /**
 \brief Enable the radio in RX mode.
@@ -230,7 +230,7 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
    }
 }
 
-//=========================== turning radio off ===============================
+//===================================== public (turning radio off) ============
 
 /**
 \brief Turn the radio off.
@@ -254,7 +254,9 @@ void radio_rfOff() {
    radio_vars.state = RADIOSTATE_RFOFF;
 }
 
-//=========================== interrupt handler ================================
+//===================================== private ===============================
+
+//===================================== interrupt handler =====================
 
 /**
 \brief Radio interrupt handler function.

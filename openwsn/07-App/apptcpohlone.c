@@ -116,3 +116,5 @@ void apptcpohlone_connectDone(error_t error) {
 bool apptcpohlone_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

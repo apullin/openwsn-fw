@@ -74,3 +74,5 @@ void appudpsensor_receive(OpenQueueEntry_t* msg) {
 bool appudpsensor_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

@@ -147,9 +147,7 @@ error_t mac_send(OpenQueueEntry_t* msg) {
    return E_SUCCESS;
 }
 
-//===================================== public from lower layer ================
-
-//===================================== events =================================
+//===================================== public (events) =======================
 
 /**
 \brief Indicates a new slot has just started.
@@ -313,7 +311,15 @@ void ieee154e_endOfFrame(uint16_t capturedTime) {
    }
 }
 
-//===================================== SYNCHRONIZING =========================
+//===================================== public (misc) =========================
+
+bool mac_debugPrint() {
+   return FALSE;
+}
+
+//===================================== private ===============================
+
+//============ SYNCHRONIZING
 
 inline void activity_synchronize_newSlot() {
    // if this is the first time I call this function while not synchronized,
@@ -391,7 +397,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    
 }
 
-//===================================== TX ====================================
+//============ TX
 
 inline void activity_ti1ORri1() {
    uint8_t cellType;
@@ -722,7 +728,7 @@ inline void activity_ti9(uint16_t capturedTime) {
    endSlot();
 }
 
-//===================================== RX ====================================
+//============ RX
 
 inline void activity_ri2() {
    uint8_t frequency;
@@ -1112,7 +1118,7 @@ void endSlot() {
       // if everything went well, dataToSend was set to NULL in ti9
       // transmit failed, decrement transmits left counter
       ieee154e_vars.dataToSend->l2_retriesLeft--;
-      // indicate tx fail if counnter 
+      // indicate tx fail if no more retries left
       if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
          res_sendDone(ieee154e_vars.dataToSend,E_FAIL);
       }
@@ -1148,8 +1154,4 @@ void endSlot() {
    
    // change state
    change_state(S_SLEEP);
-}
-
-bool mac_debugPrint() {
-   return FALSE;
 }

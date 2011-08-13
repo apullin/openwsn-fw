@@ -15,6 +15,8 @@ uint8_t reg_CTRL_REGC;
 uint8_t reg_CTRL_REGB;
 bool large_range_accel_configured = FALSE;
 
+//===================================== prototypes ============================
+
 //===================================== public ================================
 
 void large_range_accel_init() {
@@ -61,3 +63,5 @@ void large_range_accel_get_measurement(uint8_t* spaceToWrite) {
       }
    }
 }
+
+//===================================== private ===============================

@@ -19,14 +19,14 @@
 #include "leds.h"
 #include "packetfunctions.h"
 
-//===================================== variables ==============================
+//===================================== variables =============================
 
 uint16_t res_periodMaintenance;
 bool     res_busySending;
 
-//===================================== prototypes =============================
+//===================================== prototypes ============================
 
-//===================================== public =================================
+//===================================== public ================================
 
 void res_init() {
    res_periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
@@ -34,7 +34,7 @@ void res_init() {
    //poipoi disabling ADV timer_startPeriodic(TIMER_RES,res_periodMaintenance);
 }
 
-//===================================== public with upper ======================
+//===================================== public (from upper) ===================
 
 error_t res_send(OpenQueueEntry_t *msg) {
    msg->owner        = COMPONENT_RES;
@@ -42,7 +42,7 @@ error_t res_send(OpenQueueEntry_t *msg) {
    return mac_send(msg);
 }
 
-//===================================== public with lower ======================
+//===================================== public (from lower) ===================
 
 void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_RES;
@@ -78,7 +78,7 @@ bool res_debugPrint() {
    return TRUE;
 }
 
-//===================================== timer ==================================
+//===================================== public (timer) ========================
 
 void timer_res_fired() {
    OpenQueueEntry_t* adv;
@@ -117,3 +117,5 @@ void timer_res_fired() {
       res_busySending = TRUE;
    }
 }
+
+//===================================== private ===============================

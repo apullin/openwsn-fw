@@ -20,6 +20,8 @@ uint8_t reg_ID_B;
 uint8_t reg_ID_C;
 bool magnetometer_configured = FALSE;
 
+//===================================== prototypes ============================
+
 //===================================== public ================================
 
 void magnetometer_init() {
@@ -67,3 +69,5 @@ void magnetometer_get_measurement(uint8_t* spaceToWrite) {
       }
    }
 }
+
+//===================================== private ===============================

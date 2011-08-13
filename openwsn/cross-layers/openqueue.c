@@ -15,6 +15,7 @@
 OpenQueueEntry_t queue[QUEUELENGTH];
 
 //===================================== prototypes ============================
+
 //===================================== public ================================
 
 void openqueue_init() {
@@ -114,3 +115,5 @@ bool openqueue_debugPrint() {
    openserial_printStatus(STATUS_OPENQUEUE_QUEUE,(uint8_t*)&output,QUEUELENGTH*sizeof(debugOpenQueueEntry_t));
    return TRUE;
 }
+
+//===================================== private ===============================

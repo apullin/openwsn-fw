@@ -90,3 +90,5 @@ void apptcpinject_receive(OpenQueueEntry_t* msg) {
 bool apptcpinject_debugPrint() {
    return FALSE;
 }
+
+//===================================== private ===============================

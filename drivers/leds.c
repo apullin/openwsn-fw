@@ -8,6 +8,12 @@
 
 #include "leds.h"
 
+//===================================== variables =============================
+
+//===================================== prototypes ============================
+
+//===================================== public ================================
+
 void leds_init() {
    P2DIR  |=  0x0F;                              // P2DIR = 0bxxxx1111 for LEDs
    P2OUT  &= ~0x0F;                              // P2OUT = 0bxxxx0000, all LEDs off
@@ -36,3 +42,5 @@ void leds_increment() {
    P2OUT &= ~0x0f; //all LEDs off
    P2OUT |=  led_counter & 0x0f; //LEDs on again
 }
+
+//===================================== private ===============================
