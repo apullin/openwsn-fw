@@ -10,13 +10,17 @@
 #include "openwsn.h"
 
 //=========================== define ==========================================
+#define SCHEDULELENGTH  7
+
+typedef uint8_t cellType_t;
+typedef uint8_t channelOffset_t;
 
 enum {
    CELLTYPE_OFF         = 0,
    CELLTYPE_ADV         = 1,
    CELLTYPE_TX          = 2,
    CELLTYPE_RX          = 3,
-   CELLTYPE_RXSERIAL    = 4
+   CELLTYPE_SERIALRX    = 4
 };
 
 //=========================== typedef =========================================

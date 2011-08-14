@@ -10,12 +10,15 @@
 
 //=========================== define ==========================================
 
+// this is a temporary define which is used to test synchronization between
+// two mote
+#define DEBUG_MOTEID_MASTER 0xb6
+#define DEBUG_MOTEID_SLAVE  0x99
+
 //general
 #include "msp430x26x.h"
 #include "stdint.h"                              // needed for uin8_t, uint16_t
 #include <string.h>                              // needed for memcpy and memcmp
-
-#define bool uint8_t
 
 #define DEBUG_PIN_FRAME_INIT()    P4DIR |=  0x20 // P4.5
 #define DEBUG_PIN_FRAME_TOGGLE()  P4OUT ^=  0x20
@@ -49,28 +52,12 @@
 
 __no_init volatile uint8_t eui64 @ 0x10ee;       // address is flash where the node's EUI64 identifier is stored
 
+#define bool uint8_t
 enum {
    TRUE  = 1,
    FALSE = 0,
 };
 
-enum {
-   HOPPING_ENABLED                 =  FALSE,
-   SCHEDULELENGTH                  =      5,
-   MAXNUMNEIGHBORS                 =     10,
-   DEFAULTCHANNEL                  =     15,
-   TXRETRIES                       =      3,
-   //state
-   QUEUELENGTH                     =     10,
-   SERIAL_OUTPUT_BUFFER_SIZE       =    300,
-   SERIAL_INPUT_BUFFER_SIZE        =    200,     //not more than 255 (length encoded in 1B)
-   //misc
-   GOODNEIGHBORMINPOWER            =    219,     //-80dBm in 8-bit 2's compl. (-80 -> -35 -> 36 -> 219)
-   BADNEIGHBORMAXPOWER             =    229,     //-70dBm in 8-bit 2's compl. (-70 -> -25 -> 26 -> 0001 1010 -> 1110 0101-> 229)
-   SWITCHSTABILITYTHRESHOLD        =      3,
-   TX_POWER                        =     31,     //1=-25dBm, 31=0dBm (max value)
-   MAXPREFERENCE                   =      2,
-};
 
 enum {
    E_SUCCESS      =  0,          
@@ -89,11 +76,6 @@ enum {
 enum {
    LITTLE_ENDIAN = TRUE,
    BIG_ENDIAN    = FALSE,
-};
-
-enum {
-   IS_ADV        = TRUE,
-   IS_NOT_ADV    = FALSE,
 };
 
 enum {
@@ -173,6 +155,8 @@ enum {
    COMPONENT_OPENSERIAL       = 0x1f,
    COMPONENT_PACKETFUNCTIONS  = 0x20,
 };
+
+//============================================ debug ==========================
 
 //status elements
 enum {

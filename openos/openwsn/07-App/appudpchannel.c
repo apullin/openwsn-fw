@@ -91,6 +91,6 @@ bool appudpchannel_debugPrint() {
 
 void appudpchannel_change_channel(uint8_t new_channel) {
    if (new_channel>=11 && new_channel<=26) {
-      openwsn_frequency_channel = new_channel;
+      //openwsn_frequency_channel = new_channel;
    }
 }

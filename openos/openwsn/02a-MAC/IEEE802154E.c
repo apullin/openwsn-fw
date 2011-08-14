@@ -475,6 +475,9 @@ inline void activity_ti1ORri1() {
          // arm rt1
          ieee154etimer_schedule(DURATION_rt1);
          break;
+      case CELLTYPE_SERIALRX:
+         //todo implement
+         break;
       default:
          // log the error
          openserial_printError(COMPONENT_IEEE802154E,
