@@ -13,12 +13,10 @@
 
 //=========================== define ==========================================
 
-// this is the channel the mote will listen on to synchronize
-#define SYNCHRONIZING_CHANNEL 26
+#define SYNCHRONIZING_CHANNEL 26 // channel the mote listens on to synchronize
 #define TXRETRIES              3
 #define SYNCTIMEOUT           50 // @10ms per slot -> 0.5 second
-//1=-25dBm, 31=0dBm (max value)
-#define TX_POWER              31
+#define TX_POWER              31 //1=-25dBm, 31=0dBm (max value)
 
 // the different states of the IEEE802.15.4e state machine
 enum ieee154e_state_enum {
@@ -100,12 +98,12 @@ enum ieee154e_atomicdurations_enum{
 
 //IEEE802.15.4E acknowledgement (ACK)
 typedef struct {
-   uint16_t    timeCorrection;
+   uint16_t timeCorrection;
 } IEEE802154E_ACK_ht;
 
 //IEEE802.15.4E advertisement (ADV)
 typedef struct {
-   uint16_t   asn;
+   uint8_t  asn[2];
 } IEEE802154E_ADV_t;
 
 //=========================== variables =======================================
