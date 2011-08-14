@@ -15,6 +15,9 @@
 
 // this is the channel the mote will listen on to synchronize
 #define SYNCHRONIZING_CHANNEL 26
+#define TXRETRIES              3
+//1=-25dBm, 31=0dBm (max value)
+#define TX_POWER              31
 
 // the different states of the IEEE802.15.4e state machine
 enum ieee154e_state_enum {

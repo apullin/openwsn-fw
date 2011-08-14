@@ -7,6 +7,7 @@
 #include "OpenWSN.h"
 #include "schedule.h"
 #include "openserial.h"
+#include "idmanager.h"
 
 //=========================== variables =======================================
 
@@ -23,6 +24,8 @@ schedule_vars_t schedule_vars;
 
 void schedule_init() {
    uint8_t slotCounter;
+   // for debug print
+   debugPrintSlotOffset                    = 0;
    //all slots OFF
    for (slotCounter=0;slotCounter<SCHEDULELENGTH;slotCounter++){
       schedule_vars.cellTable[slotCounter].type          = CELLTYPE_OFF;
@@ -34,33 +37,87 @@ void schedule_init() {
    }
    //slot 0 is advertisement slot
    schedule_vars.cellTable[0].type                       = CELLTYPE_ADV;
-   //slot 1 is receive slot
-   schedule_vars.cellTable[1].type                       = CELLTYPE_RX;
-   //slot 2 is transmit slot to neighbor 0xffffffffffffffff
-   schedule_vars.cellTable[2].type                       = CELLTYPE_TX;
-   schedule_vars.cellTable[2].neighbor.type              = ADDR_64B;
-   schedule_vars.cellTable[2].neighbor.addr_64b[0]       = 0xff;
-   schedule_vars.cellTable[2].neighbor.addr_64b[1]       = 0xff;
-   schedule_vars.cellTable[2].neighbor.addr_64b[2]       = 0xff;
-   schedule_vars.cellTable[2].neighbor.addr_64b[3]       = 0xff;
-   schedule_vars.cellTable[2].neighbor.addr_64b[4]       = 0xff;
-   schedule_vars.cellTable[2].neighbor.addr_64b[5]       = 0xff;
-   schedule_vars.cellTable[2].neighbor.addr_64b[6]       = 0xff;
-   schedule_vars.cellTable[2].neighbor.addr_64b[7]       = 0xff;
-   //slot 3 is transmit slot to neighbor 0x14159209022b0087
-   schedule_vars.cellTable[3].type                       = CELLTYPE_TX;
-   schedule_vars.cellTable[3].neighbor.type              = ADDR_64B;
-   schedule_vars.cellTable[3].neighbor.addr_64b[0]       = 0x14;
-   schedule_vars.cellTable[3].neighbor.addr_64b[1]       = 0x15;
-   schedule_vars.cellTable[3].neighbor.addr_64b[2]       = 0x92;
-   schedule_vars.cellTable[3].neighbor.addr_64b[3]       = 0x09;
-   schedule_vars.cellTable[3].neighbor.addr_64b[4]       = 0x02;
-   schedule_vars.cellTable[3].neighbor.addr_64b[5]       = 0x2b;
-   schedule_vars.cellTable[3].neighbor.addr_64b[6]       = 0x00;
-   schedule_vars.cellTable[3].neighbor.addr_64b[7]       = 0x87;
-   
-   // for debug print
-   schedule_vars.debugPrintRow                    = 0;
+   //slot 1 TX@MASTER, RX@SLAVE
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+      cellTable[1].type                    = CELLTYPE_TX;
+   } else {
+      cellTable[1].type                    = CELLTYPE_RX;
+   }
+   cellTable[1].neighbor.type              = ADDR_64B;
+   cellTable[1].neighbor.addr_64b[0]       = 0x14;
+   cellTable[1].neighbor.addr_64b[1]       = 0x15;
+   cellTable[1].neighbor.addr_64b[2]       = 0x92;
+   cellTable[1].neighbor.addr_64b[3]       = 0x09;
+   cellTable[1].neighbor.addr_64b[4]       = 0x02;
+   cellTable[1].neighbor.addr_64b[5]       = 0x2b;
+   cellTable[1].neighbor.addr_64b[6]       = 0x00;
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+      cellTable[1].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
+   } else {
+      cellTable[1].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
+   }
+   //slot 2 RX@MASTER, TX@SLAVE
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+      cellTable[2].type                    = CELLTYPE_RX;
+   } else {
+      cellTable[2].type                    = CELLTYPE_TX;
+   }
+   cellTable[2].neighbor.type              = ADDR_64B;
+   cellTable[2].neighbor.addr_64b[0]       = 0x14;
+   cellTable[2].neighbor.addr_64b[1]       = 0x15;
+   cellTable[2].neighbor.addr_64b[2]       = 0x92;
+   cellTable[2].neighbor.addr_64b[3]       = 0x09;
+   cellTable[2].neighbor.addr_64b[4]       = 0x02;
+   cellTable[2].neighbor.addr_64b[5]       = 0x2b;
+   cellTable[2].neighbor.addr_64b[6]       = 0x00;
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+      cellTable[2].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
+   } else {
+      cellTable[2].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
+   }
+   //slot 3 TX@MASTER, OFF@SLAVE
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+      cellTable[3].type                    = CELLTYPE_TX;
+      cellTable[3].neighbor.type           = ADDR_64B;
+      cellTable[3].neighbor.addr_64b[0]    = 0x14;
+      cellTable[3].neighbor.addr_64b[1]    = 0x15;
+      cellTable[3].neighbor.addr_64b[2]    = 0x92;
+      cellTable[3].neighbor.addr_64b[3]    = 0x09;
+      cellTable[3].neighbor.addr_64b[4]    = 0x02;
+      cellTable[3].neighbor.addr_64b[5]    = 0x2b;
+      cellTable[3].neighbor.addr_64b[6]    = 0x00;
+      cellTable[3].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
+   } else {
+      cellTable[3].type                    = CELLTYPE_OFF;
+   }
+   //slot 4 RX@MASTER, OFF@SLAVE
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+      cellTable[4].type                    = CELLTYPE_RX;
+      cellTable[4].neighbor.type           = ADDR_64B;
+      cellTable[4].neighbor.addr_64b[0]    = 0x14;
+      cellTable[4].neighbor.addr_64b[1]    = 0x15;
+      cellTable[4].neighbor.addr_64b[2]    = 0x92;
+      cellTable[4].neighbor.addr_64b[3]    = 0x09;
+      cellTable[4].neighbor.addr_64b[4]    = 0x02;
+      cellTable[4].neighbor.addr_64b[5]    = 0x2b;
+      cellTable[4].neighbor.addr_64b[6]    = 0x00;
+      cellTable[4].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
+   } else {
+      cellTable[4].type                    = CELLTYPE_OFF;
+   }
+   //slot 5 is transmit slot to neighbor 0xffffffffffffffff
+   cellTable[5].type                       = CELLTYPE_TX;
+   cellTable[5].neighbor.type              = ADDR_64B;
+   cellTable[5].neighbor.addr_64b[0]       = 0xff;
+   cellTable[5].neighbor.addr_64b[1]       = 0xff;
+   cellTable[5].neighbor.addr_64b[2]       = 0xff;
+   cellTable[5].neighbor.addr_64b[3]       = 0xff;
+   cellTable[5].neighbor.addr_64b[4]       = 0xff;
+   cellTable[5].neighbor.addr_64b[5]       = 0xff;
+   cellTable[5].neighbor.addr_64b[6]       = 0xff;
+   cellTable[5].neighbor.addr_64b[7]       = 0xff;
+   //slot 6 is serialRx
+   cellTable[6].type                       = CELLTYPE_SERIALRX;
 }
 
 cellType_t schedule_getType(asn_t asn_param) {

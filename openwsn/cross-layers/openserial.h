@@ -9,6 +9,10 @@
 
 //=========================== define ==========================================
 
+#define SERIAL_OUTPUT_BUFFER_SIZE 300
+//not more than 255 (length encoded in 1B)
+#define SERIAL_INPUT_BUFFER_SIZE  200
+
 enum {
    MODE_OFF    = 0,
    MODE_INPUT  = 1,

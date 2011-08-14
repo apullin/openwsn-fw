@@ -53,8 +53,6 @@
 
 //=========================== variables =======================================
 
-uint8_t openwsn_frequency_channel;
-
 //=========================== prototypes ======================================
 
 void openwsn_init();
@@ -62,7 +60,6 @@ void openwsn_init();
 //=========================== public ==========================================
 
 void openwsn_init() {
-   openwsn_frequency_channel = DEFAULTCHANNEL;
    scheduler_init();
 #ifdef OPENWSN_STACK
    timer_init();
