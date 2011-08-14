@@ -34,7 +34,7 @@ res_vars_t res_vars;
 void res_init() {
    res_vars.periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
    res_vars.busySending       = FALSE;
-   //poipoi disabling ADV timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
+   timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
 }
 
 //======= from upper layer
