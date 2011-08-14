@@ -21,14 +21,18 @@ See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation
 
 //=========================== variables =======================================
 
-uint8_t           tcp_state;
-uint32_t          tcp_mySeqNum;
-uint16_t          tcp_myPort;
-uint32_t          tcp_hisNextSeqNum;
-uint16_t          tcp_hisPort;
-open_addr_t       tcp_hisIPv6Address;
-OpenQueueEntry_t* tcp_dataToSend;
-OpenQueueEntry_t* tcp_dataReceived;
+typedef struct {
+   uint8_t              state;
+   uint32_t             mySeqNum;
+   uint16_t             myPort;
+   uint32_t             hisNextSeqNum;
+   uint16_t             hisPort;
+   open_addr_t          hisIPv6Address;
+   OpenQueueEntry_t*    dataToSend;
+   OpenQueueEntry_t*    dataReceived;
+} tcp_vars_t;
+
+tcp_vars_t tcp_vars;
 
 //=========================== prototypes ======================================
 
@@ -46,13 +50,13 @@ void tcp_init() {
 error_t tcp_connect(open_addr_t* dest, uint16_t param_tcp_hisPort, uint16_t param_tcp_myPort) {
    //[command] establishment
    OpenQueueEntry_t* tempPkt;
-   if (tcp_state!=TCP_STATE_CLOSED) {
-      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_state,(errorparameter_t)0);
+   if (tcp_vars.state!=TCP_STATE_CLOSED) {
+      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)0);
       return E_FAIL;
    }
-   tcp_myPort  = param_tcp_myPort;
-   tcp_hisPort = param_tcp_hisPort;
-   memcpy(&tcp_hisIPv6Address,dest,sizeof(open_addr_t));
+   tcp_vars.myPort  = param_tcp_myPort;
+   tcp_vars.hisPort = param_tcp_hisPort;
+   memcpy(&tcp_vars.hisIPv6Address,dest,sizeof(open_addr_t));
    //I receive command 'connect', I send SYNC
    tempPkt = openqueue_getFreePacketBuffer();
    if (tempPkt==NULL) {
@@ -61,8 +65,8 @@ error_t tcp_connect(open_addr_t* dest, uint16_t param_tcp_hisPort, uint16_t para
    }
    tempPkt->creator                = COMPONENT_TCP;
    tempPkt->owner                  = COMPONENT_TCP;
-   memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
-   tcp_mySeqNum = TCP_INITIAL_SEQNUM;
+   memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
+   tcp_vars.mySeqNum = TCP_INITIAL_SEQNUM;
    prependTCPHeader(tempPkt,
          TCP_ACK_NO,
          TCP_PSH_NO,
@@ -75,37 +79,37 @@ error_t tcp_connect(open_addr_t* dest, uint16_t param_tcp_hisPort, uint16_t para
 
 error_t tcp_send(OpenQueueEntry_t* msg) {             //[command] data
    msg->owner = COMPONENT_TCP;
-   if (tcp_state!=TCP_STATE_ESTABLISHED) {
-      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_state,(errorparameter_t)2);
+   if (tcp_vars.state!=TCP_STATE_ESTABLISHED) {
+      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)2);
       return E_FAIL;
    }
-   if (tcp_dataToSend!=NULL) {
+   if (tcp_vars.dataToSend!=NULL) {
       openserial_printError(COMPONENT_TCP,ERR_BUSY_SENDING,(errorparameter_t)0,(errorparameter_t)0);
       return E_FAIL;
    }
    //I receive command 'send', I send data
    msg->l4_protocol          = IANA_TCP;
-   msg->l4_sourcePortORicmpv6Type       = tcp_myPort;
-   msg->l4_destination_port  = tcp_hisPort;
+   msg->l4_sourcePortORicmpv6Type       = tcp_vars.myPort;
+   msg->l4_destination_port  = tcp_vars.hisPort;
    msg->l4_payload           = msg->payload;
    msg->l4_length            = msg->length;
-   memcpy(&(msg->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
-   tcp_dataToSend = msg;
-   prependTCPHeader(tcp_dataToSend,
+   memcpy(&(msg->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
+   tcp_vars.dataToSend = msg;
+   prependTCPHeader(tcp_vars.dataToSend,
          TCP_ACK_YES,
          TCP_PSH_YES,
          TCP_RST_NO,
          TCP_SYN_NO,
          TCP_FIN_NO);
-   tcp_mySeqNum += tcp_dataToSend->l4_length;
+   tcp_vars.mySeqNum += tcp_vars.dataToSend->l4_length;
    tcp_change_state(TCP_STATE_ALMOST_DATA_SENT);
-   return forwarding_send(tcp_dataToSend);
+   return forwarding_send(tcp_vars.dataToSend);
 }
 
 void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
    OpenQueueEntry_t* tempPkt;
    msg->owner = COMPONENT_TCP;
-   switch (tcp_state) {
+   switch (tcp_vars.state) {
       case TCP_STATE_ALMOST_SYN_SENT:                             //[sendDone] establishement
          openqueue_freePacketBuffer(msg);
          tcp_change_state(TCP_STATE_SYN_SENT);
@@ -119,7 +123,7 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
       case TCP_STATE_ALMOST_ESTABLISHED:                          //[sendDone] establishement
          openqueue_freePacketBuffer(msg);
          tcp_change_state(TCP_STATE_ESTABLISHED);
-         switch(tcp_myPort) {
+         switch(tcp_vars.myPort) {
             case WKP_TCP_ECHO:
                apptcpecho_connectDone(E_SUCCESS);
                break;
@@ -133,7 +137,7 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
                apptcpprint_connectDone(E_SUCCESS);
                break;
             default:
-               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_myPort,2);
+               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,2);
                break;
          }
          break;
@@ -145,23 +149,23 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
       case TCP_STATE_ALMOST_DATA_RECEIVED:                        //[sendDone] data
          openqueue_freePacketBuffer(msg);
          tcp_change_state(TCP_STATE_ESTABLISHED);
-         switch(tcp_myPort) {
+         switch(tcp_vars.myPort) {
             case WKP_TCP_ECHO:
-               apptcpecho_receive(tcp_dataReceived);
+               apptcpecho_receive(tcp_vars.dataReceived);
                break;
             case WKP_TCP_INJECT:
-               apptcpinject_receive(tcp_dataReceived);
+               apptcpinject_receive(tcp_vars.dataReceived);
                break;
             case WKP_TCP_HTTP:
-               apptcpohlone_receive(tcp_dataReceived);
+               apptcpohlone_receive(tcp_vars.dataReceived);
                break;
             case WKP_TCP_DISCARD:
-               apptcpprint_receive(tcp_dataReceived);
+               apptcpprint_receive(tcp_vars.dataReceived);
                break;
             default:
-               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_myPort,0);
+               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,0);
                openqueue_freePacketBuffer(msg);
-               tcp_dataReceived = NULL;
+               tcp_vars.dataReceived = NULL;
                break;
          }
          break;
@@ -195,7 +199,7 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
          }
          tempPkt->creator       = COMPONENT_TCP;
          tempPkt->owner         = COMPONENT_TCP;
-         memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+         memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
          prependTCPHeader(tempPkt,
                TCP_ACK_YES,
                TCP_PSH_NO,
@@ -212,7 +216,7 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
          break;
 
       default:
-         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_state,(errorparameter_t)3);
+         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)3);
          break;
    }
 }
@@ -227,11 +231,11 @@ void tcp_receive(OpenQueueEntry_t* msg) {
    msg->l4_sourcePortORicmpv6Type = packetfunctions_ntohs((uint8_t*)&(((tcp_ht*)msg->payload)->source_port));
    msg->l4_destination_port       = packetfunctions_ntohs((uint8_t*)&(((tcp_ht*)msg->payload)->destination_port));
    if ( 
-         tcp_state!=TCP_STATE_CLOSED &&
+         tcp_vars.state!=TCP_STATE_CLOSED &&
          (
-          msg->l4_destination_port != tcp_myPort  ||
-          msg->l4_sourcePortORicmpv6Type      != tcp_hisPort ||
-          packetfunctions_sameAddress(&(msg->l3_destinationORsource),&tcp_hisIPv6Address)==FALSE
+          msg->l4_destination_port != tcp_vars.myPort  ||
+          msg->l4_sourcePortORicmpv6Type      != tcp_vars.hisPort ||
+          packetfunctions_sameAddress(&(msg->l3_destinationORsource),&tcp_vars.hisIPv6Address)==FALSE
          )
       ) {
       openqueue_freePacketBuffer(msg);
@@ -242,7 +246,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
       reset();
       openqueue_freePacketBuffer(msg);
    }
-   switch (tcp_state) {
+   switch (tcp_vars.state) {
       case TCP_STATE_CLOSED:                                      //[receive] establishement
          switch(msg->l4_destination_port) {
             case WKP_TCP_ECHO:
@@ -263,11 +267,11 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                break;
          }
          if ( containsControlBits(msg,TCP_ACK_NO,TCP_RST_NO,TCP_SYN_YES,TCP_FIN_NO) && shouldIlisten==TRUE ) {
-                  tcp_myPort = msg->l4_destination_port;
+                  tcp_vars.myPort = msg->l4_destination_port;
                   //I receive SYN, I send SYN+ACK
-                  tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
-                  tcp_hisPort       = msg->l4_sourcePortORicmpv6Type;
-                  memcpy(&tcp_hisIPv6Address,&(msg->l3_destinationORsource),sizeof(open_addr_t));
+                  tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
+                  tcp_vars.hisPort       = msg->l4_sourcePortORicmpv6Type;
+                  memcpy(&tcp_vars.hisIPv6Address,&(msg->l3_destinationORsource),sizeof(open_addr_t));
                   tempPkt       = openqueue_getFreePacketBuffer();
                   if (tempPkt==NULL) {
                      openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -276,19 +280,19 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                   }
                   tempPkt->creator       = COMPONENT_TCP;
                   tempPkt->owner         = COMPONENT_TCP;
-                  memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+                  memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
                   prependTCPHeader(tempPkt,
                         TCP_ACK_YES,
                         TCP_PSH_NO,
                         TCP_RST_NO,
                         TCP_SYN_YES,
                         TCP_FIN_NO);
-                  tcp_mySeqNum++;
+                  tcp_vars.mySeqNum++;
                   tcp_change_state(TCP_STATE_ALMOST_SYN_RECEIVED);
                   forwarding_send(tempPkt);
                } else {
                   reset();
-                  openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_state,(errorparameter_t)0);
+                  openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)0);
                }
          openqueue_freePacketBuffer(msg);
          break;
@@ -296,7 +300,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
       case TCP_STATE_SYN_SENT:                                    //[receive] establishement
          if (containsControlBits(msg,TCP_ACK_YES,TCP_RST_NO,TCP_SYN_YES,TCP_FIN_NO)) {
             //I receive SYN+ACK, I send ACK
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -305,7 +309,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
@@ -316,7 +320,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             forwarding_send(tempPkt);
          } else if (containsControlBits(msg,TCP_ACK_NO,TCP_RST_NO,TCP_SYN_YES,TCP_FIN_NO)) {
             //I receive SYN, I send SYN+ACK
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt       = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -325,19 +329,19 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
                   TCP_RST_NO,
                   TCP_SYN_YES,
                   TCP_FIN_NO);
-            tcp_mySeqNum++;
+            tcp_vars.mySeqNum++;
             tcp_change_state(TCP_STATE_ALMOST_SYN_RECEIVED);
             forwarding_send(tempPkt);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_state,(errorparameter_t)1);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)1);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -348,7 +352,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_ESTABLISHED);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_state,(errorparameter_t)2);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)2);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -356,7 +360,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
       case TCP_STATE_ESTABLISHED:                                 //[receive] data/teardown
          if (containsControlBits(msg,TCP_ACK_WHATEVER,TCP_RST_NO,TCP_SYN_NO,TCP_FIN_YES)) {
             //I receive FIN[+ACK], I send ACK
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht)+1;
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht)+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -365,7 +369,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
@@ -376,7 +380,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_ALMOST_CLOSE_WAIT);
          } else if (containsControlBits(msg,TCP_ACK_WHATEVER,TCP_RST_NO,TCP_SYN_NO,TCP_FIN_NO)) {
             //I receive data, I send ACK
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht);
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht);
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -385,7 +389,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
@@ -394,11 +398,11 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                   TCP_FIN_NO);
             forwarding_send(tempPkt);
             packetfunctions_tossHeader(msg,sizeof(tcp_ht));
-            tcp_dataReceived = msg;
+            tcp_vars.dataReceived = msg;
             tcp_change_state(TCP_STATE_ALMOST_DATA_RECEIVED);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_state,(errorparameter_t)3);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)3);
             openqueue_freePacketBuffer(msg);
          }
          break;
@@ -406,46 +410,46 @@ void tcp_receive(OpenQueueEntry_t* msg) {
       case TCP_STATE_DATA_SENT:                                   //[receive] data
          if (containsControlBits(msg,TCP_ACK_YES,TCP_RST_NO,TCP_SYN_NO,TCP_FIN_NO)) {
             //I receive ACK, data message sent
-            switch(tcp_myPort) {
+            switch(tcp_vars.myPort) {
                case WKP_TCP_ECHO:
-                  apptcpecho_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpecho_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                case WKP_TCP_INJECT:
-                  apptcpinject_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpinject_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                case WKP_TCP_HTTP:
-                  apptcpohlone_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpohlone_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                case WKP_TCP_DISCARD:
-                  apptcpprint_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpprint_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                default:
-                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_myPort,0);
+                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,0);
                   break;
             }
-            tcp_dataToSend = NULL;
+            tcp_vars.dataToSend = NULL;
             tcp_change_state(TCP_STATE_ESTABLISHED);
          } else if (containsControlBits(msg,TCP_ACK_WHATEVER,TCP_RST_NO,TCP_SYN_NO,TCP_FIN_YES)) {
             //I receive FIN[+ACK], I send ACK
-            switch(tcp_myPort) {
+            switch(tcp_vars.myPort) {
                case WKP_TCP_ECHO:
-                  apptcpecho_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpecho_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                case WKP_TCP_INJECT:
-                  apptcpinject_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpinject_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                case WKP_TCP_HTTP:
-                  apptcpohlone_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpohlone_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                case WKP_TCP_DISCARD:
-                  apptcpprint_sendDone(tcp_dataToSend,E_SUCCESS);
+                  apptcpprint_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                default:
-                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_myPort,0);
+                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,0);
                   break;
             }
-            tcp_dataToSend = NULL;
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht)+1;
+            tcp_vars.dataToSend = NULL;
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht)+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -454,7 +458,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
@@ -465,7 +469,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_ALMOST_CLOSE_WAIT);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_state,(errorparameter_t)4);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)4);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -473,7 +477,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
       case TCP_STATE_FIN_WAIT_1:                                  //[receive] teardown
          if (containsControlBits(msg,TCP_ACK_NO,TCP_RST_NO,TCP_SYN_NO,TCP_FIN_YES)) {
             //I receive FIN, I send ACK
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -482,7 +486,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
@@ -493,7 +497,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_ALMOST_CLOSING);
          } else if (containsControlBits(msg,TCP_ACK_YES,TCP_RST_NO,TCP_SYN_NO,TCP_FIN_YES)) {
             //I receive FIN+ACK, I send ACK
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -502,7 +506,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
@@ -516,7 +520,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_FIN_WAIT_2);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_state,(errorparameter_t)5);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)5);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -524,7 +528,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
       case TCP_STATE_FIN_WAIT_2:                                  //[receive] teardown
          if (containsControlBits(msg,TCP_ACK_WHATEVER,TCP_RST_NO,TCP_SYN_NO,TCP_FIN_YES)) {
             //I receive FIN[+ACK], I send ACK
-            tcp_hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
+            tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
                openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
@@ -533,7 +537,7 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             }
             tempPkt->creator       = COMPONENT_TCP;
             tempPkt->owner         = COMPONENT_TCP;
-            memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+            memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
             prependTCPHeader(tempPkt,
                   TCP_ACK_YES,
                   TCP_PSH_NO,
@@ -565,19 +569,19 @@ void tcp_receive(OpenQueueEntry_t* msg) {
          break;
 
       default:
-         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_state,(errorparameter_t)4);
+         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)4);
          break;
    }
 }
 
 error_t tcp_close() {    //[command] teardown
    OpenQueueEntry_t* tempPkt;
-   if (  tcp_state==TCP_STATE_ALMOST_CLOSE_WAIT ||
-         tcp_state==TCP_STATE_CLOSE_WAIT        ||
-         tcp_state==TCP_STATE_ALMOST_LAST_ACK   ||
-         tcp_state==TCP_STATE_LAST_ACK          ||
-         tcp_state==TCP_STATE_CLOSED) {
-      //openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_state,(errorparameter_t)1);
+   if (  tcp_vars.state==TCP_STATE_ALMOST_CLOSE_WAIT ||
+         tcp_vars.state==TCP_STATE_CLOSE_WAIT        ||
+         tcp_vars.state==TCP_STATE_ALMOST_LAST_ACK   ||
+         tcp_vars.state==TCP_STATE_LAST_ACK          ||
+         tcp_vars.state==TCP_STATE_CLOSED) {
+      //openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)1);
       //not an error, can happen when distant node has already started tearing down
       return E_SUCCESS;
    }
@@ -589,14 +593,14 @@ error_t tcp_close() {    //[command] teardown
    }
    tempPkt->creator       = COMPONENT_TCP;
    tempPkt->owner         = COMPONENT_TCP;
-   memcpy(&(tempPkt->l3_destinationORsource),&tcp_hisIPv6Address,sizeof(open_addr_t));
+   memcpy(&(tempPkt->l3_destinationORsource),&tcp_vars.hisIPv6Address,sizeof(open_addr_t));
    prependTCPHeader(tempPkt,
          TCP_ACK_YES,
          TCP_PSH_NO,
          TCP_RST_NO,
          TCP_SYN_NO,
          TCP_FIN_YES);
-   tcp_mySeqNum++;
+   tcp_vars.mySeqNum++;
    tcp_change_state(TCP_STATE_ALMOST_FIN_WAIT_1);
    return forwarding_send(tempPkt);
 }
@@ -622,10 +626,10 @@ void prependTCPHeader(OpenQueueEntry_t* msg,
       bool fin) {
    msg->l4_protocol = IANA_TCP;
    packetfunctions_reserveHeaderSize(msg,sizeof(tcp_ht));
-   packetfunctions_htons(tcp_myPort        ,(uint8_t*)&(((tcp_ht*)msg->payload)->source_port));
-   packetfunctions_htons(tcp_hisPort       ,(uint8_t*)&(((tcp_ht*)msg->payload)->destination_port));
-   packetfunctions_htonl(tcp_mySeqNum      ,(uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number));
-   packetfunctions_htonl(tcp_hisNextSeqNum ,(uint8_t*)&(((tcp_ht*)msg->payload)->ack_number));
+   packetfunctions_htons(tcp_vars.myPort        ,(uint8_t*)&(((tcp_ht*)msg->payload)->source_port));
+   packetfunctions_htons(tcp_vars.hisPort       ,(uint8_t*)&(((tcp_ht*)msg->payload)->destination_port));
+   packetfunctions_htonl(tcp_vars.mySeqNum      ,(uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number));
+   packetfunctions_htonl(tcp_vars.hisNextSeqNum ,(uint8_t*)&(((tcp_ht*)msg->payload)->ack_number));
    ((tcp_ht*)msg->payload)->data_offset      = TCP_DEFAULT_DATA_OFFSET;
    ((tcp_ht*)msg->payload)->control_bits     = 0;
    if (ack==TCP_ACK_YES) {
@@ -670,18 +674,18 @@ bool containsControlBits(OpenQueueEntry_t* msg, uint8_t ack, uint8_t rst, uint8_
 
 void reset() {
    tcp_change_state(TCP_STATE_CLOSED);
-   tcp_mySeqNum            = TCP_INITIAL_SEQNUM; 
-   tcp_hisNextSeqNum       = 0;
-   tcp_hisPort             = 0;
-   tcp_hisIPv6Address.type = ADDR_NONE;
-   tcp_dataToSend          = NULL;
-   tcp_dataReceived        = NULL;
+   tcp_vars.mySeqNum            = TCP_INITIAL_SEQNUM; 
+   tcp_vars.hisNextSeqNum       = 0;
+   tcp_vars.hisPort             = 0;
+   tcp_vars.hisIPv6Address.type = ADDR_NONE;
+   tcp_vars.dataToSend          = NULL;
+   tcp_vars.dataReceived        = NULL;
    openqueue_removeAllOwnedBy(COMPONENT_TCP);
 }
 
 void tcp_change_state(uint8_t new_tcp_state) {
-   tcp_state = new_tcp_state;
-   if (tcp_state==TCP_STATE_CLOSED) {
+   tcp_vars.state = new_tcp_state;
+   if (tcp_vars.state==TCP_STATE_CLOSED) {
       timer_stop(TIMER_TCP_TIMEOUT);
    } else {
       timer_startOneShot(TIMER_TCP_TIMEOUT,TCP_TIMEOUT);

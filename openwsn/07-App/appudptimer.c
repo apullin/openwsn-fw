@@ -14,14 +14,18 @@
 
 //=========================== variables =======================================
 
-bool appudptimer_busySending;
+typedef struct {
+   bool busySending;
+} appudptimer_vars_t;
+
+appudptimer_vars_t appudptimer_vars;
 
 //=========================== prototypes ======================================
 
 //=========================== public ==========================================
 
 void appudptimer_init() {
-   appudptimer_busySending = FALSE;
+   appudptimer_vars.busySending = FALSE;
    timer_startPeriodic(TIMER_UDP_TIMER,32768);
 }
 
@@ -31,7 +35,7 @@ void appudptimer_trigger() {
    // only send a packet if I received a sendDone for the previous.
    // the packet might be stuck in the queue for a long time for
    // example while the mote is synchronizing
-   if (appudptimer_busySending==FALSE) {
+   if (appudptimer_vars.busySending==FALSE) {
       //prepare packet
       pkt = openqueue_getFreePacketBuffer();
       if (pkt==NULL) {
@@ -71,7 +75,7 @@ void appudptimer_trigger() {
       if ((udp_send(pkt))==E_FAIL) {
          openqueue_freePacketBuffer(pkt);
       }
-      appudptimer_busySending = TRUE;
+      appudptimer_vars.busySending = TRUE;
    }
 }
 
@@ -81,7 +85,7 @@ void appudptimer_sendDone(OpenQueueEntry_t* msg, error_t error) {
       openserial_printError(COMPONENT_APPUDPTIMER,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
-   appudptimer_busySending = FALSE;
+   appudptimer_vars.busySending = FALSE;
 }
 
 void appudptimer_receive(OpenQueueEntry_t* msg) {

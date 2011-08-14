@@ -242,7 +242,7 @@ typedef uint8_t   dagrank_t;
 typedef uint16_t  asn_t;
 typedef uint8_t   error_t;
 
-typedef struct open_addr_t {                     //always written big endian, i.e. MSB in addr[0]
+typedef struct {                                 // always written big endian, i.e. MSB in addr[0]
    uint8_t type;
    union {
       uint8_t addr_16b[2];
@@ -253,8 +253,7 @@ typedef struct open_addr_t {                     //always written big endian, i.
    };
 } open_addr_t;
 
-//OpenQueue entry definition
-typedef struct OpenQueueEntry_t {
+typedef struct {
    //admin
    uint8_t       creator;                        //the component which called getFreePacketBuffer()
    uint8_t       owner;                          //the component which currently owns the entry

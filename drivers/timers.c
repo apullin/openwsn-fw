@@ -24,8 +24,7 @@ For now, KISS.
 
 //=========================== variables =======================================
 
-uint16_t timers_period[TIMER_COUNT];
-bool     timers_continuous[TIMER_COUNT];
+timers_vars_t timers_vars;
 
 //=========================== prototypes ======================================
 
@@ -68,8 +67,8 @@ void timer_startPeriodic(uint8_t timer_id, uint16_t duration) {
 }
 
 void timer_stop(uint8_t timer_id) {
-   timers_period[timer_id] = 0;
-   timers_continuous[timer_id] = 0;
+   timers_vars.period[timer_id] = 0;
+   timers_vars.continuous[timer_id] = 0;
    switch(timer_id) {
       case 0:
          TBCCR0   =  0;
@@ -105,35 +104,35 @@ void timer_stop(uint8_t timer_id) {
 //=========================== private =========================================
 
 void timer_start(uint8_t timer_id, uint16_t duration, bool continuous) {
-   timers_period[timer_id]     = duration;
-   timers_continuous[timer_id] = continuous;
+   timers_vars.period[timer_id]     = duration;
+   timers_vars.continuous[timer_id] = continuous;
    switch(timer_id) {
       case 0:
-         TBCCR0   = TBR+timers_period[timer_id];
+         TBCCR0   = TBR+timers_vars.period[timer_id];
          TBCCTL0  = CCIE;
          break;
       case 1:
-         TBCCR1   = TBR+timers_period[timer_id];
+         TBCCR1   = TBR+timers_vars.period[timer_id];
          TBCCTL1  = CCIE;
          break;
       case 2:
-         TBCCR2   = TBR+timers_period[timer_id];
+         TBCCR2   = TBR+timers_vars.period[timer_id];
          TBCCTL2  = CCIE;
          break;
       case 3:
-         TBCCR3   = TBR+timers_period[timer_id];
+         TBCCR3   = TBR+timers_vars.period[timer_id];
          TBCCTL3  = CCIE;
          break;
       case 4:
-         TBCCR4   = TBR+timers_period[timer_id];
+         TBCCR4   = TBR+timers_vars.period[timer_id];
          TBCCTL4  = CCIE;
          break;
       case 5:
-         TBCCR5   = TBR+timers_period[timer_id];
+         TBCCR5   = TBR+timers_vars.period[timer_id];
          TBCCTL5  = CCIE;
          break;
       case 6:
-         TBCCR6   = TBR+timers_period[timer_id];
+         TBCCR6   = TBR+timers_vars.period[timer_id];
          TBCCTL6  = CCIE;
          break;
    }

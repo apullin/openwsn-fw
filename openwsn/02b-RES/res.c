@@ -20,17 +20,21 @@
 
 //=========================== variables =======================================
 
-uint16_t res_periodMaintenance;
-bool     res_busySending;
+typedef struct {
+uint16_t periodMaintenance;
+bool     busySending;
+} res_vars_t;
+
+res_vars_t res_vars;
 
 //=========================== prototypes ======================================
 
 //=========================== public ==========================================
 
 void res_init() {
-   res_periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
-   res_busySending       = FALSE;
-   //poipoi disabling ADV timer_startPeriodic(TIMER_RES,res_periodMaintenance);
+   res_vars.periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
+   res_vars.busySending       = FALSE;
+   //poipoi disabling ADV timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
 }
 
 //======= from upper layer
@@ -49,7 +53,7 @@ void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
       // discard (ADV) packets this component has created
       openqueue_freePacketBuffer(msg);
       // I can send the next ADV
-      res_busySending = FALSE;
+      res_vars.busySending = FALSE;
    } else {
       // send the rest up the stack
       iphc_sendDone(msg,error);
@@ -85,7 +89,7 @@ void timer_res_fired() {
    // only send a packet if I received a sendDone for the previous.
    // the packet might be stuck in the queue for a long time for
    // example while the mote is synchronizing
-   if (res_busySending==FALSE) {
+   if (res_vars.busySending==FALSE) {
       // get a free packet buffer
       adv = openqueue_getFreePacketBuffer();
       if (adv==NULL) {
@@ -113,7 +117,7 @@ void timer_res_fired() {
       
       // send to MAC
       mac_send(adv);
-      res_busySending = TRUE;
+      res_vars.busySending = TRUE;
    }
 }
 

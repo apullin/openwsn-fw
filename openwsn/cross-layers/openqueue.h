@@ -14,7 +14,7 @@
 
 //=========================== typedef =========================================
 
-typedef struct debugOpenQueueEntry_t {
+typedef struct {
    uint8_t  creator;
    uint8_t  owner;
 } debugOpenQueueEntry_t;

@@ -23,9 +23,15 @@
 
 //=========================== variables =======================================
 
-uint8_t task_list[MAX_NUM_TASKS];
-uint8_t index_first_task;
-uint8_t num_tasks;
+typedef struct {
+   uint8_t task_list[MAX_NUM_TASKS];
+   uint8_t index_first_task;
+   uint8_t num_tasks;
+} scheduler_vars_t;
+
+scheduler_vars_t scheduler_vars;
+
+extern timers_vars_t timers_vars;
 
 //=========================== prototypes ======================================
 
@@ -33,57 +39,57 @@ uint8_t num_tasks;
 
 void scheduler_init() {
    uint8_t task_counter;
-   index_first_task = 0;
-   num_tasks        = 0;
+   scheduler_vars.index_first_task = 0;
+   scheduler_vars.num_tasks        = 0;
    DEBUG_PIN_TASK_INIT();
    DEBUG_PIN_ISR_INIT();
    for (task_counter=0;task_counter<MAX_NUM_TASKS;task_counter++) {
-      task_list[task_counter] = 0;
+      scheduler_vars.task_list[task_counter] = 0;
    }
 }
 
 void scheduler_start() {
    while (1) {                                   // IAR should halt here if nothing to do
-      while(num_tasks>0) {
-         if (task_list[TASKID_RES]>0) {
-            task_list[TASKID_RES]--;
-            num_tasks--;
+      while(scheduler_vars.num_tasks>0) {
+         if (scheduler_vars.task_list[TASKID_RES]>0) {
+            scheduler_vars.task_list[TASKID_RES]--;
+            scheduler_vars.num_tasks--;
 #ifdef OPENWSN_STACK
             timer_res_fired();
 #endif
-         } else if (task_list[TASKID_RPL]>0) {
-            task_list[TASKID_RPL]--;
-            num_tasks--;
+         } else if (scheduler_vars.task_list[TASKID_RPL]>0) {
+            scheduler_vars.task_list[TASKID_RPL]--;
+            scheduler_vars.num_tasks--;
 #ifdef OPENWSN_STACK
             timer_rpl_fired();
 #endif
-         } else if (task_list[TASKID_TCP_TIMEOUT]>0) {
-            task_list[TASKID_TCP_TIMEOUT]--;
-            num_tasks--;
+         } else if (scheduler_vars.task_list[TASKID_TCP_TIMEOUT]>0) {
+            scheduler_vars.task_list[TASKID_TCP_TIMEOUT]--;
+            scheduler_vars.num_tasks--;
 #ifdef OPENWSN_STACK
             timer_tcp_timeout_fired();
 #endif
-         } else if (task_list[TASKID_UDP_TIMER]>0) {
-            task_list[TASKID_UDP_TIMER]--;
-            num_tasks--;
+         } else if (scheduler_vars.task_list[TASKID_UDP_TIMER]>0) {
+            scheduler_vars.task_list[TASKID_UDP_TIMER]--;
+            scheduler_vars.num_tasks--;
 #ifdef OPENWSN_STACK
             appudptimer_trigger();
 #endif
-         } else if (task_list[TASKID_TIMERB4]>0) {
-            task_list[TASKID_TIMERB4]--;
-            num_tasks--;
+         } else if (scheduler_vars.task_list[TASKID_TIMERB4]>0) {
+            scheduler_vars.task_list[TASKID_TIMERB4]--;
+            scheduler_vars.num_tasks--;
             // timer available, put your function here
-         } else if (task_list[TASKID_TIMERB5]>0) {
-            task_list[TASKID_TIMERB5]--;
-            num_tasks--;
+         } else if (scheduler_vars.task_list[TASKID_TIMERB5]>0) {
+            scheduler_vars.task_list[TASKID_TIMERB5]--;
+            scheduler_vars.num_tasks--;
             // timer available, put your function here
-         } else if (task_list[TASKID_TIMERB6]>0) {
-            task_list[TASKID_TIMERB6]--;
-            num_tasks--;
+         } else if (scheduler_vars.task_list[TASKID_TIMERB6]>0) {
+            scheduler_vars.task_list[TASKID_TIMERB6]--;
+            scheduler_vars.num_tasks--;
             // timer available, put your function here
-         } else if (task_list[TASKID_BUTTON]>0) {
-            task_list[TASKID_BUTTON]--;
-            num_tasks--;
+         } else if (scheduler_vars.task_list[TASKID_BUTTON]>0) {
+            scheduler_vars.task_list[TASKID_BUTTON]--;
+            scheduler_vars.num_tasks--;
 #ifdef ISR_BUTTON
             isr_button();
 #endif
@@ -97,8 +103,8 @@ void scheduler_start() {
 
 void scheduler_push_task(int8_t task_id) {
    if(task_id>=MAX_NUM_TASKS) { while(1); }
-   task_list[task_id]++;
-   num_tasks++;
+   scheduler_vars.task_list[task_id]++;
+   scheduler_vars.num_tasks++;
 }
 
 //=========================== interrupt handlers ==============================
@@ -126,8 +132,8 @@ __interrupt void TIMERB0_ISR (void) {
    CAPTURE_TIME();
    DEBUG_PIN_ISR_SET();
 #ifdef ISR_TIMERS
-   if (timers_continuous[0]==TRUE) {
-      TBCCR0 += timers_period[0];                // continuous timer: schedule next instant
+   if (timers_vars.continuous[0]==TRUE) {
+      TBCCR0 += timers_vars.period[0];           // continuous timer: schedule next instant
    } else {
       TBCCTL0 = 0;                               // stop the timer
       TBCCR0  = 0;
@@ -147,8 +153,8 @@ __interrupt void TIMERB1through6_ISR (void) {
    uint16_t tbiv_temp = TBIV;                    // read only once because accessing TBIV resets it
    switch (tbiv_temp) {
       case 0x0002: // timerB CCR1
-         if (timers_continuous[1]==TRUE) {
-            TBCCR1 += timers_period[1];          // continuous timer: schedule next instant
+         if (timers_vars.continuous[1]==TRUE) {
+            TBCCR1 += timers_vars.period[1];     // continuous timer: schedule next instant
          } else {
             TBCCTL1 = 0;                         // stop the timer
             TBCCR1  = 0;
@@ -157,8 +163,8 @@ __interrupt void TIMERB1through6_ISR (void) {
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0004: // timerB CCR2
-         if (timers_continuous[2]==TRUE) {
-            TBCCR2 += timers_period[2];          // continuous timer: schedule next instant
+         if (timers_vars.continuous[2]==TRUE) {
+            TBCCR2 += timers_vars.period[2];     // continuous timer: schedule next instant
          } else {
             TBCCTL2 = 0;                         // stop the timer
             TBCCR2  = 0;
@@ -167,8 +173,8 @@ __interrupt void TIMERB1through6_ISR (void) {
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0006: // timerB CCR3
-         if (timers_continuous[3]==TRUE) {
-            TBCCR3 += timers_period[3];          // continuous timer: schedule next instant
+         if (timers_vars.continuous[3]==TRUE) {
+            TBCCR3 += timers_vars.period[3];     // continuous timer: schedule next instant
          } else {
             TBCCTL3 = 0;                         // stop the timer
             TBCCR3  = 0;
@@ -177,8 +183,8 @@ __interrupt void TIMERB1through6_ISR (void) {
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x0008: // timerB CCR4
-         if (timers_continuous[4]==TRUE) {
-            TBCCR4 += timers_period[4];          // continuous timer: schedule next instant
+         if (timers_vars.continuous[4]==TRUE) {
+            TBCCR4 += timers_vars.period[4];     // continuous timer: schedule next instant
          } else {
             TBCCTL4 = 0;                         // stop the timer
             TBCCR4  = 0;
@@ -187,8 +193,8 @@ __interrupt void TIMERB1through6_ISR (void) {
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x000A: // timerB CCR5
-         if (timers_continuous[5]==TRUE) {
-            TBCCR5 += timers_period[5];          // continuous timer: schedule next instant
+         if (timers_vars.continuous[5]==TRUE) {
+            TBCCR5 += timers_vars.period[5];     // continuous timer: schedule next instant
          } else {
             TBCCTL5 = 0;                         // stop the timer
             TBCCR5  = 0;
@@ -197,8 +203,8 @@ __interrupt void TIMERB1through6_ISR (void) {
          __bic_SR_register_on_exit(CPUOFF);      // restart CPU
          break;
       case 0x000C: // timerB CCR6
-         if (timers_continuous[6]==TRUE) {
-            TBCCR6 += timers_period[6];          // continuous timer: schedule next instant
+         if (timers_vars.continuous[6]==TRUE) {
+            TBCCR6 += timers_vars.period[6];     // continuous timer: schedule next instant
          } else {
             TBCCTL6 = 0;                         // stop the timer
             TBCCR6  = 0;

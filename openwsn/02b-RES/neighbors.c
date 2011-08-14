@@ -14,9 +14,13 @@
 
 //=========================== variables =======================================
 
-neighborEntry_t  neighbors[MAXNUMNEIGHBORS];
-dagrank_t        neighbors_myDAGrank;
-uint8_t          neighbors_debugRow;
+typedef struct {
+   neighborEntry_t  neighbors[MAXNUMNEIGHBORS];
+   dagrank_t        myDAGrank;
+   uint8_t          debugRow;
+} neighbors_vars_t;
+
+neighbors_vars_t neighbors_vars;
 
 //=========================== prototypes ======================================
 
@@ -30,12 +34,12 @@ bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber);
 void neighbors_init() {
    uint8_t i;
    for (i=0;i<MAXNUMNEIGHBORS;i++){
-      neighbors[i].used=FALSE;
+      neighbors_vars.neighbors[i].used=FALSE;
    }
    if (idmanager_getIsDAGroot()==TRUE) {
-      neighbors_myDAGrank=0;
+      neighbors_vars.myDAGrank=0;
    } else {
-      neighbors_myDAGrank=255;
+      neighbors_vars.myDAGrank=255;
    }
 }
 
@@ -47,16 +51,16 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
          if (isThisRowMatching(&(msg->l2_nextORpreviousHop),i)) {
             //memcpy(&(neighbors[i].addr_128b),&(msg->l3_destinationORsource),sizeof(open_addr_t));//removed to save RAM
-            neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
+            neighbors_vars.neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
             //poipoi forces single hop
-            if (neighbors[i].DAGrank==0x00) {
-               neighbors[i].parentPreference=MAXPREFERENCE;
-               if (neighbors[i].numTxACK==0) {
+            if (neighbors_vars.neighbors[i].DAGrank==0x00) {
+               neighbors_vars.neighbors[i].parentPreference=MAXPREFERENCE;
+               if (neighbors_vars.neighbors[i].numTxACK==0) {
                   temp_linkCost=15; //TODO: evaluate using RSSI?
                } else {
-                  temp_linkCost=(uint8_t)((((float)neighbors[i].numTx)/((float)neighbors[i].numTxACK))*10.0);
+                  temp_linkCost=(uint8_t)((((float)neighbors_vars.neighbors[i].numTx)/((float)neighbors_vars.neighbors[i].numTxACK))*10.0);
                }
-               neighbors_myDAGrank=neighbors[i].DAGrank+temp_linkCost;
+               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
             }
             break;
          }
@@ -71,28 +75,28 @@ void neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi) {
    uint8_t i=0;
    while (i<MAXNUMNEIGHBORS) {
       if (isThisRowMatching(l2_src,i)) {
-         neighbors[i].numRx++;
-         neighbors[i].linkQuality=rssi;
-         neighbors[i].timestamp=0;//poipoi implement timing
-         if (neighbors[i].stableNeighbor==FALSE) {
-            if (neighbors[i].linkQuality>BADNEIGHBORMAXPOWER || neighbors[i].linkQuality<129) {
-               neighbors[i].switchStabilityCounter++;
-               if (neighbors[i].switchStabilityCounter>=SWITCHSTABILITYTHRESHOLD) {
-                  neighbors[i].switchStabilityCounter=0;
-                  neighbors[i].stableNeighbor=TRUE;
+         neighbors_vars.neighbors[i].numRx++;
+         neighbors_vars.neighbors[i].linkQuality=rssi;
+         neighbors_vars.neighbors[i].timestamp=0;//poipoi implement timing
+         if (neighbors_vars.neighbors[i].stableNeighbor==FALSE) {
+            if (neighbors_vars.neighbors[i].linkQuality>BADNEIGHBORMAXPOWER || neighbors_vars.neighbors[i].linkQuality<129) {
+               neighbors_vars.neighbors[i].switchStabilityCounter++;
+               if (neighbors_vars.neighbors[i].switchStabilityCounter>=SWITCHSTABILITYTHRESHOLD) {
+                  neighbors_vars.neighbors[i].switchStabilityCounter=0;
+                  neighbors_vars.neighbors[i].stableNeighbor=TRUE;
                }
             } else {
-               neighbors[i].switchStabilityCounter=0;
+               neighbors_vars.neighbors[i].switchStabilityCounter=0;
             }
-         } else if (neighbors[i].stableNeighbor==TRUE) {
-            if (neighbors[i].linkQuality<GOODNEIGHBORMINPOWER && neighbors[i].linkQuality>128) {
-               neighbors[i].switchStabilityCounter++;
-               if (neighbors[i].switchStabilityCounter>=SWITCHSTABILITYTHRESHOLD) {
-                  neighbors[i].switchStabilityCounter=0;
-                  neighbors[i].stableNeighbor=FALSE;
+         } else if (neighbors_vars.neighbors[i].stableNeighbor==TRUE) {
+            if (neighbors_vars.neighbors[i].linkQuality<GOODNEIGHBORMINPOWER && neighbors_vars.neighbors[i].linkQuality>128) {
+               neighbors_vars.neighbors[i].switchStabilityCounter++;
+               if (neighbors_vars.neighbors[i].switchStabilityCounter>=SWITCHSTABILITYTHRESHOLD) {
+                  neighbors_vars.neighbors[i].switchStabilityCounter=0;
+                  neighbors_vars.neighbors[i].stableNeighbor=FALSE;
                }
             } else {
-               neighbors[i].switchStabilityCounter=0;
+               neighbors_vars.neighbors[i].switchStabilityCounter=0;
             }
          }
          return;
@@ -106,14 +110,14 @@ void neighbors_indicateTx(open_addr_t* l2_dest, bool was_acked) {
    if (packetfunctions_isBroadcastMulticast(l2_dest)==FALSE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
          if (isThisRowMatching(l2_dest,i)) {
-            if (neighbors[i].numTx==255) {
-               neighbors[i].numTx/=2;
-               neighbors[i].numTxACK/=2;
+            if (neighbors_vars.neighbors[i].numTx==255) {
+               neighbors_vars.neighbors[i].numTx/=2;
+               neighbors_vars.neighbors[i].numTxACK/=2;
             }
-            neighbors[i].numTx++;
+            neighbors_vars.neighbors[i].numTx++;
             if (was_acked==TRUE) {
-               neighbors[i].numTxACK++;
-               neighbors[i].timestamp=0;//poipoi implement timing
+               neighbors_vars.neighbors[i].numTxACK++;
+               neighbors_vars.neighbors[i].timestamp=0;//poipoi implement timing
             }
             return;
          }
@@ -136,7 +140,7 @@ bool neighbors_isStableNeighbor(open_addr_t* address) {
          return FALSE;
    }
    for (i=0;i<MAXNUMNEIGHBORS;i++) {
-      if (isThisRowMatching(&temp_addr_64b,i) && neighbors[i].stableNeighbor==TRUE) {
+      if (isThisRowMatching(&temp_addr_64b,i) && neighbors_vars.neighbors[i].stableNeighbor==TRUE) {
          return TRUE;
       }
    }
@@ -144,13 +148,13 @@ bool neighbors_isStableNeighbor(open_addr_t* address) {
 }
 
 dagrank_t neighbors_getMyDAGrank() {
-   return neighbors_myDAGrank;
+   return neighbors_vars.myDAGrank;
 }
 uint8_t neighbors_getNumNeighbors() {
    uint8_t i;
    uint8_t returnvalue=0;
    for (i=0;i<MAXNUMNEIGHBORS;i++) {
-      if (neighbors[i].used==TRUE) {
+      if (neighbors_vars.neighbors[i].used==TRUE) {
          returnvalue++;
       }
    }
@@ -174,13 +178,13 @@ void neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type
    uint8_t i;
    addressToWrite->type=ADDR_NONE;
    for (i=0; i<MAXNUMNEIGHBORS; i++) {
-      if (neighbors[i].used==TRUE && neighbors[i].parentPreference==MAXPREFERENCE) {
+      if (neighbors_vars.neighbors[i].used==TRUE && neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
          switch(addr_type) {
             /*case ADDR_16B:
               memcpy(addressToWrite,&(neighbors[i].addr_16b),sizeof(open_addr_t));
               break;*///removed to save RAM
             case ADDR_64B:
-               memcpy(addressToWrite,&(neighbors[i].addr_64b),sizeof(open_addr_t));//poipoi I only really use this one
+               memcpy(addressToWrite,&(neighbors_vars.neighbors[i].addr_64b),sizeof(open_addr_t));//poipoi I only really use this one
                break;
                /*case ADDR_128B:
                  memcpy(addressToWrite,&(neighbors[i].addr_128b),sizeof(open_addr_t));
@@ -202,21 +206,21 @@ bool neighbors_debugPrint() {
    uint8_t num_iterations;
    num_iterations = 0;
    do {
-      neighbors_debugRow=(neighbors_debugRow+1)%MAXNUMNEIGHBORS;
+      neighbors_vars.debugRow=(neighbors_vars.debugRow+1)%MAXNUMNEIGHBORS;
       num_iterations++;
-   } while (neighbors[neighbors_debugRow].used==0 && num_iterations<MAXNUMNEIGHBORS+1);
+   } while (neighbors_vars.neighbors[neighbors_vars.debugRow].used==0 && num_iterations<MAXNUMNEIGHBORS+1);
    if (num_iterations<MAXNUMNEIGHBORS+1) {
-      temp.row=neighbors_debugRow;
-      temp.neighborEntry=neighbors[neighbors_debugRow];
+      temp.row=neighbors_vars.debugRow;
+      temp.neighborEntry=neighbors_vars.neighbors[neighbors_vars.debugRow];
       openserial_printStatus(STATUS_NEIGHBORS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
       return TRUE;
    }
    return FALSE;
 
    /*debugNeighborEntry_t temp;
-     neighbors_debugRow=(neighbors_debugRow+1)%MAXNUMNEIGHBORS;
-     temp.row=neighbors_debugRow;
-     temp.neighborEntry=neighbors[neighbors_debugRow];
+     neighbors_vars.debugRow=(neighbors_vars.debugRow+1)%MAXNUMNEIGHBORS;
+     temp.row=neighbors_vars.debugRow;
+     temp.neighborEntry=neighbors[neighbors_vars.debugRow];
      openserial_printStatus(STATUS_NEIGHBORS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
      return TRUE;*/
 }
@@ -238,13 +242,13 @@ void registerNewNeighbor(open_addr_t* address,dagrank_t hisDAGrank) {
    if (isNeighbor(address)==FALSE) {
       i=0;
       while(i<MAXNUMNEIGHBORS) {
-         if (neighbors[i].used==FALSE) {
-            neighbors[i].used                   = TRUE;
-            neighbors[i].parentPreference       = 0;
-            neighbors[i].stableNeighbor         = TRUE;//poipoipoi speed up for workshop
-            neighbors[i].switchStabilityCounter = 0;
+         if (neighbors_vars.neighbors[i].used==FALSE) {
+            neighbors_vars.neighbors[i].used                   = TRUE;
+            neighbors_vars.neighbors[i].parentPreference       = 0;
+            neighbors_vars.neighbors[i].stableNeighbor         = TRUE;//poipoipoi speed up for workshop
+            neighbors_vars.neighbors[i].switchStabilityCounter = 0;
             //neighbors[i].addr_16b.type          = ADDR_NONE;//removed to save RAM
-            neighbors[i].addr_64b.type          = ADDR_NONE;
+            neighbors_vars.neighbors[i].addr_64b.type          = ADDR_NONE;
             //neighbors[i].addr_128b.type         = ADDR_NONE;//removed to save RAM
             switch (address->type) {
                /*case ADDR_16B:
@@ -264,7 +268,7 @@ void registerNewNeighbor(open_addr_t* address,dagrank_t hisDAGrank) {
                     address,
                     &temp_addr128b);
                     memcpy(&neighbors[i].addr_16b,  &temp_addr16b,  sizeof(open_addr_t));*///removed to save RAM
-                  memcpy(&neighbors[i].addr_64b,  address,        sizeof(open_addr_t));
+                  memcpy(&neighbors_vars.neighbors[i].addr_64b,  address,        sizeof(open_addr_t));
                   //memcpy(&neighbors[i].addr_128b, &temp_addr128b, sizeof(open_addr_t));//removed to save RAM
                   break;
                   /*case ADDR_128B:
@@ -278,12 +282,12 @@ void registerNewNeighbor(open_addr_t* address,dagrank_t hisDAGrank) {
                     memcpy(&neighbors[i].addr_128b, address,        sizeof(open_addr_t));
                     break;*///removed to save RAM
             }
-            neighbors[i].DAGrank                = hisDAGrank;
-            neighbors[i].linkQuality            = 0;
-            neighbors[i].numRx                  = 1;
-            neighbors[i].numTx                  = 0;
-            neighbors[i].numTxACK               = 0;
-            neighbors[i].timestamp              = 0;//poipoi implement timing
+            neighbors_vars.neighbors[i].DAGrank                = hisDAGrank;
+            neighbors_vars.neighbors[i].linkQuality            = 0;
+            neighbors_vars.neighbors[i].numRx                  = 1;
+            neighbors_vars.neighbors[i].numTx                  = 0;
+            neighbors_vars.neighbors[i].numTxACK               = 0;
+            neighbors_vars.neighbors[i].timestamp              = 0;//poipoi implement timing
             break;
          }
          i++;
@@ -306,19 +310,19 @@ bool isNeighbor(open_addr_t* neighbor) {
 }
 
 void removeNeighbor(uint8_t neighborIndex) {
-   neighbors[neighborIndex].used                      = FALSE;
-   neighbors[neighborIndex].parentPreference          = 0;
-   neighbors[neighborIndex].stableNeighbor            = FALSE;
-   neighbors[neighborIndex].switchStabilityCounter    = 0;
-   //neighbors[neighborIndex].addr_16b.type             = ADDR_NONE;//removed to save RAM
-   neighbors[neighborIndex].addr_64b.type             = ADDR_NONE;
-   //neighbors[neighborIndex].addr_128b.type            = ADDR_NONE;//removed to save RAM
-   neighbors[neighborIndex].DAGrank                   = 255;
-   neighbors[neighborIndex].linkQuality               = 0;
-   neighbors[neighborIndex].numRx                     = 0;
-   neighbors[neighborIndex].numTx                     = 0;
-   neighbors[neighborIndex].numTxACK                  = 0;
-   neighbors[neighborIndex].timestamp                 = 0;
+   neighbors_vars.neighbors[neighborIndex].used                      = FALSE;
+   neighbors_vars.neighbors[neighborIndex].parentPreference          = 0;
+   neighbors_vars.neighbors[neighborIndex].stableNeighbor            = FALSE;
+   neighbors_vars.neighbors[neighborIndex].switchStabilityCounter    = 0;
+   //neighbors_vars.neighbors[neighborIndex].addr_16b.type             = ADDR_NONE;//removed to save RAM
+   neighbors_vars.neighbors[neighborIndex].addr_64b.type             = ADDR_NONE;
+   //neighbors_vars.neighbors[neighborIndex].addr_128b.type            = ADDR_NONE;//removed to save RAM
+   neighbors_vars.neighbors[neighborIndex].DAGrank                   = 255;
+   neighbors_vars.neighbors[neighborIndex].linkQuality               = 0;
+   neighbors_vars.neighbors[neighborIndex].numRx                     = 0;
+   neighbors_vars.neighbors[neighborIndex].numTx                     = 0;
+   neighbors_vars.neighbors[neighborIndex].numTxACK                  = 0;
+   neighbors_vars.neighbors[neighborIndex].timestamp                 = 0;
 }
 
 bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber) {
@@ -327,8 +331,8 @@ bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber) {
         return neighbors[rowNumber].used &&
         packetfunctions_sameAddress(address,&neighbors[rowNumber].addr_16b);*///removed to save RAM
       case ADDR_64B:
-         return neighbors[rowNumber].used &&
-            packetfunctions_sameAddress(address,&neighbors[rowNumber].addr_64b);
+         return neighbors_vars.neighbors[rowNumber].used &&
+            packetfunctions_sameAddress(address,&neighbors_vars.neighbors[rowNumber].addr_64b);
          /*case ADDR_128B:
            return neighbors[rowNumber].used &&
            packetfunctions_sameAddress(address,&neighbors[rowNumber].addr_128b);*///removed to save RAM
@@ -341,7 +345,7 @@ bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber) {
 }
 
 
-//update neighbors_myDAGrank and neighbor preference
+//update neighbors_vars.myDAGrank and neighbor preference
 void neighbors_updateMyDAGrankAndNeighborPreference() {
    uint8_t   i;
    uint8_t   temp_linkCost;
@@ -349,19 +353,19 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
    uint8_t   temp_preferredParentRow=0;
    bool      temp_preferredParentExists=FALSE;
    if ((idmanager_getIsDAGroot())==FALSE) {
-      neighbors_myDAGrank=255;
+      neighbors_vars.myDAGrank=255;
       i=0;
       while(i<MAXNUMNEIGHBORS) {
-         neighbors[i].parentPreference=0;
-         if (neighbors[i].used==TRUE && neighbors[i].stableNeighbor==TRUE) {
-            if (neighbors[i].numTxACK==0) {
+         neighbors_vars.neighbors[i].parentPreference=0;
+         if (neighbors_vars.neighbors[i].used==TRUE && neighbors_vars.neighbors[i].stableNeighbor==TRUE) {
+            if (neighbors_vars.neighbors[i].numTxACK==0) {
                temp_linkCost=15; //TODO: evaluate using RSSI?
             } else {
-               temp_linkCost=(uint8_t)((((float)neighbors[i].numTx)/((float)neighbors[i].numTxACK))*10.0);
+               temp_linkCost=(uint8_t)((((float)neighbors_vars.neighbors[i].numTx)/((float)neighbors_vars.neighbors[i].numTxACK))*10.0);
             }
-            temp_myTentativeDAGrank=neighbors[i].DAGrank+temp_linkCost;
-            if (temp_myTentativeDAGrank<neighbors_myDAGrank && temp_myTentativeDAGrank<255) {
-               neighbors_myDAGrank=temp_myTentativeDAGrank;
+            temp_myTentativeDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
+            if (temp_myTentativeDAGrank<neighbors_vars.myDAGrank && temp_myTentativeDAGrank<255) {
+               neighbors_vars.myDAGrank=temp_myTentativeDAGrank;
                temp_preferredParentExists=TRUE;
                temp_preferredParentRow=i;
             }
@@ -370,14 +374,14 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
                switch ((idmanager_getMyID(ADDR_16B))->addr_16b[1]) {
                case 0x03:
                if (neighbors[i].addr_16b.addr_16b[1]==0x07) {
-               neighbors_myDAGrank=neighbors[i].DAGrank+temp_linkCost;
+               neighbors_vars.myDAGrank=neighbors[i].DAGrank+temp_linkCost;
                temp_preferredParentExists=TRUE;
                temp_preferredParentRow=i;
                }
                break;
                case 0x07:
                if (neighbors[i].addr_16b.addr_16b[1]==0x01) {
-               neighbors_myDAGrank=neighbors[i].DAGrank+temp_linkCost;
+               neighbors_vars.myDAGrank=neighbors[i].DAGrank+temp_linkCost;
                temp_preferredParentExists=TRUE;
                temp_preferredParentRow=i;
                }
@@ -390,9 +394,9 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
          i++;
       }
       if (temp_preferredParentExists) {
-         neighbors[temp_preferredParentRow].parentPreference=MAXPREFERENCE;
+         neighbors_vars.neighbors[temp_preferredParentRow].parentPreference=MAXPREFERENCE;
       }
    } else {
-      neighbors_myDAGrank=0;
+      neighbors_vars.myDAGrank=0;
    }
 }

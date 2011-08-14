@@ -14,16 +14,21 @@
 
 //=========================== variables =======================================
 
-bool        icmpv6router_busySending;
-open_addr_t icmpv6router_hisAddress;
-uint16_t    icmpv6router_seq=0;
+typedef struct {
+bool        busySending;
+open_addr_t hisAddress;
+uint16_t    seq;
+} icmpv6router_vars_t;
+
+icmpv6router_vars_t icmpv6router_vars;
 
 //=========================== prototypes ======================================
 
 //=========================== public ==========================================
 
 void icmpv6router_init() {
-   icmpv6router_busySending = FALSE;
+   icmpv6router_vars.busySending = FALSE;
+   icmpv6router_vars.seq         = 0;
 }
 
 void icmpv6router_trigger() {
@@ -37,13 +42,13 @@ void icmpv6router_trigger() {
             (errorparameter_t)0);
       return;
    };
-   icmpv6router_hisAddress.type  = ADDR_128B;
-   memcpy(&(icmpv6router_hisAddress.addr_128b[0]),&(input_buffer[0]),16);
+   icmpv6router_vars.hisAddress.type  = ADDR_128B;
+   memcpy(&(icmpv6router_vars.hisAddress.addr_128b[0]),&(input_buffer[0]),16);
    //send
-   if (icmpv6router_busySending==TRUE) {
+   if (icmpv6router_vars.busySending==TRUE) {
       openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_BUSY_SENDING,0,0);
    } else {
-      icmpv6router_busySending = TRUE;
+      icmpv6router_vars.busySending = TRUE;
       OpenQueueEntry_t* msg;
       msg = openqueue_getFreePacketBuffer();
       if (msg==NULL) {
@@ -79,11 +84,11 @@ void icmpv6router_trigger() {
       ((ICMPv6_ht*)(msg->payload))->type         = msg->l4_sourcePortORicmpv6Type;
       ((ICMPv6_ht*)(msg->payload))->code         = 0;
       packetfunctions_htons(0x1234       ,(uint8_t*)&((ICMPv6_ht*)(msg->payload))->identifier);
-      packetfunctions_htons(icmpv6router_seq++ ,(uint8_t*)&((ICMPv6_ht*)(msg->payload))->sequence_number); 
+      packetfunctions_htons(icmpv6router_vars.seq++ ,(uint8_t*)&((ICMPv6_ht*)(msg->payload))->sequence_number); 
       packetfunctions_calculateChecksum(msg,(uint8_t*)&(((ICMPv6_ht*)(msg->payload))->checksum));//call last
       //send
       if (icmpv6_send(msg)!=E_SUCCESS) {
-         icmpv6router_busySending = FALSE;
+         icmpv6router_vars.busySending = FALSE;
          openqueue_freePacketBuffer(msg);
       }
    }
@@ -95,7 +100,7 @@ void icmpv6router_sendDone(OpenQueueEntry_t* msg, error_t error) {
       openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
-   icmpv6router_busySending = FALSE;
+   icmpv6router_vars.busySending = FALSE;
 }
 
 void icmpv6router_receive(OpenQueueEntry_t* msg) {

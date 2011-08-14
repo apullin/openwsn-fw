@@ -11,7 +11,11 @@
 
 //=========================== variables =======================================
 
-OpenQueueEntry_t queue[QUEUELENGTH];
+typedef struct {
+   OpenQueueEntry_t queue[QUEUELENGTH];
+} openqueue_vars_t;
+
+openqueue_vars_t openqueue_vars;
 
 //=========================== prototypes ======================================
 
@@ -20,16 +24,16 @@ OpenQueueEntry_t queue[QUEUELENGTH];
 void openqueue_init() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++){
-      openqueue_reset_entry(&(queue[i]));
+      openqueue_reset_entry(&(openqueue_vars.queue[i]));
    }
 }
 
 OpenQueueEntry_t* openqueue_getFreePacketBuffer() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
-      if (queue[i].owner==COMPONENT_NULL) {
-         queue[i].owner=COMPONENT_OPENQUEUE;
-         return &queue[i];
+      if (openqueue_vars.queue[i].owner==COMPONENT_NULL) {
+         openqueue_vars.queue[i].owner=COMPONENT_OPENQUEUE;
+         return &openqueue_vars.queue[i];
       }
    }
    return NULL;
@@ -37,8 +41,8 @@ OpenQueueEntry_t* openqueue_getFreePacketBuffer() {
 error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
-      if (&queue[i]==pkt) {
-         openqueue_reset_entry(&(queue[i]));
+      if (&openqueue_vars.queue[i]==pkt) {
+         openqueue_reset_entry(&(openqueue_vars.queue[i]));
          return E_SUCCESS;
       }
    }
@@ -48,9 +52,9 @@ error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
 OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t* toNeighbor) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
-      if (queue[i].owner==COMPONENT_IEEE802154E &&
-         packetfunctions_sameAddress(toNeighbor,&queue[i].l2_nextORpreviousHop)) {
-         return &queue[i];
+      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E &&
+         packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop)) {
+         return &openqueue_vars.queue[i];
       }
    }
    return NULL;
@@ -59,8 +63,8 @@ OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t* toNeighbor) {
 OpenQueueEntry_t* openqueue_getAdvPacket() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
-      if (queue[i].owner==COMPONENT_IEEE802154E && queue[i].creator==COMPONENT_RES) {
-         return &queue[i];
+      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E && openqueue_vars.queue[i].creator==COMPONENT_RES) {
+         return &openqueue_vars.queue[i];
       }
    }
    return NULL;
@@ -70,9 +74,9 @@ error_t openqueue_removeAllPacketsToNeighbor(open_addr_t* neighbor) {
    error_t returnValue=E_FAIL;
    /*uint8_t i;
      for (i=0;i<QUEUELENGTH;i++){
-     atomic if (queue[i].owner==COMPONENT_MAC && ((IEEE802154_ht*)(queue[i].payload))->dest==neighbor) {
-     queue[i].owner=COMPONENT_NULL;
-     queue[i].l2_retriesLeft=0;
+     atomic if (openqueue_vars.queue[i].owner==COMPONENT_MAC && ((IEEE802154_ht*)(openqueue_vars.queue[i].payload))->dest==neighbor) {
+     openqueue_vars.queue[i].owner=COMPONENT_NULL;
+     openqueue_vars.queue[i].l2_retriesLeft=0;
      returnValue=E_SUCCESS;
      }
      }poipoistupid*/
@@ -82,8 +86,8 @@ error_t openqueue_removeAllPacketsToNeighbor(open_addr_t* neighbor) {
 void openqueue_removeAllOwnedBy(uint8_t owner) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++){
-      if (queue[i].owner==owner) {
-         openqueue_reset_entry(&(queue[i]));
+      if (openqueue_vars.queue[i].owner==owner) {
+         openqueue_reset_entry(&(openqueue_vars.queue[i]));
       }
    }
 }
@@ -108,8 +112,8 @@ bool openqueue_debugPrint() {
    debugOpenQueueEntry_t output[QUEUELENGTH];
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
-      output[i].creator = queue[i].creator;
-      output[i].owner   = queue[i].owner;
+      output[i].creator = openqueue_vars.queue[i].creator;
+      output[i].owner   = openqueue_vars.queue[i].owner;
    }
    openserial_printStatus(STATUS_OPENQUEUE_QUEUE,(uint8_t*)&output,QUEUELENGTH*sizeof(debugOpenQueueEntry_t));
    return TRUE;
