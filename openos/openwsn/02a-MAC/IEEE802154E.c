@@ -160,6 +160,7 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 This function executes in ISR mode, when the new slot timer fires.
 */
 void isr_ieee154e_newSlot() {
+   TACCR0   =  TsSlotDuration;//poipoi testing something
    if (ieee154e_vars.isSync==FALSE) {
       activity_synchronize_newSlot();
    } else {
@@ -382,7 +383,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
       
       // synchronize the slots to the sender's
-      synchronize(capturedTime,&ieee802514_header.src);
+      synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
          
       // record the ASN
       ieee154e_vars.asn = ((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn;
@@ -411,12 +412,6 @@ inline void activity_ti1ORri1() {
    //stop outputting serial data
    openserial_stop();
    
-   ieee154e_vars.syncTimeout--;
-   if (ieee154e_vars.syncTimeout==0) {
-      changeIsSync(FALSE);
-      endSlot();
-   }
-   
    // increment ASN (do this first so debug pins are in sync)
    ieee154e_vars.asn++;
    
@@ -424,6 +419,13 @@ inline void activity_ti1ORri1() {
    DEBUG_PIN_SLOT_TOGGLE();
    if (ieee154e_vars.asn%SCHEDULELENGTH==0) {
       DEBUG_PIN_FRAME_TOGGLE();
+   }
+   
+   ieee154e_vars.syncTimeout--;
+   if (ieee154e_vars.syncTimeout==0) {
+      changeIsSync(FALSE);
+      endSlot();
+      return;
    }
 
    // if the previous slot took too long, we will not be in the right state
@@ -1003,10 +1005,12 @@ inline void activity_ri9(uint16_t capturedTime) {
 //=========================== private =========================================
 
 void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
-   volatile int16_t correction;
-   
+   int16_t  correction;
+   uint16_t newTaccr0;
    correction  = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
-   TAR        -= correction;
+   newTaccr0   = 2*TsSlotDuration;
+   newTaccr0   = (uint16_t)((int16_t)newTaccr0+correction);
+   TACCR0      = newTaccr0;//poipoi testing something
    ieee154e_vars.syncTimeout = SYNCTIMEOUT;
 }
 
