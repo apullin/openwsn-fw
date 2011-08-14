@@ -41,51 +41,53 @@ ieee154e_vars_t ieee154e_vars;
 //=========================== prototypes ======================================
 
 // SYNCHRONIZING
-void    activity_synchronize_newSlot();
-void    activity_synchronize_startOfFrame(uint16_t capturedTime);
-void    activity_synchronize_endOfFrame(uint16_t capturedTime);
+void     activity_synchronize_newSlot();
+void     activity_synchronize_startOfFrame(uint16_t capturedTime);
+void     activity_synchronize_endOfFrame(uint16_t capturedTime);
 // TX
-void    activity_ti1ORri1();
-void    activity_ti2();
-void    activity_tie1();
-void    activity_ti3();
-void    activity_tie2();
-void    activity_ti4(uint16_t capturedTime);
-void    activity_tie3();
-void    activity_ti5(uint16_t capturedTime);
-void    activity_ti6();
-void    activity_tie4();
-void    activity_ti7();
-void    activity_tie5();
-void    activity_ti8(uint16_t capturedTime);
-void    activity_tie6();
-void    activity_ti9(uint16_t capturedTime);
+void     activity_ti1ORri1();
+void     activity_ti2();
+void     activity_tie1();
+void     activity_ti3();
+void     activity_tie2();
+void     activity_ti4(uint16_t capturedTime);
+void     activity_tie3();
+void     activity_ti5(uint16_t capturedTime);
+void     activity_ti6();
+void     activity_tie4();
+void     activity_ti7();
+void     activity_tie5();
+void     activity_ti8(uint16_t capturedTime);
+void     activity_tie6();
+void     activity_ti9(uint16_t capturedTime);
 // RX
-void    activity_ri2();
-void    activity_rie1();
-void    activity_ri3();
-void    activity_rie2();
-void    activity_ri4(uint16_t capturedTime);
-void    activity_rie3();
-void    activity_ri5(uint16_t capturedTime);
-void    activity_ri6();
-void    activity_rie4();
-void    activity_ri7();
-void    activity_rie5();
-void    activity_ri8(uint16_t capturedTime);
-void    activity_rie6();
-void    activity_ri9(uint16_t capturedTime);
-// helper
-void    synchronize(uint16_t timeReceived,open_addr_t* advFrom);
-void    changeIsSync(bool newIsSync);
-uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset);
-bool    isAckValid(OpenQueueEntry_t* ackFrame);
-bool    isDataValid(OpenQueueEntry_t* dataFrame);
-bool    ackRequested(OpenQueueEntry_t* frame);
-void    createAck(OpenQueueEntry_t* frame);
-void    change_state(uint8_t newstate);
-void    endSlot();
-bool    mac_debugPrint();
+void     activity_ri2();
+void     activity_rie1();
+void     activity_ri3();
+void     activity_rie2();
+void     activity_ri4(uint16_t capturedTime);
+void     activity_rie3();
+void     activity_ri5(uint16_t capturedTime);
+void     activity_ri6();
+void     activity_rie4();
+void     activity_ri7();
+void     activity_rie5();
+void     activity_ri8(uint16_t capturedTime);
+void     activity_rie6();
+void     activity_ri9(uint16_t capturedTime);
+// misc
+void     fillInAsn(OpenQueueEntry_t* advFrame);
+uint16_t readAsn(OpenQueueEntry_t* advFrame);
+void     synchronize(uint16_t timeReceived,open_addr_t* advFrom);
+void     changeIsSync(bool newIsSync);
+uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
+bool     isAckValid(OpenQueueEntry_t* ackFrame);
+bool     isDataValid(OpenQueueEntry_t* dataFrame);
+bool     ackRequested(OpenQueueEntry_t* frame);
+void     createAck(OpenQueueEntry_t* frame);
+void     change_state(uint8_t newstate);
+void     endSlot();
+bool     mac_debugPrint();
 
 //=========================== public ==========================================
 
@@ -140,6 +142,8 @@ error_t mac_send(OpenQueueEntry_t* msg) {
       msg->l2_retriesLeft = TXRETRIES;
    }
    msg->l1_txPower = TX_POWER;
+   // record the location, in the packet, where the l2 payload starts
+   msg->l2_payload = msg->payload;
    //IEEE802.15.4 header
    prependIEEE802154header(msg,
                            msg->l2_frameType,
@@ -160,7 +164,7 @@ error_t mac_send(OpenQueueEntry_t* msg) {
 This function executes in ISR mode, when the new slot timer fires.
 */
 void isr_ieee154e_newSlot() {
-   TACCR0   =  TsSlotDuration;//poipoi testing something
+   TACCR0   =  TsSlotDuration;
    if (ieee154e_vars.isSync==FALSE) {
       activity_synchronize_newSlot();
    } else {
@@ -386,7 +390,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
          
       // record the ASN
-      ieee154e_vars.asn = ((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn;
+      ieee154e_vars.asn = readAsn(ieee154e_vars.dataReceived);
       
       // declare synchronized
       changeIsSync(TRUE);
@@ -462,6 +466,8 @@ inline void activity_ti1ORri1() {
             // I will be sending an ADV
             // change state
             change_state(S_TXDATAOFFSET);
+            // fill in the ASN field of the ADV
+            fillInAsn(ieee154e_vars.dataToSend);
             // arm tt1
             ieee154etimer_schedule(DURATION_tt1);
          }
@@ -1004,13 +1010,28 @@ inline void activity_ri9(uint16_t capturedTime) {
 
 //=========================== private =========================================
 
+inline void fillInAsn(OpenQueueEntry_t* advFrame) {
+   ((IEEE802154E_ADV_t*)(advFrame->l2_payload))->asn[0] = ieee154e_vars.asn/256;
+   ((IEEE802154E_ADV_t*)(advFrame->l2_payload))->asn[1] = ieee154e_vars.asn%256;
+}
+
+inline uint16_t readAsn(OpenQueueEntry_t* advFrame) {
+   uint16_t returnVal;
+   returnVal  = 0;
+   /*
+   returnVal += 256*((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn[0];
+   returnVal +=     ((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn[1];
+   */
+   return returnVal;
+}
+
 void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
    int16_t  correction;
    uint16_t newTaccr0;
    correction  = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
    newTaccr0   = 2*TsSlotDuration;
    newTaccr0   = (uint16_t)((int16_t)newTaccr0+correction);
-   TACCR0      = newTaccr0;//poipoi testing something
+   TACCR0      = newTaccr0;
    ieee154e_vars.syncTimeout = SYNCTIMEOUT;
 }
 
