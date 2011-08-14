@@ -9,16 +9,20 @@
 
 //=========================== variables =======================================
 
-//register backup variables
-uint8_t reg_CTRL_REGC;
-uint8_t reg_CTRL_REGB;
-bool large_range_accel_configured = FALSE;
+typedef struct {
+   uint8_t reg_CTRL_REGC;    // register backup
+   uint8_t reg_CTRL_REGB;    // register backup
+   bool    configured;
+} large_range_accel_vars_t;
+
+large_range_accel_vars_t large_range_accel_vars;
 
 //=========================== prototypes ======================================
 
 //=========================== public ==========================================
 
 void large_range_accel_init() {
+   large_range_accel_vars.configured = FALSE;
    P5OUT |=  0x10;                               // set P5.4 as output
    P5DIR |=  0x10;                               // set P5.4 high to enable I2C
    i2c_write_register(1,LARGE_RANGE_ACCEL_I2C_ADDR,
@@ -27,7 +31,7 @@ void large_range_accel_init() {
    i2c_write_register(1,LARGE_RANGE_ACCEL_I2C_ADDR,
          LARGE_RANGE_ACCEL_REG_CTRL_REGB_ADDR,
          LARGE_RANGE_ACCEL_REG_CTRL_REGB_SETTING);
-   large_range_accel_configured = TRUE;
+   large_range_accel_vars.configured = TRUE;
 }
 
 void large_range_accel_disable() {
@@ -37,21 +41,21 @@ void large_range_accel_disable() {
 }
 
 void large_range_accel_get_config() {
-   if (large_range_accel_configured==TRUE) {
+   if (large_range_accel_vars.configured==TRUE) {
       i2c_read_registers(1,LARGE_RANGE_ACCEL_I2C_ADDR,
             LARGE_RANGE_ACCEL_REG_CTRL_REGC_ADDR,
             1,
-            &reg_CTRL_REGC);
+            &large_range_accel_vars.reg_CTRL_REGC);
       i2c_read_registers(1,LARGE_RANGE_ACCEL_I2C_ADDR,
             LARGE_RANGE_ACCEL_REG_CTRL_REGB_ADDR,
             1,
-            &reg_CTRL_REGB);
+            &large_range_accel_vars.reg_CTRL_REGB);
    }
 }
 
 void large_range_accel_get_measurement(uint8_t* spaceToWrite) {
    uint8_t i;
-   if (large_range_accel_configured==TRUE) {
+   if (large_range_accel_vars.configured==TRUE) {
       i2c_read_registers(1,LARGE_RANGE_ACCEL_I2C_ADDR,
             LARGE_RANGE_ACCEL_REG_XOUT_H_ADDR,
             6,

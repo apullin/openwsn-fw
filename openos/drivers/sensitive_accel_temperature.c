@@ -9,13 +9,19 @@
 
 //=========================== variables =======================================
 
-bool sensitive_accel_temperature_configured = FALSE;
+typedef struct {
+   bool configured;
+} sensitive_accel_temperature_vars_t;
+
+sensitive_accel_temperature_vars_t sensitive_accel_temperature_vars;
 
 //=========================== prototypes ======================================
 
 //=========================== public ==========================================
 
 void sensitive_accel_temperature_init() {
+   sensitive_accel_temperature_vars.configured = FALSE;
+   
    // enable accelerometer and filter
    P6DIR  |=  0x08;                              // P6.3 as output for accelerometer and filter
    P6OUT  |=  0x08;		                 // P6.3 high to enable accelerometer and filter
@@ -39,20 +45,20 @@ void sensitive_accel_temperature_init() {
    ADC12IE = 0x10;                               // interrupt only when ADC12MEM4 changes
 
    for (volatile int i=0; i<0x3600; i++) {}      // delay for ADC12 reference start-up
-   sensitive_accel_temperature_configured = TRUE;
+   sensitive_accel_temperature_vars.configured = TRUE;
 }
 
 void sensitive_accel_temperature_disable() {
    P6OUT   &=  ~0x08;   //Turn off P6.3 to disable accelerometer and filter
 }
 void sensitive_accel_temperature_get_config() {
-   if (sensitive_accel_temperature_configured==TRUE) {
+   if (sensitive_accel_temperature_vars.configured==TRUE) {
    }
 }
 
 void sensitive_accel_temperature_get_measurement(uint8_t* spaceToWrite) {
    uint8_t i;
-   if (sensitive_accel_temperature_configured==TRUE) {
+   if (sensitive_accel_temperature_vars.configured==TRUE) {
       ADC12CTL0 |= ENC;                             // sampling and conversion start
       ADC12CTL0 |= ADC12SC;                         // start conversion
       __bis_SR_register(CPUOFF+GIE);                // turn off CPU, but leave on interrupts

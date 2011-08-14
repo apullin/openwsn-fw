@@ -83,6 +83,8 @@ void    change_state(uint8_t newstate);
 void    endSlot();
 bool    mac_debugPrint();
 
+//=========================== public ==========================================
+
 //======= from upper layer
 
 /**

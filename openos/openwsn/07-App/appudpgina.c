@@ -19,8 +19,12 @@
 
 //=========================== variables =======================================
 
-uint8_t           appudpgina_mesurements_left;
-OpenQueueEntry_t* appudpgina_pktReceived;
+typedef struct {
+   uint8_t              mesurements_left;
+   OpenQueueEntry_t*    pktReceived;
+} appudpgina_vars_t;
+
+appudpgina_vars_t appudpgina_vars;
 
 //=========================== prototypes ======================================
 
@@ -36,7 +40,7 @@ void appudpgina_init() {
       magnetometer_init();
       sensitive_accel_temperature_init();
    }
-   appudpgina_mesurements_left = 0;
+   appudpgina_vars.mesurements_left = 0;
 }
 
 //this is called when the UdpGina button is pressed on the OpenVisualizer interface
@@ -46,9 +50,9 @@ void appudpgina_trigger() {
 //I just received a request, send a packet with IMU data
 void appudpgina_receive(OpenQueueEntry_t* msg) {
    msg->owner = COMPONENT_APPUDPGINA;
-   if (appudpgina_pktReceived==NULL) {
-      appudpgina_pktReceived      = msg;
-      appudpgina_mesurements_left = appudpgina_pktReceived->payload[0];
+   if (appudpgina_vars.pktReceived==NULL) {
+      appudpgina_vars.pktReceived      = msg;
+      appudpgina_vars.mesurements_left = appudpgina_vars.pktReceived->payload[0];
       appudpgina_send();
    } else {
       openqueue_freePacketBuffer(msg);
@@ -62,7 +66,7 @@ void appudpgina_sendDone(OpenQueueEntry_t* msg, error_t error) {
       openserial_printError(COMPONENT_APPUDPGINA,ERR_UNEXPECTED_SENDDONE,0,0);
    }
    openqueue_freePacketBuffer(msg);
-   if (appudpgina_mesurements_left>0) {
+   if (appudpgina_vars.mesurements_left>0) {
       appudpgina_send();
    } else {
       appudpgina_reset();
@@ -86,11 +90,11 @@ void appudpgina_send() {
    packetToSend->creator                     = COMPONENT_APPUDPGINA;
    packetToSend->owner                       = COMPONENT_APPUDPGINA;
    packetToSend->l4_protocol                 = IANA_UDP;
-   packetToSend->l4_sourcePortORicmpv6Type   = appudpgina_pktReceived->l4_destination_port;
-   packetToSend->l4_destination_port         = appudpgina_pktReceived->l4_sourcePortORicmpv6Type;
+   packetToSend->l4_sourcePortORicmpv6Type   = appudpgina_vars.pktReceived->l4_destination_port;
+   packetToSend->l4_destination_port         = appudpgina_vars.pktReceived->l4_sourcePortORicmpv6Type;
    packetToSend->l3_destinationORsource.type = ADDR_128B;
    memcpy(&(packetToSend->l3_destinationORsource.addr_128b[0]),
-         &(appudpgina_pktReceived->l3_destinationORsource.addr_128b[0]),
+         &(appudpgina_vars.pktReceived->l3_destinationORsource.addr_128b[0]),
          16);
    //payload, gyro data
    packetfunctions_reserveHeaderSize(packetToSend,8);
@@ -109,13 +113,13 @@ void appudpgina_send() {
       openqueue_freePacketBuffer(packetToSend);
       appudpgina_reset();
    }
-   appudpgina_mesurements_left--;
+   appudpgina_vars.mesurements_left--;
 }
 
 void appudpgina_reset() {
-   appudpgina_mesurements_left=0;
-   if (appudpgina_pktReceived!=NULL) {
-      openqueue_freePacketBuffer(appudpgina_pktReceived);
-      appudpgina_pktReceived = NULL;
+   appudpgina_vars.mesurements_left=0;
+   if (appudpgina_vars.pktReceived!=NULL) {
+      openqueue_freePacketBuffer(appudpgina_vars.pktReceived);
+      appudpgina_vars.pktReceived = NULL;
    }
 }

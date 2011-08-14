@@ -16,7 +16,11 @@ specifying the IPv6 address of a remote node.
 
 //=========================== variables =======================================
 
-uint8_t appudpchannel_new_channel;
+typedef struct {
+   uint8_t new_channel;
+} appudpchannel_vars_t;
+
+appudpchannel_vars_t appudpchannel_vars;
 
 //=========================== prototypes ======================================
 
@@ -25,7 +29,7 @@ void appudpchannel_change_channel(uint8_t new_channel);
 //=========================== public ==========================================
 
 void appudpchannel_init() {
-   appudpchannel_new_channel = 0;
+   appudpchannel_vars.new_channel = 0;
 }
 
 void appudpchannel_trigger() {
@@ -40,9 +44,9 @@ void appudpchannel_trigger() {
             (errorparameter_t)0);
       return;
    };
-   appudpchannel_new_channel = input_buffer[16];
-   if (appudpchannel_new_channel<11 && appudpchannel_new_channel>26) {
-      appudpchannel_new_channel = 0;
+   appudpchannel_vars.new_channel = input_buffer[16];
+   if (appudpchannel_vars.new_channel<11 && appudpchannel_vars.new_channel>26) {
+      appudpchannel_vars.new_channel = 0;
       return;
    }
    //prepare packet
@@ -59,7 +63,7 @@ void appudpchannel_trigger() {
    pkt->l3_destinationORsource.type = ADDR_128B;
    memcpy(&(pkt->l3_destinationORsource.addr_128b[0]),&(input_buffer[0]),16);   
    packetfunctions_reserveHeaderSize(pkt,1);
-   ((uint8_t*)pkt->payload)[0] = appudpchannel_new_channel;
+   ((uint8_t*)pkt->payload)[0] = appudpchannel_vars.new_channel;
    //send packet
    if ((udp_send(pkt))==E_FAIL) {
       openqueue_freePacketBuffer(pkt);
@@ -67,9 +71,9 @@ void appudpchannel_trigger() {
 }
 
 void appudpchannel_sendDone(OpenQueueEntry_t* msg, error_t error) {
-   if (error==E_SUCCESS && appudpchannel_new_channel!=0) {
-      appudpchannel_change_channel(appudpchannel_new_channel);
-      appudpchannel_new_channel = 0;
+   if (error==E_SUCCESS && appudpchannel_vars.new_channel!=0) {
+      appudpchannel_change_channel(appudpchannel_vars.new_channel);
+      appudpchannel_vars.new_channel = 0;
    }
    openqueue_freePacketBuffer(msg);
 }

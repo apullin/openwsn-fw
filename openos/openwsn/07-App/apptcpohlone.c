@@ -16,10 +16,14 @@
 
 //=========================== variables =======================================
 
-OpenQueueEntry_t* apptcpohlone_pkt;
-bool              apptcpohlone_sending;
-uint16_t          apptcpohlone_httpChunk;
-uint8_t           apptcpohlone_getRequest[TCP_DEFAULT_WINDOW_SIZE];
+typedef struct {
+   OpenQueueEntry_t*    pkt;
+   bool                 sending;
+   uint16_t             httpChunk;
+   uint8_t              getRequest[TCP_DEFAULT_WINDOW_SIZE];
+} apptcpohlone_vars_t;
+
+apptcpohlone_vars_t apptcpohlone_vars;
 
 //=========================== prototypes ======================================
 
@@ -29,9 +33,9 @@ bool apptcpohlone_check4chars(uint8_t c1[4], uint8_t c2[4]);
 //=========================== public ==========================================
 
 void apptcpohlone_init() {
-   apptcpohlone_httpChunk = 0;
-   apptcpohlone_getRequest[0] = '/';
-   apptcpohlone_getRequest[1] = ' ';
+   apptcpohlone_vars.httpChunk = 0;
+   apptcpohlone_vars.getRequest[0] = '/';
+   apptcpohlone_vars.getRequest[1] = ' ';
    ohlone_webpages_init();
 }
 
@@ -43,31 +47,31 @@ void apptcpohlone_sendpkt() {
    uint8_t buffer[TCP_DEFAULT_WINDOW_SIZE];
    uint8_t buffer_len;
   
-   buffer_len = ohlone_webpage(apptcpohlone_getRequest, apptcpohlone_httpChunk++, buffer);
+   buffer_len = ohlone_webpage(apptcpohlone_vars.getRequest, apptcpohlone_vars.httpChunk++, buffer);
    
    if (buffer_len == 0) {
       // No more to send
       // close TCP session, but keep listening
-      apptcpohlone_getRequest[0] = '/';
-      apptcpohlone_getRequest[1] = ' ';
+      apptcpohlone_vars.getRequest[0] = '/';
+      apptcpohlone_vars.getRequest[1] = ' ';
       tcp_close();
       return;
    }
 
-   apptcpohlone_pkt = openqueue_getFreePacketBuffer();
-   if (apptcpohlone_pkt==NULL) {
+   apptcpohlone_vars.pkt = openqueue_getFreePacketBuffer();
+   if (apptcpohlone_vars.pkt==NULL) {
       openserial_printError(COMPONENT_APPTCPOHLONE,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
       tcp_close();
       return;
    }
-   apptcpohlone_pkt->creator = COMPONENT_APPTCPOHLONE;
-   apptcpohlone_pkt->owner   = COMPONENT_APPTCPOHLONE;
+   apptcpohlone_vars.pkt->creator = COMPONENT_APPTCPOHLONE;
+   apptcpohlone_vars.pkt->owner   = COMPONENT_APPTCPOHLONE;
    
-   packetfunctions_reserveHeaderSize(apptcpohlone_pkt, buffer_len);
-   memcpy(apptcpohlone_pkt->payload, buffer, buffer_len);
+   packetfunctions_reserveHeaderSize(apptcpohlone_vars.pkt, buffer_len);
+   memcpy(apptcpohlone_vars.pkt->payload, buffer, buffer_len);
    
-   if ((tcp_send(apptcpohlone_pkt))==E_FAIL) {
-      openqueue_freePacketBuffer(apptcpohlone_pkt);
+   if ((tcp_send(apptcpohlone_vars.pkt))==E_FAIL) {
+      openqueue_freePacketBuffer(apptcpohlone_vars.pkt);
       tcp_close();
    }
 
@@ -85,12 +89,12 @@ void apptcpohlone_receive(OpenQueueEntry_t* msg) {
    
    for (payload_index=0;payload_index<msg->length-3;payload_index++) {
       if (apptcpohlone_check4chars(msg->payload+payload_index, "GET "))
-         memcpy(apptcpohlone_getRequest, 
+         memcpy(apptcpohlone_vars.getRequest, 
                 msg->payload + payload_index + 4, 
                 msg->length - payload_index - 4);
 
       if (apptcpohlone_check4chars(msg->payload+payload_index, "\r\n\r\n")) {
-         apptcpohlone_httpChunk = 0;
+         apptcpohlone_vars.httpChunk = 0;
          apptcpohlone_sendpkt();
          return;
       }

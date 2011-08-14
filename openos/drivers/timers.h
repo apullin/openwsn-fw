@@ -33,10 +33,12 @@ enum {
 
 //=========================== typedef =========================================
 
-//=========================== variables =======================================
+typedef struct {
+   uint16_t period[TIMER_COUNT];
+   bool     continuous[TIMER_COUNT];
+} timers_vars_t;
 
-extern uint16_t timers_period[TIMER_COUNT];
-extern bool     timers_continuous[TIMER_COUNT];
+//=========================== variables =======================================
 
 //=========================== prototypes ======================================
 

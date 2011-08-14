@@ -30,20 +30,14 @@ This driver can be used in two modes:
 
 //=========================== variables =======================================
 
-uint8_t* spi_tx_buffer;
-uint8_t* spi_rx_buffer;
-uint8_t  num_bytes;
-uint8_t  spi_busy;
+typedef struct {
+   uint8_t* tx_buffer;
+   uint8_t* rx_buffer;
+   uint8_t  num_bytes;
+   uint8_t  busy;
+} spi_vars_t;
 
-struct {
-   volatile unsigned char* ctl0[2];
-   volatile unsigned char* ctl1[2];
-   volatile unsigned char* br0[2];
-   volatile unsigned char* br1[2];
-   volatile unsigned char* ie[2];
-   volatile unsigned char* txbuf[2];
-   volatile unsigned char* rxbuf[2];
-} spi_control;
+spi_vars_t spi_vars;
 
 //=========================== prototypes ======================================
 
@@ -74,7 +68,7 @@ void spi_write_register(uint8_t reg_addr, uint8_t reg_setting) {
    temp_tx_buffer[1] = reg_setting;
    spi_txrx(&(temp_tx_buffer[0]),sizeof(temp_tx_buffer),&(temp_rx_buffer[0]));
 #ifdef ISR_SPI
-   while ( spi_busy==1 );
+   while ( spi_vars.busy==1 );
 #endif
 }
 
@@ -85,7 +79,7 @@ uint8_t spi_read_register(uint8_t reg_addr) {
    temp_tx_buffer[1] = 0x00;                     // send a no_operation command just to get the reg value
    spi_txrx(&(temp_tx_buffer[0]),sizeof(temp_tx_buffer),&(temp_rx_buffer[0]));
 #ifdef ISR_SPI
-   while ( spi_busy==1 );
+   while ( spi_vars.busy==1 );
 #endif
    return temp_rx_buffer[1];
 }
@@ -94,7 +88,7 @@ void spi_write_buffer(OpenQueueEntry_t* packet) {
    uint8_t temp_rx_buffer[1+1+127];              // 1B SPI address, 1B length, max. 127B data
    spi_txrx(packet->payload,packet->length,&(temp_rx_buffer[0]));
 #ifdef ISR_SPI
-   while ( spi_busy==1 );
+   while ( spi_vars.busy==1 );
 #endif
 }
 
@@ -103,7 +97,7 @@ void spi_read_buffer(OpenQueueEntry_t* packet, uint8_t length) {
    temp_tx_buffer[0] = 0x20;                     // spi address for 'read frame buffer'
    spi_txrx(&(temp_tx_buffer[0]),length,packet->payload);
 #ifdef ISR_SPI
-   while ( spi_busy==1 );
+   while ( spi_vars.busy==1 );
 #endif
 }
 
@@ -114,40 +108,40 @@ void spi_read_buffer(OpenQueueEntry_t* packet, uint8_t length) {
 void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive) {
    __disable_interrupt();
    //register spi frame to send
-   spi_tx_buffer =  spaceToSend;
-   spi_rx_buffer =  spaceToReceive;
-   num_bytes     =  len;
-   spi_busy      =  1;
+   spi_vars.tx_buffer =  spaceToSend;
+   spi_vars.rx_buffer =  spaceToReceive;
+   spi_vars.num_bytes     =  len;
+   spi_vars.busy      =  1;
    //send first byte
    P4OUT&=~0x01;P4OUT&=~0x40;                    // SPI CS (and P4.6) down
-   UCA0TXBUF     = *spi_tx_buffer;
-   spi_tx_buffer++;
-   num_bytes--;
+   UCA0TXBUF     = *spi_vars.tx_buffer;
+   spi_vars.tx_buffer++;
+   spi_vars.num_bytes--;
    __enable_interrupt();
 }
 #else
 // this implemetation busy waits for each byte to be sent
 void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive) {
    //register spi frame to send
-   spi_tx_buffer = spaceToSend;
-   spi_rx_buffer = spaceToReceive;
-   num_bytes     = len;
+   spi_vars.tx_buffer = spaceToSend;
+   spi_vars.rx_buffer = spaceToReceive;
+   spi_vars.num_bytes     = len;
    // SPI CS (and P4.6) down
    P4OUT&=~0x01;P4OUT&=~0x40;                    // SPI CS (and P4.6) down
    // write all bytes
-   while (num_bytes>0) {
+   while (spi_vars.num_bytes>0) {
       //write byte to TX buffer
-      UCA0TXBUF     = *spi_tx_buffer;
-      spi_tx_buffer++;
+      UCA0TXBUF     = *spi_vars.tx_buffer;
+      spi_vars.tx_buffer++;
       // busy wait on the interrupt flag
       while ((IFG2 & UCA0RXIFG)==0);
       // clear the interrupt flag
       IFG2 &= ~UCA0RXIFG;
       // save the byte just received in the RX buffer
-      *spi_rx_buffer = UCA0RXBUF;
-      spi_rx_buffer++;
+      *spi_vars.rx_buffer = UCA0RXBUF;
+      spi_vars.rx_buffer++;
       // one byte less to go
-      num_bytes--;
+      spi_vars.num_bytes--;
    }
    // SPI CS (and P4.6) up
    P4OUT|=0x01;P4OUT|=0x40;
@@ -159,15 +153,15 @@ void spi_txrx(uint8_t* spaceToSend, uint8_t len, uint8_t* spaceToReceive) {
 #ifdef ISR_SPI
 //executed in ISR, called from scheduler.c
 void isr_spi_rx() {
-   *spi_rx_buffer = UCA0RXBUF;
-   spi_rx_buffer++;
-   if (num_bytes>0) {
-      UCA0TXBUF = *spi_tx_buffer;
-      spi_tx_buffer++;
-      num_bytes--;
+   *spi_vars.rx_buffer = UCA0RXBUF;
+   spi_vars.rx_buffer++;
+   if (spi_vars.num_bytes>0) {
+      UCA0TXBUF = *spi_vars.tx_buffer;
+      spi_vars.tx_buffer++;
+      spi_vars.num_bytes--;
    } else {
       P4OUT|=0x01;P4OUT|=0x40;                   // SPI CS (and P4.6) up
-      spi_busy = 0;
+      spi_vars.busy = 0;
    }
 }
 #endif
