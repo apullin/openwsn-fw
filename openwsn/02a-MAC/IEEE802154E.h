@@ -16,6 +16,7 @@
 // this is the channel the mote will listen on to synchronize
 #define SYNCHRONIZING_CHANNEL 26
 #define TXRETRIES              3
+#define SYNCTIMEOUT          200 // @10ms per slot -> 2 second
 //1=-25dBm, 31=0dBm (max value)
 #define TX_POWER              31
 
@@ -65,7 +66,7 @@ enum ieee154e_atomicdurations_enum{
    maxTxDataPrepare          =  33,    //  1000us (TBC)
    maxRxAckPrepare           =  10,    //   (TBC)
    maxRxDataPrepare          =  13,    //   400us (TBC)
-   maxTxAckPrepare           =  29,    //   900us (TBC)
+   maxTxAckPrepare           =  17,    //   (TBC)
    // radio speed related
    delayTx                   =   0,    //     0us (TBC)
    delayRx                   =   0,    //     0us (TBC)
