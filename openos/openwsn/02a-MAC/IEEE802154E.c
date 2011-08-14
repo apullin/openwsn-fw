@@ -329,7 +329,7 @@ bool mac_debugPrint() {
 
 //=========================== private =========================================
 
-//============ SYNCHRONIZING
+//======= SYNCHRONIZING
 
 inline void activity_synchronize_newSlot() {
    // if this is the first time I call this function while not synchronized,
@@ -383,20 +383,20 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
        packetfunctions_sameAddress(&ieee802514_header.panid,idmanager_getMyID(ADDR_PANID))              &&
        ieee154e_vars.dataReceived->length==ieee802514_header.headerLength+sizeof(IEEE802154E_ADV_t)+2) {
       
+      // turn off the radio
+      radio_rfOff();
+      
       // toss the IEEE802.15.4 header
       packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
       
+      // record the ASN
+      ieee154e_vars.asn = readAsn(ieee154e_vars.dataReceived)+1;
+      
       // synchronize the slots to the sender's
       synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
-         
-      // record the ASN
-      ieee154e_vars.asn = readAsn(ieee154e_vars.dataReceived);
       
       // declare synchronized
       changeIsSync(TRUE);
-      
-      // turn off the radio
-      radio_rfOff();
       
       // change state
       change_state(S_SLEEP);
@@ -407,7 +407,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    
 }
 
-//============ TX
+//======= TX
 
 inline void activity_ti1ORri1() {
    uint8_t cellType;
@@ -425,11 +425,14 @@ inline void activity_ti1ORri1() {
       DEBUG_PIN_FRAME_TOGGLE();
    }
    
-   ieee154e_vars.syncTimeout--;
-   if (ieee154e_vars.syncTimeout==0) {
-      changeIsSync(FALSE);
-      endSlot();
-      return;
+   // desynchronize if needed
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
+      ieee154e_vars.syncTimeout--;
+      if (ieee154e_vars.syncTimeout==0) {
+         changeIsSync(FALSE);
+         endSlot();
+         return;
+      }
    }
 
    // if the previous slot took too long, we will not be in the right state
@@ -750,7 +753,7 @@ inline void activity_ti9(uint16_t capturedTime) {
    endSlot();
 }
 
-//============ RX
+//======= RX
 
 inline void activity_ri2() {
    uint8_t frequency;
@@ -1008,7 +1011,7 @@ inline void activity_ri9(uint16_t capturedTime) {
    endSlot();
 }
 
-//=========================== private =========================================
+//======= misc
 
 inline void fillInAsn(OpenQueueEntry_t* advFrame) {
    ((IEEE802154E_ADV_t*)(advFrame->l2_payload))->asn[0] = ieee154e_vars.asn/256;
@@ -1018,21 +1021,21 @@ inline void fillInAsn(OpenQueueEntry_t* advFrame) {
 inline uint16_t readAsn(OpenQueueEntry_t* advFrame) {
    uint16_t returnVal;
    returnVal  = 0;
-   /*
    returnVal += 256*((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn[0];
    returnVal +=     ((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn[1];
-   */
    return returnVal;
 }
 
 void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
    int16_t  correction;
    uint16_t newTaccr0;
-   correction  = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
-   newTaccr0   = 2*TsSlotDuration;
-   newTaccr0   = (uint16_t)((int16_t)newTaccr0+correction);
-   TACCR0      = newTaccr0;
-   ieee154e_vars.syncTimeout = SYNCTIMEOUT;
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
+      correction  = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+      newTaccr0   = 2*TsSlotDuration;
+      newTaccr0   = (uint16_t)((int16_t)newTaccr0+correction);
+      TACCR0      = newTaccr0;
+      ieee154e_vars.syncTimeout = SYNCTIMEOUT;
+   }
 }
 
 void changeIsSync(bool newIsSync) {
