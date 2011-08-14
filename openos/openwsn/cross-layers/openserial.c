@@ -286,7 +286,7 @@ bool openserial_debugPrint() {
    temp_buffer[0] = openserial_vars.output_buffer_index_write;
    temp_buffer[1] = openserial_vars.output_buffer_index_read;
    __enable_interrupt();
-   openserial_printStatus(STATUS_OPENSERIAL_OUTPUTBUFFERINDEXES,(uint8_t*)temp_buffer,sizeof(temp_buffer));
+   openserial_printStatus(STATUS_OPENSERIAL_OUTBUFFERINDEXES,(uint8_t*)temp_buffer,sizeof(temp_buffer));
    return TRUE;
 }
 

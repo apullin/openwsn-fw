@@ -67,13 +67,13 @@ void scheduler_start() {
             scheduler_vars.task_list[TASKID_TCP_TIMEOUT]--;
             scheduler_vars.num_tasks--;
 #ifdef OPENWSN_STACK
-            timer_tcp_timeout_fired();
+            timer_tcp_fired();
 #endif
          } else if (scheduler_vars.task_list[TASKID_UDP_TIMER]>0) {
             scheduler_vars.task_list[TASKID_UDP_TIMER]--;
             scheduler_vars.num_tasks--;
 #ifdef OPENWSN_STACK
-            appudptimer_trigger();
+            timer_appudptimer_fired();
 #endif
          } else if (scheduler_vars.task_list[TASKID_TIMERB4]>0) {
             scheduler_vars.task_list[TASKID_TIMERB4]--;
