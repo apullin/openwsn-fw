@@ -12,9 +12,6 @@
 //=========================== define ==========================================
 #define SCHEDULELENGTH  7
 
-typedef uint8_t cellType_t;
-typedef uint8_t channelOffset_t;
-
 enum {
    CELLTYPE_OFF         = 0,
    CELLTYPE_ADV         = 1,

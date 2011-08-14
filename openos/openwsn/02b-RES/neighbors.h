@@ -9,6 +9,14 @@
 
 //=========================== define ==========================================
 
+#define MAXNUMNEIGHBORS            10
+#define MAXPREFERENCE               2
+//-70dBm in 8-bit 2's compl. (-70 -> -25 -> 26 -> 0001 1010 -> 1110 0101-> 229)
+#define BADNEIGHBORMAXPOWER       229
+//-80dBm in 8-bit 2's compl. (-80 -> -35 -> 36 -> 219)
+#define GOODNEIGHBORMINPOWER      219
+#define SWITCHSTABILITYTHRESHOLD    3
+
 //=========================== typedef =========================================
 
 typedef struct {

@@ -117,8 +117,7 @@ void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
    addressToWrite64b->addr_64b[2] = 0x92;
    addressToWrite64b->addr_64b[3] = 0x09;
    addressToWrite64b->addr_64b[4] = 0x02;
-   addressToWrite64b->addr_64b[5] = 0x2b;
+   addressToWrite64b->addr_64b[5] = 0x2c;
    addressToWrite64b->addr_64b[6] = 0x00;
-   addressToWrite64b->addr_64b[7] = 0x87;   
-   
+   addressToWrite64b->addr_64b[7] = 0x87;
 }
