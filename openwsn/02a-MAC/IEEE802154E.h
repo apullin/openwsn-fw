@@ -15,7 +15,7 @@
 
 #define SYNCHRONIZING_CHANNEL 26 // channel the mote listens on to synchronize
 #define TXRETRIES              3
-#define SYNCTIMEOUT           50 // @10ms per slot -> 0.5 second
+#define SYNCTIMEOUT          300 // @10ms per slot -> 3 seconds
 #define TX_POWER              31 //1=-25dBm, 31=0dBm (max value)
 
 // the different states of the IEEE802.15.4e state machine
