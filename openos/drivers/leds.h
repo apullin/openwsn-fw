@@ -13,6 +13,22 @@
  
 //=========================== define ==========================================
 
+#define LED0_ON()       P2OUT |=  0x01;
+#define LED0_OFF()      P2OUT &= ~0x01;
+#define LED0_TOGGLE()   P2OUT ^=  0x01;
+
+#define LED1_ON()       P2OUT |=  0x02;
+#define LED1_OFF()      P2OUT &= ~0x02;
+#define LED1_TOGGLE()   P2OUT ^=  0x02;
+
+#define LED2_ON()       P2OUT |=  0x04;
+#define LED2_OFF()      P2OUT &= ~0x04;
+#define LED2_TOGGLE()   P2OUT ^=  0x04;
+
+#define LED3_ON()       P2OUT |=  0x08;
+#define LED3_OFF()      P2OUT &= ~0x08;
+#define LED3_TOGGLE()   P2OUT ^=  0x08;
+
 //=========================== typedef =========================================
 
 //=========================== variables =======================================

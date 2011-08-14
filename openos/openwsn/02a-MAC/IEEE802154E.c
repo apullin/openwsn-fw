@@ -19,6 +19,7 @@
 #include "packetfunctions.h"
 #include "neighbors.h"
 #include "res.h"
+#include "leds.h"
 
 //=========================== variables =======================================
 
@@ -27,6 +28,7 @@ typedef struct {
    uint8_t            state;              // state of the FSM
    uint8_t            dsn;                // data sequence number
    uint16_t           capturedTime;       // last captures time
+   uint16_t           syncTimeout;        // how many cells left before looses sync
    bool               isSync;             // TRUE iff mote synchronized to network
    OpenQueueEntry_t*  dataToSend;         // pointer to the data to send
    OpenQueueEntry_t*  dataReceived;       // pointer to the data received
@@ -74,6 +76,8 @@ void    activity_ri8(uint16_t capturedTime);
 void    activity_rie6();
 void    activity_ri9(uint16_t capturedTime);
 // helper
+void    synchronize(uint16_t timeReceived,open_addr_t* advFrom);
+void    changeIsSync(bool newIsSync);
 uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset);
 bool    isAckValid(OpenQueueEntry_t* ackFrame);
 bool    isDataValid(OpenQueueEntry_t* dataFrame);
@@ -109,9 +113,9 @@ void mac_init() {
    ieee154e_vars.ackReceived               = NULL;
    ieee154e_vars.capturedTime              = 0;
    if (idmanager_getIsDAGroot()==TRUE) {
-      ieee154e_vars.isSync                 = TRUE;
+      changeIsSync(TRUE);
    } else {
-      ieee154e_vars.isSync                 = FALSE;
+      changeIsSync(FALSE);
    }
    
    // initialize (and start) IEEE802.15.4e timer
@@ -378,15 +382,15 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
       
       // synchronize the slots to the sender's
-      // TODO
+      synchronize(capturedTime,&ieee802514_header.src);
          
       // record the ASN
       ieee154e_vars.asn = ((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn;
       
       // declare synchronized
-      //poipoiisSync = TRUE;
+      changeIsSync(TRUE);
       
-      // turn radio off
+      // turn off the radio
       radio_rfOff();
       
       // change state
@@ -406,6 +410,12 @@ inline void activity_ti1ORri1() {
    
    //stop outputting serial data
    openserial_stop();
+   
+   ieee154e_vars.syncTimeout--;
+   if (ieee154e_vars.syncTimeout==0) {
+      changeIsSync(FALSE);
+      endSlot();
+   }
    
    // increment ASN (do this first so debug pins are in sync)
    ieee154e_vars.asn++;
@@ -811,6 +821,9 @@ inline void activity_rie3() {
 inline void activity_ri5(uint16_t capturedTime) {
    // change state
    change_state(S_TXACKOFFSET);
+   
+   // turn off the radio
+   radio_rfOff();
 
    // cancel rt4
    ieee154etimer_cancel();
@@ -988,6 +1001,23 @@ inline void activity_ri9(uint16_t capturedTime) {
 }
 
 //=========================== private =========================================
+
+void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
+   volatile int16_t correction;
+   
+   correction  = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+   TAR        -= correction;
+   ieee154e_vars.syncTimeout = SYNCTIMEOUT;
+}
+
+void changeIsSync(bool newIsSync) {
+   ieee154e_vars.isSync = newIsSync;
+   if (ieee154e_vars.isSync==TRUE) {
+      LED0_ON();
+   } else {
+      LED0_OFF();
+   }
+}
 
 /**
 \brief Calculates the frequency to transmit on, based on the 
