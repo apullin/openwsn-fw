@@ -612,7 +612,7 @@ bool tcp_debugPrint() {
 //======= timer
 
 //timer used to reset state when TCP state machine is stuck
-void timer_tcp_timeout_fired() {
+void timer_tcp_fired() {
    reset();
 }
 
@@ -686,8 +686,8 @@ void reset() {
 void tcp_change_state(uint8_t new_tcp_state) {
    tcp_vars.state = new_tcp_state;
    if (tcp_vars.state==TCP_STATE_CLOSED) {
-      timer_stop(TIMER_TCP_TIMEOUT);
+      timer_stop(TIMER_TCP);
    } else {
-      timer_startOneShot(TIMER_TCP_TIMEOUT,TCP_TIMEOUT);
+      timer_startOneShot(TIMER_TCP,TCP_TIMEOUT);
    }
 }
