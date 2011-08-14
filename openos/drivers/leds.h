@@ -13,21 +13,21 @@
  
 //=========================== define ==========================================
 
-#define LED0_ON()       P2OUT |=  0x01;
-#define LED0_OFF()      P2OUT &= ~0x01;
-#define LED0_TOGGLE()   P2OUT ^=  0x01;
+#define LED_D1_ON()       P2OUT |=  0x01;
+#define LED_D1_OFF()      P2OUT &= ~0x01;
+#define LED_D1_TOGGLE()   P2OUT ^=  0x01;
 
-#define LED1_ON()       P2OUT |=  0x02;
-#define LED1_OFF()      P2OUT &= ~0x02;
-#define LED1_TOGGLE()   P2OUT ^=  0x02;
+#define LED_D2_ON()       P2OUT |=  0x02;
+#define LED_D2_OFF()      P2OUT &= ~0x02;
+#define LED_D2_TOGGLE()   P2OUT ^=  0x02;
 
-#define LED2_ON()       P2OUT |=  0x04;
-#define LED2_OFF()      P2OUT &= ~0x04;
-#define LED2_TOGGLE()   P2OUT ^=  0x04;
+#define LED_D3_ON()       P2OUT |=  0x04;
+#define LED_D3_OFF()      P2OUT &= ~0x04;
+#define LED_D3_TOGGLE()   P2OUT ^=  0x04;
 
-#define LED3_ON()       P2OUT |=  0x08;
-#define LED3_OFF()      P2OUT &= ~0x08;
-#define LED3_TOGGLE()   P2OUT ^=  0x08;
+#define LED_D4_ON()       P2OUT |=  0x08;
+#define LED_D4_OFF()      P2OUT &= ~0x08;
+#define LED_D4_TOGGLE()   P2OUT ^=  0x08;
 
 //=========================== typedef =========================================
 

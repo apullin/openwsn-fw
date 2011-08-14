@@ -32,9 +32,11 @@ res_vars_t res_vars;
 //=========================== public ==========================================
 
 void res_init() {
-   res_vars.periodMaintenance = 32768; // timer_res_fired() called every 1 sec 
+   res_vars.periodMaintenance = 32768/2; // timer_res_fired() called every 0.5 sec 
    res_vars.busySending       = FALSE;
-   timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+      timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
+   }
 }
 
 //======= from upper layer

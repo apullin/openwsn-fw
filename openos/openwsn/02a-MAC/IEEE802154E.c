@@ -75,15 +75,18 @@ void     activity_rie5();
 void     activity_ri8(uint16_t capturedTime);
 void     activity_rie6();
 void     activity_ri9(uint16_t capturedTime);
-// misc
-void     fillInAsn(OpenQueueEntry_t* advFrame);
-uint16_t readAsn(OpenQueueEntry_t* advFrame);
+// frame validity check
+bool     isValidAdv (ieee802154_header_iht* ieee802514_header);
+bool     isValidData(ieee802154_header_iht* ieee802514_header);
+bool     isValidAck (ieee802154_header_iht* ieee802514_header);
+// ASN handling
+void     asnWrite(OpenQueueEntry_t* advFrame);
+uint16_t asnRead (OpenQueueEntry_t* advFrame);
+// synchronization
 void     synchronize(uint16_t timeReceived,open_addr_t* advFrom);
 void     changeIsSync(bool newIsSync);
+// misc
 uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
-bool     isAckValid(OpenQueueEntry_t* ackFrame);
-bool     isDataValid(OpenQueueEntry_t* dataFrame);
-bool     ackRequested(OpenQueueEntry_t* frame);
 void     createAck(OpenQueueEntry_t* frame);
 void     change_state(uint8_t newstate);
 void     endSlot();
@@ -374,23 +377,21 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    // retrieve the packet from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
    
-   // parse the packet
+   // parse the IEEE802.15.4 header
    retrieveIEEE802154header(ieee154e_vars.dataReceived,&ieee802514_header);
    
-   // if it's a valid ADV, synchronize
-   if (ieee802514_header.valid==TRUE                                                                    &&
-       ieee802514_header.frameType==IEEE154_TYPE_BEACON                                                 &&
-       packetfunctions_sameAddress(&ieee802514_header.panid,idmanager_getMyID(ADDR_PANID))              &&
-       ieee154e_vars.dataReceived->length==ieee802514_header.headerLength+sizeof(IEEE802154E_ADV_t)+2) {
+   // toss the IEEE802.15.4 header
+   packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
+   
+   // if I just received a valid ADV, handle
+   if (isValidAdv(&ieee802514_header)==TRUE) {
       
       // turn off the radio
       radio_rfOff();
       
-      // toss the IEEE802.15.4 header
-      packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
-      
       // record the ASN
-      ieee154e_vars.asn = readAsn(ieee154e_vars.dataReceived)+1;
+      //ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived)+1;
+      ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
       
       // synchronize the slots to the sender's
       synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
@@ -405,6 +406,8 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    // free the received data buffer so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
    
+   // clear local variable
+   ieee154e_vars.dataReceived = NULL;
 }
 
 //======= TX
@@ -470,7 +473,7 @@ inline void activity_ti1ORri1() {
             // change state
             change_state(S_TXDATAOFFSET);
             // fill in the ASN field of the ADV
-            fillInAsn(ieee154e_vars.dataToSend);
+            asnWrite(ieee154e_vars.dataToSend);
             // arm tt1
             ieee154etimer_schedule(DURATION_tt1);
          }
@@ -706,7 +709,7 @@ inline void activity_tie6() {
 }
 
 inline void activity_ti9(uint16_t capturedTime) {
-   bool validAck;
+   ieee802154_header_iht ieee802514_header;
    
    // change state
    change_state(S_TXPROC);
@@ -732,22 +735,25 @@ inline void activity_ti9(uint16_t capturedTime) {
    
    // retrieve the ACK frame
    radio_getReceivedFrame(ieee154e_vars.ackReceived);
-
-   // check that ACK frame is valid
-   if (isAckValid(ieee154e_vars.ackReceived)) {
-      validAck = TRUE;
-   } else {
-      validAck = FALSE;
+   
+   // parse the IEEE802.15.4 header
+   retrieveIEEE802154header(ieee154e_vars.ackReceived,&ieee802514_header);
+   
+   // toss the IEEE802.15.4 header
+   packetfunctions_tossHeader(ieee154e_vars.ackReceived,ieee802514_header.headerLength);
+   
+   // if frame is a valid ACK, handle
+   if (isValidAck(&ieee802514_header)==TRUE) {
+      // if packet sent successfully, inform upper layer
+      res_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
+      ieee154e_vars.dataToSend = NULL;
    }
 
    // free the received ack so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.ackReceived);
-
-   // if packet sent successfully, inform upper layer
-   if (validAck==TRUE) {
-      res_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
-      ieee154e_vars.dataToSend = NULL;
-   }
+   
+   // clear local variable
+   ieee154e_vars.ackReceived = NULL;
 
    // official end of Tx slot
    endSlot();
@@ -830,6 +836,8 @@ inline void activity_rie3() {
 }
 
 inline void activity_ri5(uint16_t capturedTime) {
+   ieee802154_header_iht ieee802514_header;
+   
    // change state
    change_state(S_TXACKOFFSET);
    
@@ -838,9 +846,6 @@ inline void activity_ri5(uint16_t capturedTime) {
 
    // cancel rt4
    ieee154etimer_cancel();
-
-   // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
 
    // get a buffer to put the (received) data in
    ieee154e_vars.dataReceived = openqueue_getFreePacketBuffer();
@@ -857,9 +862,44 @@ inline void activity_ri5(uint16_t capturedTime) {
    
    // retrieve the data frame
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
+   
+   // parse the IEEE802.15.4 header
+   retrieveIEEE802154header(ieee154e_vars.dataReceived,&ieee802514_header);
+   
+   // toss the IEEE802.15.4 header
+   packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
+   
+   // if I just received a valid ADV, handle and stop
+   if (isValidAdv(&ieee802514_header)==TRUE) {
+      
+      // record the ASN
+      //ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
+      if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
+         __no_operation();
+      };
+      
+      // synchronize the slots to the sender's
+      synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
+      
+      // declare synchronized
+      changeIsSync(TRUE);
+      
+      // free the received data so corresponding RAM memory can be recycled
+      openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
+      
+      // clear local variable
+      ieee154e_vars.dataReceived = NULL;
+      
+      // abort
+      endSlot();
+      return;
+   }
+   
+   // record the captured time
+   ieee154e_vars.capturedTime = capturedTime;
 
-   // if data frame invalid, stop
-   if (isDataValid(ieee154e_vars.dataReceived)==FALSE) {
+   // if I juts received an invalid data frame, stop
+   if (isValidData(&ieee802514_header)==FALSE) {
       // free the received data so corresponding RAM memory can be recycled
       openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
       
@@ -872,7 +912,7 @@ inline void activity_ri5(uint16_t capturedTime) {
    }
 
    // check if ack requested
-   if (ackRequested(ieee154e_vars.dataReceived)==TRUE) {
+   if (ieee802514_header.ackRequested==1) {
       // arm rt5
       ieee154etimer_schedule(DURATION_rt5);
    } else {
@@ -1011,14 +1051,56 @@ inline void activity_ri9(uint16_t capturedTime) {
    endSlot();
 }
 
-//======= misc
+//======= frame validity check
 
-inline void fillInAsn(OpenQueueEntry_t* advFrame) {
+/**
+\brief Decides whether the packet I just received is a valid ADV
+
+\param [in] ieee802514_header IEEE802.15.4 header of the packet I just received
+
+\returns TRUE if packet is a valid ADV, FALSE otherwise
+*/
+inline bool isValidAdv(ieee802154_header_iht* ieee802514_header) {
+   return ieee802514_header->valid==TRUE                                                              && \
+          ieee802514_header->frameType==IEEE154_TYPE_BEACON                                           && \
+          packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))        && \
+          ieee154e_vars.dataReceived->length==sizeof(IEEE802154E_ADV_t)+2;
+}
+
+/**
+\brief Decides whether the packet I just received is valid data
+
+\param [in] ieee802514_header IEEE802.15.4 header of the packet I just received
+
+\returns TRUE if packet is valid data, FALSE otherwise
+*/
+inline bool isValidData(ieee802154_header_iht* ieee802514_header) {
+   return ieee802514_header->valid==TRUE                                                              && \
+          ieee802514_header->frameType==IEEE154_TYPE_DATA                                             && \
+          packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))        && \
+          idmanager_isMyAddress(&ieee802514_header->dest);
+}
+
+/**
+\brief Decides whether the packet I just received is a valid ACK
+
+\param [in] ieee802514_header IEEE802.15.4 header of the packet I just received
+
+\returns TRUE if packet is a valid ACK, FALSE otherwise
+*/
+inline bool isValidAck(ieee802154_header_iht* ieee802514_header) {
+   // TODO: implement
+   return TRUE;
+}
+
+//======= ASN handling
+
+inline void asnWrite(OpenQueueEntry_t* advFrame) {
    ((IEEE802154E_ADV_t*)(advFrame->l2_payload))->asn[0] = ieee154e_vars.asn/256;
    ((IEEE802154E_ADV_t*)(advFrame->l2_payload))->asn[1] = ieee154e_vars.asn%256;
 }
 
-inline uint16_t readAsn(OpenQueueEntry_t* advFrame) {
+inline uint16_t asnRead(OpenQueueEntry_t* advFrame) {
    uint16_t returnVal;
    returnVal  = 0;
    returnVal += 256*((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn[0];
@@ -1026,14 +1108,22 @@ inline uint16_t readAsn(OpenQueueEntry_t* advFrame) {
    return returnVal;
 }
 
+//======= synchronization
+
 void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
    int16_t  correction;
    uint16_t newTaccr0;
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
-      correction  = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
-      newTaccr0   = 2*TsSlotDuration;
-      newTaccr0   = (uint16_t)((int16_t)newTaccr0+correction);
-      TACCR0      = newTaccr0;
+      if (ieee154e_vars.isSync==TRUE) {
+         correction        = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+         newTaccr0      =   TsSlotDuration;
+      } else {
+         correction        = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+         //newTaccr0      = 2*TsSlotDuration;
+         newTaccr0      = TsSlotDuration;
+      }
+      newTaccr0         = (uint16_t)((int16_t)newTaccr0+correction);
+      TACCR0            = newTaccr0;
       ieee154e_vars.syncTimeout = SYNCTIMEOUT;
    }
 }
@@ -1041,11 +1131,13 @@ void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
 void changeIsSync(bool newIsSync) {
    ieee154e_vars.isSync = newIsSync;
    if (ieee154e_vars.isSync==TRUE) {
-      LED0_ON();
+      LED_D1_ON();
    } else {
-      LED0_OFF();
+      LED_D1_OFF();
    }
 }
+
+//======= misc
 
 /**
 \brief Calculates the frequency to transmit on, based on the 
@@ -1059,42 +1151,6 @@ absolute slot number and the channel offset of the requested slot.
 inline uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset) {
    //return 11+(asn+channelOffset)%16;
    return 26;//poipoi
-}
-
-/**
-\brief Decides whether the ack the mote just received is valid
-
-\param [in] ackFrame The ack packet just received
-
-\returns TRUE if ACK valid, FALSE otherwise
-*/
-bool isAckValid(OpenQueueEntry_t* ackFrame) {
-   // TODO: implement
-   return TRUE;
-}
-
-/**
-\brief Decides whether the data frame the mote just received is valid
-
-\param [in] dataFrame The data packet just received
-
-\returns TRUE if data frame valid, FALSE otherwise
-*/
-bool isDataValid(OpenQueueEntry_t* dataFrame) {
-   // TODO: implement
-   return TRUE;
-}
-
-/**
-\brief Decides whether the data just received needs to be acknowledged
-
-\param [in] frame The data frame just received
-
-\returns TRUE if acknowledgment is needed, FALSE otherwise
-*/
-bool ackRequested(OpenQueueEntry_t* frame) {
-   // TODO: implement
-   return TRUE;
 }
 
 /**
