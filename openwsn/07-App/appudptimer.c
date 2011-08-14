@@ -26,7 +26,7 @@ appudptimer_vars_t appudptimer_vars;
 
 void appudptimer_init() {
    appudptimer_vars.busySending = FALSE;
-   //poipoi disable timer_startPeriodic(TIMER_UDP_TIMER,32768);
+   timer_startPeriodic(TIMER_UDP_TIMER,32768);
 }
 
 void appudptimer_trigger() {

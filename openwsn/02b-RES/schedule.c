@@ -49,7 +49,7 @@ void schedule_init() {
    schedule_vars.cellTable[1].neighbor.addr_64b[2]       = 0x92;
    schedule_vars.cellTable[1].neighbor.addr_64b[3]       = 0x09;
    schedule_vars.cellTable[1].neighbor.addr_64b[4]       = 0x02;
-   schedule_vars.cellTable[1].neighbor.addr_64b[5]       = 0x2b;
+   schedule_vars.cellTable[1].neighbor.addr_64b[5]       = 0x2c;
    schedule_vars.cellTable[1].neighbor.addr_64b[6]       = 0x00;
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
       schedule_vars.cellTable[1].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
@@ -68,7 +68,7 @@ void schedule_init() {
    schedule_vars.cellTable[2].neighbor.addr_64b[2]       = 0x92;
    schedule_vars.cellTable[2].neighbor.addr_64b[3]       = 0x09;
    schedule_vars.cellTable[2].neighbor.addr_64b[4]       = 0x02;
-   schedule_vars.cellTable[2].neighbor.addr_64b[5]       = 0x2b;
+   schedule_vars.cellTable[2].neighbor.addr_64b[5]       = 0x2c;
    schedule_vars.cellTable[2].neighbor.addr_64b[6]       = 0x00;
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
       schedule_vars.cellTable[2].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
@@ -84,7 +84,7 @@ void schedule_init() {
       schedule_vars.cellTable[3].neighbor.addr_64b[2]    = 0x92;
       schedule_vars.cellTable[3].neighbor.addr_64b[3]    = 0x09;
       schedule_vars.cellTable[3].neighbor.addr_64b[4]    = 0x02;
-      schedule_vars.cellTable[3].neighbor.addr_64b[5]    = 0x2b;
+      schedule_vars.cellTable[3].neighbor.addr_64b[5]    = 0x2c;
       schedule_vars.cellTable[3].neighbor.addr_64b[6]    = 0x00;
       schedule_vars.cellTable[3].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
    } else {
@@ -99,7 +99,7 @@ void schedule_init() {
       schedule_vars.cellTable[4].neighbor.addr_64b[2]    = 0x92;
       schedule_vars.cellTable[4].neighbor.addr_64b[3]    = 0x09;
       schedule_vars.cellTable[4].neighbor.addr_64b[4]    = 0x02;
-      schedule_vars.cellTable[4].neighbor.addr_64b[5]    = 0x2b;
+      schedule_vars.cellTable[4].neighbor.addr_64b[5]    = 0x2c;
       schedule_vars.cellTable[4].neighbor.addr_64b[6]    = 0x00;
       schedule_vars.cellTable[4].neighbor.addr_64b[7]    = DEBUG_MOTEID_SLAVE;
    } else {

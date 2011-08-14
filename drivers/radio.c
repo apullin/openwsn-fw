@@ -115,6 +115,10 @@ void radio_loadPacket(OpenQueueEntry_t* packet) {
    // load packet in TXFIFO
    spi_write_buffer(packet);
    
+   // remove the 2 header bytes just added so MAC layer doesn't get confused
+   // when retransmitting
+   packetfunctions_tossHeader(packet,2);
+   
    // change state
    radio_vars.state = RADIOSTATE_PACKET_LOADED;
 }
