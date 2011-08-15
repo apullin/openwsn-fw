@@ -46,6 +46,7 @@
 #include "idmanager.h"
 #include "openqueue.h"
 #include "openserial.h"
+#include "random.h"
 //misc
 #include "ieee154etimer.h"
 #include "timers.h"
@@ -65,9 +66,10 @@ void openwsn_init() {
    timer_init();
    ieee154etimer_init();
    // cross-layer
-   idmanager_init();
+   idmanager_init();    // call first since initializes e.g. EUI64
    openqueue_init();
    openserial_init();
+   random_init();
    // 01-PHY
    radio_init();
    // 02a-TSCH

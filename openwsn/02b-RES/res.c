@@ -17,6 +17,7 @@
 #include "iphc.h"
 #include "leds.h"
 #include "packetfunctions.h"
+#include "random.h"
 
 //=========================== variables =======================================
 
@@ -32,11 +33,9 @@ res_vars_t res_vars;
 //=========================== public ==========================================
 
 void res_init() {
-   res_vars.periodMaintenance = 32768/2; // timer_res_fired() called every 0.5 sec 
+   res_vars.periodMaintenance = 16384+random_get16b()%32768; // fires after 1 sec on average
+   timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
    res_vars.busySending       = FALSE;
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
-   }
 }
 
 //======= from upper layer
@@ -56,6 +55,9 @@ void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
       openqueue_freePacketBuffer(msg);
       // I can send the next ADV
       res_vars.busySending = FALSE;
+      // restart a random timer
+      res_vars.periodMaintenance = 16384+random_get16b()%32768;
+      timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
    } else {
       // send the rest up the stack
       iphc_sendDone(msg,error);

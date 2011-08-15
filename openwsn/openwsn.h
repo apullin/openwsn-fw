@@ -164,6 +164,7 @@ enum {
    COMPONENT_OPENQUEUE                 = 0x1e,
    COMPONENT_OPENSERIAL                = 0x1f,
    COMPONENT_PACKETFUNCTIONS           = 0x20,
+   COMPONENT_RANDOM                    = 0x21,
 };
 
 //error codes
