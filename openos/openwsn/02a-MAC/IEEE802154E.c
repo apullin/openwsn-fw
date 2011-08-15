@@ -374,6 +374,10 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       return;
    }
    
+   // declare ownership over that packet
+   ieee154e_vars.dataReceived->creator = COMPONENT_IEEE802154E;
+   ieee154e_vars.dataReceived->owner   = COMPONENT_IEEE802154E;
+   
    // retrieve the packet from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
    
@@ -733,6 +737,10 @@ inline void activity_ti9(uint16_t capturedTime) {
       return;
    }
    
+   // declare ownership over that packet
+   ieee154e_vars.ackReceived->creator = COMPONENT_IEEE802154E;
+   ieee154e_vars.ackReceived->owner   = COMPONENT_IEEE802154E;
+   
    // retrieve the ACK frame
    radio_getReceivedFrame(ieee154e_vars.ackReceived);
    
@@ -859,6 +867,10 @@ inline void activity_ri5(uint16_t capturedTime) {
       endSlot();
       return;
    }
+   
+   // declare ownership over that packet
+   ieee154e_vars.dataReceived->creator = COMPONENT_IEEE802154E;
+   ieee154e_vars.dataReceived->owner   = COMPONENT_IEEE802154E;
    
    // retrieve the data frame
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
@@ -1145,6 +1157,16 @@ void changeIsSync(bool newIsSync) {
 \brief Calculates the frequency to transmit on, based on the 
 absolute slot number and the channel offset of the requested slot.
 
+During normal operation, the frequency used is a function of the 
+channelOffset indicating in the schedule, and of the ASN of the
+slot. This ensures channel hopping, consecutive packets sent in the same slot
+in the schedule are done on a difference frequency channel.
+
+During development, you can force single channel operation by having this
+function return a constant channel number (between 11 and 26). This allows you
+to use a single-channel sniffer; but you can not schedule two links on two
+different channel offsets in the same slot.
+
 \param [in] asn Absolute Slot Number
 \param [in] channelOffset channel offset for the current slot
 
@@ -1158,10 +1180,38 @@ inline uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset) {
 /**
 \brief Turns an newly reserved OpenQueueEntry_t in an ACK packet.
 
+The ACK needs to have:
+- IEEE802.15.4 type set to ACK
+- the same dsn as the data received
+- the time correction as payload
+
 \param [out] frame The frame to turn into an ACK.
 */
 void createAck(OpenQueueEntry_t* frame) {
+   
+   // get a buffer to put the ack to send in
+   ieee154e_vars.ackToSend = openqueue_getFreePacketBuffer();
+   if (ieee154e_vars.ackToSend==NULL) {
+      // log the error
+      openserial_printError(COMPONENT_IEEE802154E,
+                            ERR_NO_FREE_PACKET_BUFFER,
+                            0,
+                            0);
+      // abort
+      endSlot();
+      return;
+   }
+   
+   // declare ownership over that packet
+   ieee154e_vars.ackToSend->creator = COMPONENT_IEEE802154E;
+   ieee154e_vars.ackToSend->owner   = COMPONENT_IEEE802154E;
+   
+   // add the ACK payload (i.e. the timeCorrection)
    // TODO: implement
+   
+   // add the IEEE802.15.4 header
+   // TODO: implement
+   
    return;
 }
 
