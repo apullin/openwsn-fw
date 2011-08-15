@@ -221,20 +221,7 @@ __interrupt void TIMERB1through6_ISR (void) {
 
 //======= handled in ISR mode
 
-#pragma vector = PORT1_VECTOR
-__interrupt void PORT1_ISR (void) {
-    CAPTURE_TIME();
-    DEBUG_PIN_ISR_SET();
-#ifdef ISR_RADIO
-   //interrupt from radio through IRQ_RF connected to P1.6
-   if ((P1IFG & 0x40)!=0) {
-      P1IFG &= ~0x40;                            // clear interrupt flag
-      isr_radio();
-   }
-#endif
-   DEBUG_PIN_ISR_CLR();
-}
-
+/*
 // TimerA CCR0 interrupt service routine
 #pragma vector = TIMERA0_VECTOR
 __interrupt void TIMERA0_ISR (void) {
@@ -245,6 +232,7 @@ __interrupt void TIMERA0_ISR (void) {
 #endif
    DEBUG_PIN_ISR_CLR();
 }
+*/
 
 // TimerA CCR1-2 interrupt service routine
 #pragma vector = TIMERA1_VECTOR
@@ -254,11 +242,29 @@ __interrupt void TIMERA1and2_ISR (void) {
 #ifdef OPENWSN_STACK
    uint16_t taiv_temp = TAIV;                    // read only once because accessing TAIV resets it
    switch (taiv_temp) {
-      case 0x0002: // timerA CCR1 compare
+      case 0x0002: // capture/compare CCR1
          isr_ieee154e_timer();
          break;
+      case 0x000a: // timer overflows
+         isr_ieee154e_newSlot();
+         break;
+      case 0x0004: // capture/compare CCR2
       default:
          while(1);                               // this should not happen
+   }
+#endif
+   DEBUG_PIN_ISR_CLR();
+}
+
+#pragma vector = PORT1_VECTOR
+__interrupt void PORT1_ISR (void) {
+    CAPTURE_TIME();
+    DEBUG_PIN_ISR_SET();
+#ifdef ISR_RADIO
+   //interrupt from radio through IRQ_RF connected to P1.6
+   if ((P1IFG & 0x40)!=0) {
+      P1IFG &= ~0x40;                            // clear interrupt flag
+      isr_radio();
    }
 #endif
    DEBUG_PIN_ISR_CLR();
