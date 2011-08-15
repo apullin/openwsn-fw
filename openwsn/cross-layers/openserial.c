@@ -22,6 +22,7 @@
 #include "appudpsensor.h"
 #include "openbridge.h"
 #include "appudpchannel.h"
+#include "leds.h"
 
 //=========================== variables =======================================
 
@@ -99,6 +100,7 @@ error_t openserial_printStatus(uint8_t statusElement,uint8_t* buffer, uint16_t l
    return E_SUCCESS;
 }
 error_t openserial_printError(uint8_t calling_component, uint8_t error_code, errorparameter_t arg1, errorparameter_t arg2) {
+   LED_D4_TOGGLE();
    __disable_interrupt();
    openserial_vars.somethingInOutputBuffer=TRUE;
    openserial_vars.output_buffer[output_buffer_index_write_increment()]=(uint8_t)'^';                  //preamble
