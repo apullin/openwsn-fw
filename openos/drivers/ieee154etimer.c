@@ -33,7 +33,7 @@ void ieee154etimer_init() {
    BCSCTL3 |= LFXT1S_0;
    
    // CCR0 contains max value of counter (slot length)
-   TACCTL0  =  CCIE;
+   //TACCTL0  =  CCIE; // do not interrupt when counter reaches TACCR0
    TACCR0   =  TsSlotDuration;
    
    // CCR1 in compare mode
@@ -44,11 +44,12 @@ void ieee154etimer_init() {
    TACCTL2  =  CAP+SCS+CCIS1+CM_1;
    TACCR2   =  0;
    
-   //reset couter
+   // reset couter
    TAR      =  0;
    
    // start counting
-   TACTL    =  MC_1+TBSSEL_1;                    // up mode, clocked from ACLK
+   TACTL    =  TAIE;                             // interrupt when counter resets
+   TACTL   |=  MC_1+TBSSEL_1;                    // up mode, clocked from ACLK
 }
 
 //--- CCR1 compare timer
@@ -69,7 +70,9 @@ void ieee154etimer_schedule(uint16_t offset) {
 }
 
 /**
-\brief Cancel a timer.
+\brief Cancel the timer.
+
+This disables the interrupt associated with the TACCR1 compare register.
 
 This function has no effect if no timer is running.
 */
@@ -79,7 +82,6 @@ void ieee154etimer_cancel() {
 }
 
 //--- CCR2 capture timer
-
 inline uint16_t ieee154etimer_getCapturedTime() {
    return TAR;
 }
