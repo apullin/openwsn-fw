@@ -11,6 +11,7 @@
 #include "openserial.h"
 #include "packetfunctions.h"
 #include "timers.h"
+#include "idmanager.h"
 
 //=========================== variables =======================================
 
@@ -26,7 +27,7 @@ appudptimer_vars_t appudptimer_vars;
 
 void appudptimer_init() {
    appudptimer_vars.busySending = FALSE;
-   timer_startPeriodic(TIMER_UDPTIMER,32768);
+   timer_startPeriodic(TIMER_UDPTIMER,32768/10);
 }
 
 void timer_appudptimer_fired() {
@@ -46,7 +47,7 @@ void timer_appudptimer_fired() {
       pkt->owner                                 = COMPONENT_APPUDPTIMER;
       pkt->l4_protocol                           = IANA_UDP;
       pkt->l4_sourcePortORicmpv6Type             = WKP_UDP_TIMER;
-      pkt->l4_destination_port                   = 0xabcd;
+      pkt->l4_destination_port                   = WKP_UDP_TIMER;
       pkt->l3_destinationORsource.type           = ADDR_128B;
       pkt->l3_destinationORsource.addr_128b[ 0]  = 0xde;
       pkt->l3_destinationORsource.addr_128b[ 1]  = 0xad;
@@ -56,14 +57,18 @@ void timer_appudptimer_fired() {
       pkt->l3_destinationORsource.addr_128b[ 5]  = 0xce;
       pkt->l3_destinationORsource.addr_128b[ 6]  = 0xca;
       pkt->l3_destinationORsource.addr_128b[ 7]  = 0xfe;
-      pkt->l3_destinationORsource.addr_128b[ 8]  = 0xde;
-      pkt->l3_destinationORsource.addr_128b[ 9]  = 0xad;
-      pkt->l3_destinationORsource.addr_128b[10]  = 0xbe;
-      pkt->l3_destinationORsource.addr_128b[11]  = 0xef;
-      pkt->l3_destinationORsource.addr_128b[12]  = 0xfa;
-      pkt->l3_destinationORsource.addr_128b[13]  = 0xce;
-      pkt->l3_destinationORsource.addr_128b[14]  = 0xca;
-      pkt->l3_destinationORsource.addr_128b[15]  = 0xfe;
+      pkt->l3_destinationORsource.addr_128b[ 8]  = 0x14;
+      pkt->l3_destinationORsource.addr_128b[ 9]  = 0x15;
+      pkt->l3_destinationORsource.addr_128b[10]  = 0x92;
+      pkt->l3_destinationORsource.addr_128b[11]  = 0x09;
+      pkt->l3_destinationORsource.addr_128b[12]  = 0x02;
+      pkt->l3_destinationORsource.addr_128b[13]  = 0x2c;
+      pkt->l3_destinationORsource.addr_128b[14]  = 0x00;
+      if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
+         pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_SLAVE;
+      } else {
+         pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_MASTER;
+      }
       packetfunctions_reserveHeaderSize(pkt,6);
       ((uint8_t*)pkt->payload)[0]                = 'p';
       ((uint8_t*)pkt->payload)[1]                = 'o';

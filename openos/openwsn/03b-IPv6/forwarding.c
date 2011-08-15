@@ -75,7 +75,9 @@ void forwarding_receive(OpenQueueEntry_t* msg, ipv6_header_iht ipv6_header) {
    } else { //relay
       memcpy(&(msg->l3_destinationORsource),&ipv6_header.dest,sizeof(open_addr_t));//because initially contains source
       //TBC: source address gets changed!
-      //resend as if from upper layer
+      // change the creator to this components (should have been MAC)
+      msg->creator = COMPONENT_FORWARDING;
+      // resend as if from upper layer
       if (fowarding_send_internal(msg)==E_FAIL) {
          openqueue_freePacketBuffer(msg);
       }
