@@ -64,7 +64,7 @@ enum ieee154e_atomicdurations_enum{
    maxTxDataPrepare          =  33,    //  1000us (TBC)
    maxRxAckPrepare           =  10,    //   (TBC)
    maxRxDataPrepare          =  13,    //   400us (TBC)
-   maxTxAckPrepare           =  17,    //   (TBC)
+   maxTxAckPrepare           =  10,    //   (TBC)
    // radio speed related
    delayTx                   =   7,    //   (TBC)
    delayRx                   =   0,    //     0us (TBC)
@@ -76,7 +76,7 @@ enum ieee154e_atomicdurations_enum{
 
 // FSM timer durations (combinations of atomic durations)
 // TX
-#define DURATION_tt1 ieee154e_vars.capturedTime+TsTxOffset-delayRx-maxRxDataPrepare
+#define DURATION_tt1 ieee154e_vars.capturedTime+TsTxOffset-delayTx-maxTxDataPrepare
 #define DURATION_tt2 ieee154e_vars.capturedTime+TsTxOffset-delayTx
 #define DURATION_tt3 ieee154e_vars.capturedTime+TsTxOffset-delayTx+wdRadioTx
 #define DURATION_tt4 ieee154e_vars.capturedTime+wdDataDuration
