@@ -23,52 +23,44 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
                              open_addr_t*      nextHop) {
    uint8_t temp_8b;
    //previousHop address
-   if (frameType!=IEEE154_TYPE_ACK) {
+   switch (nextHop->type) {
+      case ADDR_16B:
+         packetfunctions_writeAddress(msg,idmanager_getMyID(ADDR_16B),LITTLE_ENDIAN);
+         break;
+      case ADDR_64B:
+         packetfunctions_writeAddress(msg,idmanager_getMyID(ADDR_64B),LITTLE_ENDIAN);
+         break;
+      default:
+         openserial_printError(COMPONENT_IEEE802154,ERR_WRONG_ADDR_TYPE,
+               (errorparameter_t)nextHop->type,
+               (errorparameter_t)0);
+   }
+   //nextHop address
+   if (packetfunctions_isBroadcastMulticast(nextHop)) { //broadcast address is always 16-bit
+      packetfunctions_reserveHeaderSize(msg,sizeof(uint8_t));
+      *((uint8_t*)(msg->payload)) = 0xFF;
+      packetfunctions_reserveHeaderSize(msg,sizeof(uint8_t));
+      *((uint8_t*)(msg->payload)) = 0xFF;
+   } else {
       switch (nextHop->type) {
          case ADDR_16B:
-            packetfunctions_writeAddress(msg,idmanager_getMyID(ADDR_16B),LITTLE_ENDIAN);
-            break;
          case ADDR_64B:
-            packetfunctions_writeAddress(msg,idmanager_getMyID(ADDR_64B),LITTLE_ENDIAN);
+            packetfunctions_writeAddress(msg,nextHop,LITTLE_ENDIAN);
             break;
          default:
             openserial_printError(COMPONENT_IEEE802154,ERR_WRONG_ADDR_TYPE,
                   (errorparameter_t)nextHop->type,
-                  (errorparameter_t)0);
-      }
-   }
-   //nextHop address
-   if (frameType!=IEEE154_TYPE_ACK) {
-      if (packetfunctions_isBroadcastMulticast(nextHop)) { //broadcast address is always 16-bit
-         packetfunctions_reserveHeaderSize(msg,sizeof(uint8_t));
-         *((uint8_t*)(msg->payload)) = 0xFF;
-         packetfunctions_reserveHeaderSize(msg,sizeof(uint8_t));
-         *((uint8_t*)(msg->payload)) = 0xFF;
-      } else {
-         switch (nextHop->type) {
-            case ADDR_16B:
-            case ADDR_64B:
-               packetfunctions_writeAddress(msg,nextHop,LITTLE_ENDIAN);
-               break;
-            default:
-               openserial_printError(COMPONENT_IEEE802154,ERR_WRONG_ADDR_TYPE,
-                     (errorparameter_t)nextHop->type,
-                     (errorparameter_t)1);
-         }
+                  (errorparameter_t)1);
       }
    }
    //destpan
-   if (frameType!=IEEE154_TYPE_ACK) {
-      packetfunctions_writeAddress(msg,idmanager_getMyID(ADDR_PANID),LITTLE_ENDIAN);
-   }
+   packetfunctions_writeAddress(msg,idmanager_getMyID(ADDR_PANID),LITTLE_ENDIAN);
    //dsn
    packetfunctions_reserveHeaderSize(msg,sizeof(uint8_t));
    *((uint8_t*)(msg->payload)) = sequenceNumber;
    //fcf (2nd byte)
    temp_8b              = 0;
-   if (frameType==IEEE154_TYPE_ACK) {
-      temp_8b          |= IEEE154_ADDR_NONE               << IEEE154_FCF_DEST_ADDR_MODE;
-   } else if (packetfunctions_isBroadcastMulticast(nextHop)) {
+   if (packetfunctions_isBroadcastMulticast(nextHop)) {
       temp_8b          |= IEEE154_ADDR_SHORT              << IEEE154_FCF_DEST_ADDR_MODE;
    } else {
       switch (nextHop->type) {
@@ -80,17 +72,13 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
             break;
       }
    }
-   if (frameType==IEEE154_TYPE_ACK) {
-      temp_8b          |= IEEE154_ADDR_NONE               << IEEE154_FCF_SRC_ADDR_MODE;
-   } else {
-      switch (nextHop->type) {//normal: SRC_ADDR_MODE is the same as DEST_ADDR_MODE
-         case ADDR_16B:
-            temp_8b    |= IEEE154_ADDR_SHORT              << IEEE154_FCF_SRC_ADDR_MODE;
-            break;
-         case ADDR_64B:
-            temp_8b    |= IEEE154_ADDR_EXT                << IEEE154_FCF_SRC_ADDR_MODE;
-            break;
-      }
+   switch (nextHop->type) {//normal: SRC_ADDR_MODE is the same as DEST_ADDR_MODE
+      case ADDR_16B:
+         temp_8b    |= IEEE154_ADDR_SHORT                 << IEEE154_FCF_SRC_ADDR_MODE;
+         break;
+      case ADDR_64B:
+         temp_8b    |= IEEE154_ADDR_EXT                   << IEEE154_FCF_SRC_ADDR_MODE;
+         break;
    }
    packetfunctions_reserveHeaderSize(msg,sizeof(uint8_t));
    //fcf (1st byte)

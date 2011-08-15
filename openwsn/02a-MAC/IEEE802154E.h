@@ -98,13 +98,13 @@ enum ieee154e_atomicdurations_enum{
 
 //IEEE802.15.4E acknowledgement (ACK)
 typedef struct {
-   uint16_t timeCorrection;
+   uint8_t timeCorrection[2];
 } IEEE802154E_ACK_ht;
 
 //IEEE802.15.4E advertisement (ADV)
 typedef struct {
-   uint8_t  asn[2];
-} IEEE802154E_ADV_t;
+   uint8_t asn[2];
+} IEEE802154E_ADV_ht;
 
 //=========================== variables =======================================
 

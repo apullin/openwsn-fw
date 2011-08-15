@@ -87,7 +87,6 @@ void     synchronize(uint16_t timeReceived,open_addr_t* advFrom);
 void     changeIsSync(bool newIsSync);
 // misc
 uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
-void     createAck(OpenQueueEntry_t* frame);
 void     change_state(uint8_t newstate);
 void     endSlot();
 bool     mac_debugPrint();
@@ -378,11 +377,15 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    ieee154e_vars.dataReceived->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.dataReceived->owner   = COMPONENT_IEEE802154E;
    
-   // retrieve the packet from the radio's Rx buffer
+   // retrieve the received frame from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
    
    // parse the IEEE802.15.4 header
    retrieveIEEE802154header(ieee154e_vars.dataReceived,&ieee802514_header);
+   
+   // store header details in packet buffer
+   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+   ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
    
    // toss the IEEE802.15.4 header
    packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
@@ -530,7 +533,7 @@ inline void activity_ti2() {
    // configure the radio for that frequency
    radio_setFrequency(frequency);
 
-   // copy the packet to send to the radio
+   // load the packet in the radio's Tx buffer
    radio_loadPacket(ieee154e_vars.dataToSend);
 
    // enable the radio in Tx mode. This does not send the packet.
@@ -717,6 +720,9 @@ inline void activity_ti9(uint16_t capturedTime) {
    
    // change state
    change_state(S_TXPROC);
+   
+   // turn off the radio
+   radio_rfOff();
 
    // cancel tt8
    ieee154etimer_cancel();
@@ -741,11 +747,15 @@ inline void activity_ti9(uint16_t capturedTime) {
    ieee154e_vars.ackReceived->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.ackReceived->owner   = COMPONENT_IEEE802154E;
    
-   // retrieve the ACK frame
+   // retrieve the received frame from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.ackReceived);
    
    // parse the IEEE802.15.4 header
    retrieveIEEE802154header(ieee154e_vars.ackReceived,&ieee802514_header);
+   
+   // store header details in packet buffer
+   memcpy(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+   ieee154e_vars.ackReceived->l2_frameType = ieee802514_header.frameType;
    
    // toss the IEEE802.15.4 header
    packetfunctions_tossHeader(ieee154e_vars.ackReceived,ieee802514_header.headerLength);
@@ -872,11 +882,15 @@ inline void activity_ri5(uint16_t capturedTime) {
    ieee154e_vars.dataReceived->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.dataReceived->owner   = COMPONENT_IEEE802154E;
    
-   // retrieve the data frame
+   // retrieve the received frame from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
    
    // parse the IEEE802.15.4 header
    retrieveIEEE802154header(ieee154e_vars.dataReceived,&ieee802514_header);
+   
+   // store header details in packet buffer
+   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+   ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
    
    // toss the IEEE802.15.4 header
    packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
@@ -944,7 +958,7 @@ inline void activity_ri6() {
    
    // change state
    change_state(S_TXACKPREPARE);
-
+   
    // get a buffer to put the ack to send in
    ieee154e_vars.ackToSend = openqueue_getFreePacketBuffer();
    if (ieee154e_vars.ackToSend==NULL) {
@@ -953,7 +967,7 @@ inline void activity_ri6() {
                             ERR_NO_FREE_PACKET_BUFFER,
                             0,
                             0);
-      // indicate we received a packet (we don't want to loose any)
+      // indicate we received a packet anyway (we don't want to loose any)
       res_receive(ieee154e_vars.dataReceived);
       // free local variable
       ieee154e_vars.dataReceived = NULL;
@@ -961,9 +975,28 @@ inline void activity_ri6() {
       endSlot();
       return;
    }
+   
+   // declare ownership over that packet
+   ieee154e_vars.ackToSend->creator = COMPONENT_IEEE802154E;
+   ieee154e_vars.ackToSend->owner   = COMPONENT_IEEE802154E;
 
-   // create the ACK
-   createAck(ieee154e_vars.ackToSend);
+   // add the payload to the ACK (i.e. the timeCorrection)
+   packetfunctions_reserveHeaderSize(ieee154e_vars.ackToSend,sizeof(IEEE802154E_ACK_ht));
+   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[0] = 0x00;//todo
+   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[1] = 0x00;//todo
+   
+   // prepend the IEEE802.15.4 header to the ACK
+   ieee154e_vars.ackToSend->l2_frameType = IEEE154_TYPE_ACK;
+   prependIEEE802154header(ieee154e_vars.ackToSend,
+                           ieee154e_vars.ackToSend->l2_frameType,
+                           IEEE154_SEC_NO_SECURITY,
+                           0x00,
+                           &(ieee154e_vars.dataReceived->l2_nextORpreviousHop)
+                           );
+   // TODO: change the dsn
+   
+   // space for 2-byte CRC
+   packetfunctions_reserveFooterSize(ieee154e_vars.ackToSend,2);
 
    // calculate the frequency to transmit on
    frequency = calculateFrequency(ieee154e_vars.asn, schedule_getChannelOffset(ieee154e_vars.asn) );
@@ -971,7 +1004,7 @@ inline void activity_ri6() {
    // configure the radio for that frequency
    radio_setFrequency(frequency);
 
-   // copy the packet to send to the radio
+   // load the packet in the radio's Tx buffer
    radio_loadPacket(ieee154e_vars.ackToSend);
 
    // enable the radio in Tx mode. This does not send that packet.
@@ -1055,11 +1088,11 @@ inline void activity_ri9(uint16_t capturedTime) {
    // free the ack we just sent so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.ackToSend);
    
+   // clear local variable
+   ieee154e_vars.ackToSend = NULL;
+   
    // inform upper layer of reception
    res_receive(ieee154e_vars.dataReceived);
-
-   // clear local variable
-   ieee154e_vars.dataReceived = NULL;
 
    // official end of Rx slot
    endSlot();
@@ -1078,7 +1111,7 @@ inline bool isValidAdv(ieee802154_header_iht* ieee802514_header) {
    return ieee802514_header->valid==TRUE                                                              && \
           ieee802514_header->frameType==IEEE154_TYPE_BEACON                                           && \
           packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))        && \
-          ieee154e_vars.dataReceived->length==sizeof(IEEE802154E_ADV_t)+2;
+          ieee154e_vars.dataReceived->length==sizeof(IEEE802154E_ADV_ht)+2;
 }
 
 /**
@@ -1110,15 +1143,15 @@ inline bool isValidAck(ieee802154_header_iht* ieee802514_header) {
 //======= ASN handling
 
 inline void asnWrite(OpenQueueEntry_t* advFrame) {
-   ((IEEE802154E_ADV_t*)(advFrame->l2_payload))->asn[0] = ieee154e_vars.asn/256;
-   ((IEEE802154E_ADV_t*)(advFrame->l2_payload))->asn[1] = ieee154e_vars.asn%256;
+   ((IEEE802154E_ADV_ht*)(advFrame->l2_payload))->asn[0] = ieee154e_vars.asn/256;
+   ((IEEE802154E_ADV_ht*)(advFrame->l2_payload))->asn[1] = ieee154e_vars.asn%256;
 }
 
 inline uint16_t asnRead(OpenQueueEntry_t* advFrame) {
    uint16_t returnVal;
    returnVal  = 0;
-   returnVal += 256*((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn[0];
-   returnVal +=     ((IEEE802154E_ADV_t*)(ieee154e_vars.dataReceived->payload))->asn[1];
+   returnVal += 256*((IEEE802154E_ADV_ht*)(ieee154e_vars.dataReceived->payload))->asn[0];
+   returnVal +=     ((IEEE802154E_ADV_ht*)(ieee154e_vars.dataReceived->payload))->asn[1];
    return returnVal;
 }
 
@@ -1175,44 +1208,6 @@ different channel offsets in the same slot.
 inline uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset) {
    //return 11+(asn+channelOffset)%16;
    return 26;//poipoi
-}
-
-/**
-\brief Turns an newly reserved OpenQueueEntry_t in an ACK packet.
-
-The ACK needs to have:
-- IEEE802.15.4 type set to ACK
-- the same dsn as the data received
-- the time correction as payload
-
-\param [out] frame The frame to turn into an ACK.
-*/
-void createAck(OpenQueueEntry_t* frame) {
-   
-   // get a buffer to put the ack to send in
-   ieee154e_vars.ackToSend = openqueue_getFreePacketBuffer();
-   if (ieee154e_vars.ackToSend==NULL) {
-      // log the error
-      openserial_printError(COMPONENT_IEEE802154E,
-                            ERR_NO_FREE_PACKET_BUFFER,
-                            0,
-                            0);
-      // abort
-      endSlot();
-      return;
-   }
-   
-   // declare ownership over that packet
-   ieee154e_vars.ackToSend->creator = COMPONENT_IEEE802154E;
-   ieee154e_vars.ackToSend->owner   = COMPONENT_IEEE802154E;
-   
-   // add the ACK payload (i.e. the timeCorrection)
-   // TODO: implement
-   
-   // add the IEEE802.15.4 header
-   // TODO: implement
-   
-   return;
 }
 
 /**
