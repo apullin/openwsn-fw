@@ -872,17 +872,19 @@ inline void activity_ri5(uint16_t capturedTime) {
    // if I just received a valid ADV, handle and stop
    if (isValidAdv(&ieee802514_header)==TRUE) {
       
-      // record the ASN
-      //ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
-      if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
-         __no_operation();
-      };
-      
-      // synchronize the slots to the sender's
-      synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
-      
-      // declare synchronized
-      changeIsSync(TRUE);
+      if (idmanager_getIsDAGroot()==FALSE) {
+         // record the ASN
+         //ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
+         if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
+            __no_operation();
+         };
+         
+         // synchronize the slots to the sender's
+         synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
+         
+         // declare synchronized
+         changeIsSync(TRUE);
+      }
       
       // free the received data so corresponding RAM memory can be recycled
       openqueue_freePacketBuffer(ieee154e_vars.dataReceived);

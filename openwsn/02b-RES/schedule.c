@@ -36,11 +36,7 @@ void schedule_init() {
       schedule_vars.cellTable[slotCounter].timestamp     = 0;
    }
    //slot 0 is advertisement slot
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.cellTable[0].type                    = CELLTYPE_ADV;
-   } else {
-      schedule_vars.cellTable[0].type                    = CELLTYPE_ADV;
-   }
+   schedule_vars.cellTable[0].type                       = CELLTYPE_ADV;
    /*
    //slot 1 TX@MASTER, RX@SLAVE
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
@@ -63,11 +59,9 @@ void schedule_init() {
    }
    //slot 2 RX@MASTER, TX@SLAVE
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      //schedule_vars.cellTable[2].type                    = CELLTYPE_RX;
-      schedule_vars.cellTable[2].type                    = CELLTYPE_OFF;//poipoi
+      schedule_vars.cellTable[2].type                    = CELLTYPE_RX;
    } else {
-      //schedule_vars.cellTable[2].type                    = CELLTYPE_TX;
-      schedule_vars.cellTable[2].type                    = CELLTYPE_OFF;//poipoi
+      schedule_vars.cellTable[2].type                    = CELLTYPE_TX;
    }
    schedule_vars.cellTable[2].neighbor.type              = ADDR_64B;
    schedule_vars.cellTable[2].neighbor.addr_64b[0]       = 0x14;
