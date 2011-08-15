@@ -19,8 +19,10 @@
 //=========================== public ==========================================
 
 void appudpleds_init() {
+   /*
    P2DIR  |=  0x0F;                              // P2.0-3 output
    P2OUT  &= ~0x0F;                              // P2OUT = 0bxxxx0000
+   */
 }
 
 //this is called when the corresponding button is pressed on the OpenVisualizer interface
