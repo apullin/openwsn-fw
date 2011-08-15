@@ -109,11 +109,11 @@ void timer_res_fired() {
       adv->owner   = COMPONENT_RES;
       
       // add ADV-specific header
-      packetfunctions_reserveHeaderSize(adv,sizeof(IEEE802154E_ADV_t));
+      packetfunctions_reserveHeaderSize(adv,sizeof(IEEE802154E_ADV_ht));
       // the actual value of the current ASN will be written by the
       // IEEE802.15.4e when transmitting
-      ((IEEE802154E_ADV_t*)(adv->payload))->asn[0] = 0x00;
-      ((IEEE802154E_ADV_t*)(adv->payload))->asn[1] = 0x00;
+      ((IEEE802154E_ADV_ht*)(adv->payload))->asn[0] = 0x00;
+      ((IEEE802154E_ADV_ht*)(adv->payload))->asn[1] = 0x00;
       
       // some l2 information about this packet
       adv->l2_frameType = IEEE154_TYPE_BEACON;
