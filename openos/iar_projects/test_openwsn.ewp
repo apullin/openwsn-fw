@@ -2042,6 +2042,9 @@
       <file>
         <name>$PROJ_DIR$\..\openwsn\cross-layers\packetfunctions.c</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\openwsn\cross-layers\random.c</name>
+      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\..\openwsn\openwsn.c</name>

@@ -14,6 +14,8 @@
 
 void onesComplementSum(uint8_t* global_sum, uint8_t* ptr, int length);
 
+//=========================== public ==========================================
+
 //======= address translation
 
 //assuming an ip128b is a concatenation of prefix64b followed by a mac64b

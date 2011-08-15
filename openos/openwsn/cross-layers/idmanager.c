@@ -62,6 +62,7 @@ void idmanager_init() {
 bool idmanager_getIsDAGroot() {
    return idmanager_vars.isDAGroot;
 }
+
 void idmanager_setIsDAGroot(bool newRole) {
    idmanager_vars.isDAGroot = newRole;
    neighbors_updateMyDAGrankAndNeighborPreference();
@@ -70,6 +71,7 @@ void idmanager_setIsDAGroot(bool newRole) {
 bool idmanager_getIsBridge() {
    return idmanager_vars.isBridge;
 }
+
 void idmanager_setIsBridge(bool newRole) {
    idmanager_vars.isBridge = newRole;
 }
