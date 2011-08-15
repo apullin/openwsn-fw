@@ -698,7 +698,7 @@ inline void activity_tie5() {
 
 inline void activity_ti8(uint16_t capturedTime) {
    // change state
-   change_state(S_TXACK);
+   change_state(S_RXACK);
 
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
@@ -1093,6 +1093,9 @@ inline void activity_ri9(uint16_t capturedTime) {
    
    // inform upper layer of reception
    res_receive(ieee154e_vars.dataReceived);
+   
+   // clear local variable
+   ieee154e_vars.dataReceived = NULL;
 
    // official end of Rx slot
    endSlot();

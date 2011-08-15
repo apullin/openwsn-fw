@@ -93,6 +93,8 @@ void scheduler_start() {
 #ifdef ISR_BUTTON
             isr_button();
 #endif
+         } else {
+            while(1);
          }
       }
       DEBUG_PIN_TASK_CLR();
