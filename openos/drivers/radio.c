@@ -12,6 +12,7 @@
 #include "ieee154etimer.h"
 #include "spi.h"
 #include "openserial.h"
+#include "leds.h"
 
 //=========================== variables =======================================
 
@@ -135,6 +136,7 @@ void radio_txEnable() {
    
    // wiggle debug pin
    DEBUG_PIN_RADIO_SET();
+   LED_D2_ON();
    
    // turn on radio's PLL
    spi_write_register(RG_TRX_STATE, CMD_PLL_ON);
@@ -181,6 +183,7 @@ void radio_rxEnable() {
    
    // wiggle debug pin
    DEBUG_PIN_RADIO_SET();
+   LED_D2_ON();
    
    //busy wait until radio status is PLL_ON
    while((spi_read_register(RG_TRX_STATUS) & 0x1F) != RX_ON);
@@ -252,6 +255,7 @@ void radio_rfOff() {
    
    // wiggle debug pin
    DEBUG_PIN_RADIO_CLR();
+   LED_D2_OFF();
    
    // change state
    radio_vars.state = RADIOSTATE_RFOFF;
