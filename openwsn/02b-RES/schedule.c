@@ -56,7 +56,6 @@ void schedule_init() {
    } else {
       schedule_vars.cellTable[1].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
    }
-   /*
    //slot 2 RX@MASTER, TX@SLAVE
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
       schedule_vars.cellTable[2].type                    = CELLTYPE_RX;
@@ -76,6 +75,7 @@ void schedule_init() {
    } else {
       schedule_vars.cellTable[2].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
    }
+   /*
    //slot 3 TX@MASTER, OFF@SLAVE
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
       schedule_vars.cellTable[3].type                    = CELLTYPE_TX;
