@@ -59,19 +59,19 @@ enum ieee154e_atomicdurations_enum {
    TsLongGT                  =  33,    //  1000us
    TsTxAckDelay              =  66,    //  2000us
    TsShortGT                 =  16,    //   500us
-   TsSlotDuration            = 327,    // 10000us (328 ticks, but counter count one extra, see datasheet)
+   TsSlotDuration            = 327,    // 10000us (328 ticks, but counter counts one extra count, see datasheet)
    // execution speed related
-   maxTxDataPrepare          =  33,    //  1000us (TBC)
-   maxRxAckPrepare           =  10,    //   (TBC)
-   maxRxDataPrepare          =  13,    //   400us (TBC)
-   maxTxAckPrepare           =  10,    //   (TBC)
+   maxTxDataPrepare          =  33,    //  1000us (measured 584 us)
+   maxRxAckPrepare           =  10,    //   305us (measured  64 us)
+   maxRxDataPrepare          =  13,    //   400us (measured  82 us)
+   maxTxAckPrepare           =  10,    //   305us (measured 260 us)
    // radio speed related
-   delayTx                   =   7,    //   (TBC)
-   delayRx                   =   0,    //     0us (TBC)
+   delayTx                   =   7,    //   213us (measured 222 us)
+   delayRx                   =   0,    //     0us (can not measure!)
    // radio watchdog
-   wdRadioTx                 =  33,    //  1000us
-   wdDataDuration            = 164,    //  5000us
-   wdAckDuration             =  98,    //  3000us
+   wdRadioTx                 =  33,    //  1000us (needs to be >delayTx)
+   wdDataDuration            = 164,    //  5000us (measured 4280us with max payload)
+   wdAckDuration             =  98,    //  3000us (measured 1000us)
 };
 
 // FSM timer durations (combinations of atomic durations)
