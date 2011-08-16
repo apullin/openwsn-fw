@@ -16,8 +16,6 @@
 #include "openqueue.h"
 #include "schedule.h"
 #include "ieee154etimer.h"
-#include "packetfunctions.h"
-#include "neighbors.h"
 #include "res.h"
 #include "leds.h"
 
