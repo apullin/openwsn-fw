@@ -53,13 +53,13 @@ enum ieee154e_state_enum {
 // expressed in 32kHz ticks:
 //    - ticks = duration_in_seconds * 32768
 //    - duration_in_seconds = ticks / 32768
-enum ieee154e_atomicdurations_enum{
+enum ieee154e_atomicdurations_enum {
    // time-slot related
-   TsTxOffset                =  69,    //  2120us
+   TsTxOffset                =  66,    //  2000us
    TsLongGT                  =  33,    //  1000us
-   TsTxAckDelay              =  33,    //  1000us
+   TsTxAckDelay              =  66,    //  2000us
    TsShortGT                 =  16,    //   500us
-   TsSlotDuration            = 328,    // 10000us
+   TsSlotDuration            = 327,    // 10000us (328 ticks, but counter count one extra, see datasheet)
    // execution speed related
    maxTxDataPrepare          =  33,    //  1000us (TBC)
    maxRxAckPrepare           =  10,    //   (TBC)

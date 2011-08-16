@@ -560,12 +560,12 @@ inline void activity_tie1() {
 inline void activity_ti3() {
    // change state
    change_state(S_TXDATADELAY);
-
-   // give the 'go' to transmit
-   radio_txNow();
    
    // arm tt3
    ieee154etimer_schedule(DURATION_tt3);
+   
+   // give the 'go' to transmit
+   radio_txNow();
 }
 
 inline void activity_tie2() {
@@ -583,11 +583,15 @@ inline void activity_ti4(uint16_t capturedTime) {
    // change state
    change_state(S_TXDATA);
 
-   // cancel the radio watchdog timer
+   // cancel tt3
    ieee154etimer_cancel();
 
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
+   
+   if (ieee154e_vars.capturedTime!=62) {
+      __no_operation();
+   }
    
    // arm tt4
    ieee154etimer_schedule(DURATION_tt4);
@@ -609,6 +613,9 @@ inline void activity_ti5(uint16_t capturedTime) {
    
    // change state
    change_state(S_RXACKOFFSET);
+   
+   // cancel tt4
+   ieee154etimer_cancel();
    
    // turn off the radio
    radio_rfOff();
@@ -699,12 +706,12 @@ inline void activity_tie5() {
 inline void activity_ti8(uint16_t capturedTime) {
    // change state
    change_state(S_RXACK);
+   
+   // cancel tt7
+   ieee154etimer_cancel();
 
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
-
-   // cancel tt7
-   ieee154etimer_cancel();
 
    // arm tt8
    ieee154etimer_schedule(DURATION_tt8);
@@ -721,11 +728,11 @@ inline void activity_ti9(uint16_t capturedTime) {
    // change state
    change_state(S_TXPROC);
    
-   // turn off the radio
-   radio_rfOff();
-
    // cancel tt8
    ieee154etimer_cancel();
+   
+   // turn off the radio
+   radio_rfOff();
 
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
@@ -831,12 +838,12 @@ inline void activity_rie2() {
 inline void activity_ri4(uint16_t capturedTime) {
    // change state
    change_state(S_RXDATA);
+   
+   // cancel rt3
+   ieee154etimer_cancel();
 
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
-
-   // cancel rt3
-   ieee154etimer_cancel();
 
    // arm rt4
    ieee154etimer_schedule(DURATION_rt4);
@@ -859,11 +866,11 @@ inline void activity_ri5(uint16_t capturedTime) {
    // change state
    change_state(S_TXACKOFFSET);
    
-   // turn off the radio
-   radio_rfOff();
-
    // cancel rt4
    ieee154etimer_cancel();
+   
+   // turn off the radio
+   radio_rfOff();
 
    // get a buffer to put the (received) data in
    ieee154e_vars.dataReceived = openqueue_getFreePacketBuffer();
@@ -1032,11 +1039,11 @@ inline void activity_ri7() {
    // change state
    change_state(S_TXACKDELAY);
 
-   // give the 'go' to transmit
-   radio_txNow();
-
    // arm rt7
    ieee154etimer_schedule(DURATION_rt7);
+   
+   // give the 'go' to transmit
+   radio_txNow();
 }
 
 inline void activity_rie5() {
