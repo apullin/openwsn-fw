@@ -69,7 +69,7 @@ void timer_appudptimer_fired() {
       } else {
          pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_MASTER;
       }
-      packetfunctions_reserveHeaderSize(pkt,6);
+      packetfunctions_reserveHeaderSize(pkt,76);// this yield a full-length packet
       ((uint8_t*)pkt->payload)[0]                = 'p';
       ((uint8_t*)pkt->payload)[1]                = 'o';
       ((uint8_t*)pkt->payload)[2]                = 'i';

@@ -33,7 +33,7 @@ void ieee154etimer_init() {
    BCSCTL3 |= LFXT1S_0;
    
    // CCR0 contains max value of counter (slot length)
-   //TACCTL0  =  CCIE; // do not interrupt when counter reaches TACCR0
+   // do not interrupt when counter reaches TACCR0!
    TACCR0   =  TsSlotDuration;
    
    // CCR1 in compare mode
