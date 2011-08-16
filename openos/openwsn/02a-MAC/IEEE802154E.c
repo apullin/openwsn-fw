@@ -8,15 +8,15 @@
 
 #include "openwsn.h"
 #include "IEEE802154E.h"
-#include "IEEE802154.h"
 #include "radio.h"
-#include "packetfunctions.h"
+#include "ieee154etimer.h"
+#include "IEEE802154.h"
+#include "openqueue.h"
 #include "idmanager.h"
 #include "openserial.h"
-#include "openqueue.h"
 #include "schedule.h"
-#include "ieee154etimer.h"
 #include "res.h"
+#include "packetfunctions.h"
 #include "leds.h"
 
 //=========================== variables =======================================
@@ -145,12 +145,12 @@ error_t mac_send(OpenQueueEntry_t* msg) {
    // record the location, in the packet, where the l2 payload starts
    msg->l2_payload = msg->payload;
    //IEEE802.15.4 header
-   prependIEEE802154header(msg,
-                           msg->l2_frameType,
-                           IEEE154_SEC_NO_SECURITY,
-                           ieee154e_vars.dsn++,
-                           &(msg->l2_nextORpreviousHop)
-                           );
+   ieee802154_prependHeader(msg,
+                            msg->l2_frameType,
+                            IEEE154_SEC_NO_SECURITY,
+                            ieee154e_vars.dsn++,
+                            &(msg->l2_nextORpreviousHop)
+                            );
    // space for 2-byte CRC
    packetfunctions_reserveFooterSize(msg,2);
    return E_SUCCESS;
@@ -379,7 +379,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
    
    // parse the IEEE802.15.4 header
-   retrieveIEEE802154header(ieee154e_vars.dataReceived,&ieee802514_header);
+   ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
    
    // store header details in packet buffer
    memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
@@ -756,7 +756,7 @@ inline void activity_ti9(uint16_t capturedTime) {
    radio_getReceivedFrame(ieee154e_vars.ackReceived);
    
    // parse the IEEE802.15.4 header
-   retrieveIEEE802154header(ieee154e_vars.ackReceived,&ieee802514_header);
+   ieee802154_retrieveHeader(ieee154e_vars.ackReceived,&ieee802514_header);
    
    // store header details in packet buffer
    memcpy(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
@@ -891,7 +891,7 @@ inline void activity_ri5(uint16_t capturedTime) {
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
    
    // parse the IEEE802.15.4 header
-   retrieveIEEE802154header(ieee154e_vars.dataReceived,&ieee802514_header);
+   ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
    
    // store header details in packet buffer
    memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
@@ -992,12 +992,12 @@ inline void activity_ri6() {
    
    // prepend the IEEE802.15.4 header to the ACK
    ieee154e_vars.ackToSend->l2_frameType = IEEE154_TYPE_ACK;
-   prependIEEE802154header(ieee154e_vars.ackToSend,
-                           ieee154e_vars.ackToSend->l2_frameType,
-                           IEEE154_SEC_NO_SECURITY,
-                           0x00,
-                           &(ieee154e_vars.dataReceived->l2_nextORpreviousHop)
-                           );
+   ieee802154_prependHeader(ieee154e_vars.ackToSend,
+                            ieee154e_vars.ackToSend->l2_frameType,
+                            IEEE154_SEC_NO_SECURITY,
+                            0x00,
+                            &(ieee154e_vars.dataReceived->l2_nextORpreviousHop)
+                            );
    // TODO: change the dsn
    
    // space for 2-byte CRC
