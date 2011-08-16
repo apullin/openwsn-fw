@@ -16,11 +16,11 @@
 
 //=========================== public ==========================================
 
-void prependIEEE802154header(OpenQueueEntry_t* msg,
-                             uint8_t           frameType,
-                             bool              securityEnabled,
-                             uint8_t           sequenceNumber,
-                             open_addr_t*      nextHop) {
+void ieee802154_prependHeader(OpenQueueEntry_t* msg,
+                              uint8_t           frameType,
+                              bool              securityEnabled,
+                              uint8_t           sequenceNumber,
+                              open_addr_t*      nextHop) {
    uint8_t temp_8b;
    //previousHop address
    switch (nextHop->type) {
@@ -97,8 +97,8 @@ void prependIEEE802154header(OpenQueueEntry_t* msg,
    *((uint8_t*)(msg->payload)) = temp_8b;
 }
 
-void retrieveIEEE802154header(OpenQueueEntry_t*      msg,
-                              ieee802154_header_iht* ieee802514_header) {
+void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
+                               ieee802154_header_iht* ieee802514_header) {
    uint8_t temp_8b;
    
    ieee802514_header->valid=FALSE;
