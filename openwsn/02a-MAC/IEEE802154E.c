@@ -26,7 +26,7 @@ typedef struct {
    uint8_t            state;              // state of the FSM
    uint8_t            dsn;                // data sequence number
    uint16_t           capturedTime;       // last captures time
-   uint16_t           syncTimeout;        // how many cells left before looses sync
+   uint16_t           syncTimeout;        // how many slots left before looses sync
    bool               isSync;             // TRUE iff mote synchronized to network
    OpenQueueEntry_t*  dataToSend;         // pointer to the data to send
    OpenQueueEntry_t*  dataReceived;       // pointer to the data received
@@ -85,7 +85,7 @@ void     synchronize(uint16_t timeReceived,open_addr_t* advFrom);
 void     changeIsSync(bool newIsSync);
 // misc
 uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
-void     change_state(uint8_t newstate);
+void     changeState(uint8_t newstate);
 void     endSlot();
 bool     mac_debugPrint();
 
@@ -336,7 +336,7 @@ inline void activity_synchronize_newSlot() {
    // switch on the radio in Rx mode
    if (ieee154e_vars.state!=S_SYNCHRONIZING) {
       // change state
-      change_state(S_SYNCHRONIZING);
+      changeState(S_SYNCHRONIZING);
       
       // turn off the radio (in case it wasn't yet)
       radio_rfOff();
@@ -405,7 +405,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       changeIsSync(TRUE);
       
       // change state
-      change_state(S_SLEEP);
+      changeState(S_SLEEP);
    }
    
    // free the received data buffer so corresponding RAM memory can be recycled
@@ -470,13 +470,13 @@ inline void activity_ti1ORri1() {
          if (ieee154e_vars.dataToSend==NULL) {
             // I will be listening for an ADV
             // change state
-            change_state(S_RXDATAOFFSET);
+            changeState(S_RXDATAOFFSET);
             // arm rt1
             ieee154etimer_schedule(DURATION_rt1);
          } else {
             // I will be sending an ADV
             // change state
-            change_state(S_TXDATAOFFSET);
+            changeState(S_TXDATAOFFSET);
             // fill in the ASN field of the ADV
             asnWrite(ieee154e_vars.dataToSend);
             // arm tt1
@@ -489,7 +489,7 @@ inline void activity_ti1ORri1() {
          if (ieee154e_vars.dataToSend!=NULL) {
             // I have a packet to send
             // change state
-            change_state(S_TXDATAOFFSET);
+            changeState(S_TXDATAOFFSET);
             // arm tt1
             ieee154etimer_schedule(DURATION_tt1);
          } else {
@@ -500,7 +500,7 @@ inline void activity_ti1ORri1() {
       case CELLTYPE_RX:
          // I need to listen for packet
          // change state
-         change_state(S_RXDATAOFFSET);
+         changeState(S_RXDATAOFFSET);
          // arm rt1
          ieee154etimer_schedule(DURATION_rt1);
          break;
@@ -523,7 +523,7 @@ inline void activity_ti2() {
    uint8_t frequency;
    
    // change state
-   change_state(S_TXDATAPREPARE);
+   changeState(S_TXDATAPREPARE);
 
    // calculate the frequency to transmit on
    frequency = calculateFrequency(ieee154e_vars.asn, schedule_getChannelOffset(ieee154e_vars.asn) );
@@ -541,7 +541,7 @@ inline void activity_ti2() {
    ieee154etimer_schedule(DURATION_tt2);
 
    // change state
-   change_state(S_TXDATAREADY);
+   changeState(S_TXDATAREADY);
 }
 
 inline void activity_tie1() {
@@ -557,7 +557,7 @@ inline void activity_tie1() {
 
 inline void activity_ti3() {
    // change state
-   change_state(S_TXDATADELAY);
+   changeState(S_TXDATADELAY);
    
    // arm tt3
    ieee154etimer_schedule(DURATION_tt3);
@@ -579,7 +579,7 @@ inline void activity_tie2() {
 
 inline void activity_ti4(uint16_t capturedTime) {
    // change state
-   change_state(S_TXDATA);
+   changeState(S_TXDATA);
 
    // cancel tt3
    ieee154etimer_cancel();
@@ -610,7 +610,7 @@ inline void activity_ti5(uint16_t capturedTime) {
    bool listenForAck;
    
    // change state
-   change_state(S_RXACKOFFSET);
+   changeState(S_RXACKOFFSET);
    
    // cancel tt4
    ieee154etimer_cancel();
@@ -645,7 +645,7 @@ inline void activity_ti6() {
    uint8_t frequency;
    
    // change state
-   change_state(S_RXACKPREPARE);
+   changeState(S_RXACKPREPARE);
 
    // calculate the frequency to transmit on
    frequency = calculateFrequency(ieee154e_vars.asn, schedule_getChannelOffset(ieee154e_vars.asn));
@@ -660,7 +660,7 @@ inline void activity_ti6() {
    ieee154etimer_schedule(DURATION_tt6);
    
    // change state
-   change_state(S_RXACKREADY);
+   changeState(S_RXACKREADY);
 }
 
 inline void activity_tie4() {
@@ -676,7 +676,7 @@ inline void activity_tie4() {
 
 inline void activity_ti7() {
    // change state
-   change_state(S_RXACKLISTEN);
+   changeState(S_RXACKLISTEN);
 
    // start listening
    radio_rxNow();
@@ -703,7 +703,7 @@ inline void activity_tie5() {
 
 inline void activity_ti8(uint16_t capturedTime) {
    // change state
-   change_state(S_RXACK);
+   changeState(S_RXACK);
    
    // cancel tt7
    ieee154etimer_cancel();
@@ -724,7 +724,7 @@ inline void activity_ti9(uint16_t capturedTime) {
    ieee802154_header_iht ieee802514_header;
    
    // change state
-   change_state(S_TXPROC);
+   changeState(S_TXPROC);
    
    // cancel tt8
    ieee154etimer_cancel();
@@ -788,7 +788,7 @@ inline void activity_ri2() {
    uint8_t frequency;
    
    // change state
-   change_state(S_RXDATAPREPARE);
+   changeState(S_RXDATAPREPARE);
 
    // calculate the frequency to transmit on
    frequency = calculateFrequency(ieee154e_vars.asn, schedule_getChannelOffset(ieee154e_vars.asn) );
@@ -803,7 +803,7 @@ inline void activity_ri2() {
    ieee154etimer_schedule(DURATION_rt2);
 
    // change state
-   change_state(S_RXDATAREADY);
+   changeState(S_RXDATAREADY);
 }
 
 inline void activity_rie1() {
@@ -819,7 +819,7 @@ inline void activity_rie1() {
 
 inline void activity_ri3() {
    // change state
-   change_state(S_RXDATALISTEN);
+   changeState(S_RXDATALISTEN);
 
    // give the 'go' to receive
    radio_rxNow();
@@ -835,7 +835,7 @@ inline void activity_rie2() {
 
 inline void activity_ri4(uint16_t capturedTime) {
    // change state
-   change_state(S_RXDATA);
+   changeState(S_RXDATA);
    
    // cancel rt3
    ieee154etimer_cancel();
@@ -862,14 +862,14 @@ inline void activity_ri5(uint16_t capturedTime) {
    ieee802154_header_iht ieee802514_header;
    
    // change state
-   change_state(S_TXACKOFFSET);
+   changeState(S_TXACKOFFSET);
    
    // cancel rt4
    ieee154etimer_cancel();
    
    // turn off the radio
    radio_rfOff();
-
+   
    // get a buffer to put the (received) data in
    ieee154e_vars.dataReceived = openqueue_getFreePacketBuffer();
    if (ieee154e_vars.dataReceived==NULL) {
@@ -930,7 +930,7 @@ inline void activity_ri5(uint16_t capturedTime) {
    
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
-
+   
    // if I juts received an invalid data frame, stop
    if (isValidData(&ieee802514_header)==FALSE) {
       // free the received data so corresponding RAM memory can be recycled
@@ -938,12 +938,12 @@ inline void activity_ri5(uint16_t capturedTime) {
       
       // clear local variable
       ieee154e_vars.dataReceived = NULL;
-
+   
       // abort
       endSlot();
       return;
    }
-
+   
    // check if ack requested
    if (ieee802514_header.ackRequested==1) {
       // arm rt5
@@ -962,7 +962,7 @@ inline void activity_ri6() {
    uint8_t frequency;
    
    // change state
-   change_state(S_TXACKPREPARE);
+   changeState(S_TXACKPREPARE);
    
    // get a buffer to put the ack to send in
    ieee154e_vars.ackToSend = openqueue_getFreePacketBuffer();
@@ -984,7 +984,7 @@ inline void activity_ri6() {
    // declare ownership over that packet
    ieee154e_vars.ackToSend->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.ackToSend->owner   = COMPONENT_IEEE802154E;
-
+   
    // add the payload to the ACK (i.e. the timeCorrection)
    packetfunctions_reserveHeaderSize(ieee154e_vars.ackToSend,sizeof(IEEE802154E_ACK_ht));
    ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[0] = 0x00;//todo
@@ -1002,24 +1002,24 @@ inline void activity_ri6() {
    
    // space for 2-byte CRC
    packetfunctions_reserveFooterSize(ieee154e_vars.ackToSend,2);
-
+   
    // calculate the frequency to transmit on
    frequency = calculateFrequency(ieee154e_vars.asn, schedule_getChannelOffset(ieee154e_vars.asn) );
-
+   
    // configure the radio for that frequency
    radio_setFrequency(frequency);
-
+   
    // load the packet in the radio's Tx buffer
    radio_loadPacket(ieee154e_vars.ackToSend);
-
+   
    // enable the radio in Tx mode. This does not send that packet.
    radio_txEnable();
-
+   
    // arm rt6
    ieee154etimer_schedule(DURATION_rt6);
-
+   
    // change state
-   change_state(S_TXACKREADY);
+   changeState(S_TXACKREADY);
 }
 
 inline void activity_rie4() {
@@ -1028,15 +1028,15 @@ inline void activity_rie4() {
                          ERR_MAXTXACKPREPARE_OVERFLOWS,
                          ieee154e_vars.state,
                          ieee154e_vars.asn%SCHEDULELENGTH);
-
+   
    // abort
    endSlot();
 }
 
 inline void activity_ri7() {
    // change state
-   change_state(S_TXACKDELAY);
-
+   changeState(S_TXACKDELAY);
+   
    // arm rt7
    ieee154etimer_schedule(DURATION_rt7);
    
@@ -1050,21 +1050,21 @@ inline void activity_rie5() {
                          ERR_WDRADIOTX_OVERFLOWS,
                          ieee154e_vars.state,
                          ieee154e_vars.asn%SCHEDULELENGTH);
-
+   
    // abort
    endSlot();
 }
 
 inline void activity_ri8(uint16_t capturedTime) {
    // change state
-   change_state(S_TXACK);
-
+   changeState(S_TXACK);
+   
    // cancel rt7
    ieee154etimer_cancel();
-
+   
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
-
+   
    // arm rt8
    ieee154etimer_schedule(DURATION_rt8);
 }
@@ -1075,21 +1075,21 @@ inline void activity_rie6() {
                          ERR_WDACKDURATION_OVERFLOWS,
                          ieee154e_vars.state,
                          ieee154e_vars.asn%SCHEDULELENGTH);
-
+   
    // abort
    endSlot();
 }
 
 inline void activity_ri9(uint16_t capturedTime) {
    // change state
-   change_state(S_RXPROC);
-
+   changeState(S_RXPROC);
+   
    // cancel rt8
    ieee154etimer_cancel();
-
+   
    // record the captured time
    ieee154e_vars.capturedTime = capturedTime;
-
+   
    // free the ack we just sent so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.ackToSend);
    
@@ -1101,7 +1101,7 @@ inline void activity_ri9(uint16_t capturedTime) {
    
    // clear local variable
    ieee154e_vars.dataReceived = NULL;
-
+   
    // official end of Rx slot
    endSlot();
 }
@@ -1226,7 +1226,7 @@ this function toggles the FSM debug pin.
 
 \param [in] newstate The state the IEEE802.15.4e FSM is now in.
 */
-void change_state(uint8_t newstate) {
+void changeState(uint8_t newstate) {
    // update the state
    ieee154e_vars.state = newstate;
    // wiggle the FSM debug pin
@@ -1282,10 +1282,10 @@ void endSlot() {
    
    // clear any pending timer
    ieee154etimer_cancel();
-
+   
    // reset capturedTime
    ieee154e_vars.capturedTime = 0;
-
+   
    // clean up dataToSend
    if (ieee154e_vars.dataToSend!=NULL) {
       // if everything went well, dataToSend was set to NULL in ti9
@@ -1298,7 +1298,7 @@ void endSlot() {
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
    }
-
+   
    // clean up dataReceived
    if (ieee154e_vars.dataReceived!=NULL) {
       // assume something went wrong. If everything went well, dataReceived
@@ -1308,7 +1308,7 @@ void endSlot() {
       // reset local variable
       ieee154e_vars.dataReceived = NULL;
    }
-
+   
    // clean up ackToSend
    if (ieee154e_vars.ackToSend!=NULL) {
       // free ackToSend so corresponding RAM memory can be recycled
@@ -1316,7 +1316,7 @@ void endSlot() {
       // reset local variable
       ieee154e_vars.ackToSend = NULL;
    }
-
+   
    // clean up ackReceived
    if (ieee154e_vars.ackReceived!=NULL) {
       // free ackReceived so corresponding RAM memory can be recycled
@@ -1326,5 +1326,5 @@ void endSlot() {
    }
    
    // change state
-   change_state(S_SLEEP);
+   changeState(S_SLEEP);
 }
