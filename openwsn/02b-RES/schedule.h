@@ -10,7 +10,7 @@
 #include "openwsn.h"
 
 //=========================== define ==========================================
-#define SCHEDULELENGTH  7
+#define SCHEDULELENGTH  9
 
 enum {
    CELLTYPE_OFF         = 0,
