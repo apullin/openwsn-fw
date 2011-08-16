@@ -25,7 +25,7 @@ schedule_vars_t schedule_vars;
 void schedule_init() {
    uint8_t slotCounter;
    // for debug print
-   schedule_vars.debugPrintRow                    = 0;
+   schedule_vars.debugPrintRow                           = 0;
    //all slots OFF
    for (slotCounter=0;slotCounter<SCHEDULELENGTH;slotCounter++){
       schedule_vars.cellTable[slotCounter].type          = CELLTYPE_OFF;
@@ -75,7 +75,6 @@ void schedule_init() {
    } else {
       schedule_vars.cellTable[2].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
    }
-   /*
    //slot 3 TX@MASTER, OFF@SLAVE
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
       schedule_vars.cellTable[3].type                    = CELLTYPE_TX;
@@ -123,7 +122,6 @@ void schedule_init() {
    schedule_vars.cellTable[5].neighbor.addr_64b[7]       = 0xff;
    //slot 6 is serialRx
    schedule_vars.cellTable[6].type                       = CELLTYPE_SERIALRX;
-   */
 }
 
 cellType_t schedule_getType(asn_t asn_param) {
