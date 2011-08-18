@@ -348,11 +348,22 @@ inline void activity_synchronize_newSlot() {
       radio_rxEnable();
       radio_rxNow();
    }
+
+   //we want to be able to receive and transmist serial even when not synchronized
+   //take turns every other slot to send or receive
+   openserial_stop();
+   if(ieee154e_vars.asn%2 == 0){
+      openserial_startOutput();
+   }else{
+      openserial_startInput();
+   }
 }
 
 inline void activity_synchronize_startOfFrame(uint16_t capturedTime) {
    // get the captured time 
    ieee154e_vars.capturedTime = capturedTime;
+   //just in case, stop the serial if it's running
+   openserial_stop();   
 }
 
 inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
