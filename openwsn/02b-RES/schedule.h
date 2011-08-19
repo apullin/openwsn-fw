@@ -43,10 +43,10 @@ typedef struct {
 
 //=========================== prototypes ======================================
 
-void            schedule_init();
-cellType_t      schedule_getType(asn_t asn_param);
-channelOffset_t schedule_getChannelOffset(asn_t asn_param);
-void            schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite);
-bool            schedule_debugPrint();
+          void            schedule_init();
+__monitor cellType_t      schedule_getType(asn_t asn_param);
+__monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param);
+__monitor void            schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite);
+          bool            schedule_debugPrint();
 
 #endif
