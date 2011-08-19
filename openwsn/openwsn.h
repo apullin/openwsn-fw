@@ -114,7 +114,7 @@ enum {
 //status elements
 enum {
    STATUS_RES_DAGRANK                  = 0,
-   STATUS_SCHEDULE_CELLTABLE           = 1,
+   STATUS_SCHEDULE_SCHEDULE            = 1,
    STATUS_NEIGHBORS_NEIGHBORS          = 2,
    STATUS_OPENSERIAL_OUTBUFFERINDEXES  = 3,
    STATUS_OPENQUEUE_QUEUE              = 4,
