@@ -45,7 +45,7 @@ bool openqueue_debugPrint() {
 
 //======= called by any component
 
-OpenQueueEntry_t* openqueue_getFreePacketBuffer() {
+__monitor OpenQueueEntry_t* openqueue_getFreePacketBuffer() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (openqueue_vars.queue[i].owner==COMPONENT_NULL) {
@@ -56,7 +56,7 @@ OpenQueueEntry_t* openqueue_getFreePacketBuffer() {
    return NULL;
 }
 
-error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
+__monitor error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (&openqueue_vars.queue[i]==pkt) {
@@ -67,7 +67,7 @@ error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
    return E_FAIL;
 }
 
-void openqueue_removeAllOwnedBy(uint8_t owner) {
+__monitor void openqueue_removeAllOwnedBy(uint8_t owner) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++){
       if (openqueue_vars.queue[i].owner==owner) {
@@ -78,7 +78,7 @@ void openqueue_removeAllOwnedBy(uint8_t owner) {
 
 //======= called by RES
 
-OpenQueueEntry_t* openqueue_resGetSentPacket() {
+__monitor OpenQueueEntry_t* openqueue_resGetSentPacket() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E_TO_RES &&
@@ -89,7 +89,7 @@ OpenQueueEntry_t* openqueue_resGetSentPacket() {
    return NULL;
 }
 
-OpenQueueEntry_t* openqueue_resGetReceivedPacket() {
+__monitor OpenQueueEntry_t* openqueue_resGetReceivedPacket() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E_TO_RES &&
@@ -102,7 +102,7 @@ OpenQueueEntry_t* openqueue_resGetReceivedPacket() {
 
 //======= called by IEEE80215E
 
-OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
+__monitor OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
@@ -113,7 +113,7 @@ OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
    return NULL;
 }
 
-OpenQueueEntry_t* openqueue_macGetAdvPacket() {
+__monitor OpenQueueEntry_t* openqueue_macGetAdvPacket() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
