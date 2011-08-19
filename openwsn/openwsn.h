@@ -154,17 +154,20 @@ enum {
    COMPONENT_RES                       = 0x17,
    COMPONENT_NEIGHBORS                 = 0x18,
    COMPONENT_SCHEDULE                  = 0x19,
+   //l2b<->l2a ("virtual components")
+   COMPONENT_RES_TO_IEEE802154E        = 0x1a,
+   COMPONENT_IEEE802154E_TO_RES        = 0x1b,
    //l2a
-   COMPONENT_IEEE802154                = 0x1a,
-   COMPONENT_IEEE802154E               = 0x1b,
+   COMPONENT_IEEE802154                = 0x1c,
+   COMPONENT_IEEE802154E               = 0x1d,
    //phy
-   COMPONENT_RADIO                     = 0x1c,
+   COMPONENT_RADIO                     = 0x1e,
    //cross-layer
-   COMPONENT_IDMANAGER                 = 0x1d,
-   COMPONENT_OPENQUEUE                 = 0x1e,
-   COMPONENT_OPENSERIAL                = 0x1f,
-   COMPONENT_PACKETFUNCTIONS           = 0x20,
-   COMPONENT_RANDOM                    = 0x21,
+   COMPONENT_IDMANAGER                 = 0x1f,
+   COMPONENT_OPENQUEUE                 = 0x20,
+   COMPONENT_OPENSERIAL                = 0x21,
+   COMPONENT_PACKETFUNCTIONS           = 0x22,
+   COMPONENT_RANDOM                    = 0x23,
 };
 
 //error codes
