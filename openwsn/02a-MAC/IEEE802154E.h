@@ -13,11 +13,11 @@
 
 //=========================== define ==========================================
 
-#define SYNCHRONIZING_CHANNEL 26 // channel the mote listens on to synchronize
-#define TXRETRIES              3
-#define SYNCTIMEOUT          300 // @10ms per slot -> 3 seconds
-#define TX_POWER              31 //1=-25dBm, 31=0dBm (max value)
-#define RESYNCHRONIZATIONGUARD 5 // in 32kHz ticks. min distance to the end of the slot to succesfully synchronize
+#define SYNCHRONIZING_CHANNEL       26 // channel the mote listens on to synchronize
+#define TXRETRIES                    3 // number of retries before declaring failed
+#define SYNCTIMEOUT                300 // @10ms per slot -> 3 seconds
+#define TX_POWER                    31 // 1=-25dBm, 31=0dBm (max value)
+#define RESYNCHRONIZATIONGUARD       5 // in 32kHz ticks. min distance to the end of the slot to succesfully synchronize
 
 // the different states of the IEEE802.15.4e state machine
 enum ieee154e_state_enum {
@@ -79,23 +79,23 @@ enum ieee154e_atomicdurations_enum {
 
 // FSM timer durations (combinations of atomic durations)
 // TX
-#define DURATION_tt1 ieee154e_vars.capturedTime+TsTxOffset-delayTx-maxTxDataPrepare
-#define DURATION_tt2 ieee154e_vars.capturedTime+TsTxOffset-delayTx
-#define DURATION_tt3 ieee154e_vars.capturedTime+TsTxOffset-delayTx+wdRadioTx
-#define DURATION_tt4 ieee154e_vars.capturedTime+wdDataDuration
-#define DURATION_tt5 ieee154e_vars.capturedTime+TsTxAckDelay-TsShortGT-delayRx-maxRxAckPrepare
-#define DURATION_tt6 ieee154e_vars.capturedTime+TsTxAckDelay-TsShortGT-delayRx
-#define DURATION_tt7 ieee154e_vars.capturedTime+TsTxAckDelay+TsShortGT
-#define DURATION_tt8 ieee154e_vars.capturedTime+wdAckDuration
+#define DURATION_tt1 ieee154e_vars.lastCapturedTime+TsTxOffset-delayTx-maxTxDataPrepare
+#define DURATION_tt2 ieee154e_vars.lastCapturedTime+TsTxOffset-delayTx
+#define DURATION_tt3 ieee154e_vars.lastCapturedTime+TsTxOffset-delayTx+wdRadioTx
+#define DURATION_tt4 ieee154e_vars.lastCapturedTime+wdDataDuration
+#define DURATION_tt5 ieee154e_vars.lastCapturedTime+TsTxAckDelay-TsShortGT-delayRx-maxRxAckPrepare
+#define DURATION_tt6 ieee154e_vars.lastCapturedTime+TsTxAckDelay-TsShortGT-delayRx
+#define DURATION_tt7 ieee154e_vars.lastCapturedTime+TsTxAckDelay+TsShortGT
+#define DURATION_tt8 ieee154e_vars.lastCapturedTime+wdAckDuration
 // RX
-#define DURATION_rt1 ieee154e_vars.capturedTime+TsTxOffset-TsLongGT-delayRx-maxRxDataPrepare
-#define DURATION_rt2 ieee154e_vars.capturedTime+TsTxOffset-TsLongGT-delayRx
-#define DURATION_rt3 ieee154e_vars.capturedTime+TsTxOffset+TsLongGT
-#define DURATION_rt4 ieee154e_vars.capturedTime+wdDataDuration
-#define DURATION_rt5 ieee154e_vars.capturedTime+TsTxAckDelay-delayTx-maxTxAckPrepare
-#define DURATION_rt6 ieee154e_vars.capturedTime+TsTxAckDelay-delayTx
-#define DURATION_rt7 ieee154e_vars.capturedTime+TsTxAckDelay-delayTx+wdRadioTx
-#define DURATION_rt8 ieee154e_vars.capturedTime+wdAckDuration
+#define DURATION_rt1 ieee154e_vars.lastCapturedTime+TsTxOffset-TsLongGT-delayRx-maxRxDataPrepare
+#define DURATION_rt2 ieee154e_vars.lastCapturedTime+TsTxOffset-TsLongGT-delayRx
+#define DURATION_rt3 ieee154e_vars.lastCapturedTime+TsTxOffset+TsLongGT
+#define DURATION_rt4 ieee154e_vars.lastCapturedTime+wdDataDuration
+#define DURATION_rt5 ieee154e_vars.lastCapturedTime+TsTxAckDelay-delayTx-maxTxAckPrepare
+#define DURATION_rt6 ieee154e_vars.lastCapturedTime+TsTxAckDelay-delayTx
+#define DURATION_rt7 ieee154e_vars.lastCapturedTime+TsTxAckDelay-delayTx+wdRadioTx
+#define DURATION_rt8 ieee154e_vars.lastCapturedTime+wdAckDuration
 
 //=========================== typedef =========================================
 
