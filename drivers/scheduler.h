@@ -39,9 +39,10 @@ enum {
 
 //=========================== prototypes ======================================
 
-void scheduler_init();
-void scheduler_start();
-void scheduler_push_task(int8_t task_id);
+// public functions
+          void scheduler_init();
+          void scheduler_start();
+__monitor void scheduler_push_task(int8_t task_id);
 
 // interrupt handlers
 #ifdef OPENWSN_STACK

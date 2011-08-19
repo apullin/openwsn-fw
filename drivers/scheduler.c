@@ -35,6 +35,9 @@ extern timers_vars_t timers_vars;
 
 //=========================== prototypes ======================================
 
+__monitor uint8_t isThereTask(uint8_t taskId);
+__monitor void    consumeTask(uint8_t taskId);
+
 //=========================== public ==========================================
 
 void scheduler_init() {
@@ -52,59 +55,49 @@ void scheduler_init() {
 }
 
 void scheduler_start() {
-   while (1) {                                   // IAR should halt here if nothing to do
+   while (1) {
       while(scheduler_vars.num_tasks>0) {
-         if        (scheduler_vars.task_list[TASKID_RESNOTIF_RX]>0) {
-            scheduler_vars.task_list[TASKID_RESNOTIF_RX]--;
-            scheduler_vars.num_tasks--;
+         if        (isThereTask(TASKID_RESNOTIF_RX)==TRUE) {
+            consumeTask(TASKID_RESNOTIF_RX);
 #ifdef OPENWSN_STACK
             task_resNotifReceive();
 #endif
-         } else if (scheduler_vars.task_list[TASKID_RESNOTIF_TXDONE]>0) {
-            scheduler_vars.task_list[TASKID_RESNOTIF_TXDONE]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_RESNOTIF_TXDONE)==TRUE) {
+            consumeTask(TASKID_RESNOTIF_TXDONE);
 #ifdef OPENWSN_STACK
             task_resNotifSendDone();
 #endif
-         } else if (scheduler_vars.task_list[TASKID_RES]>0) {
-            scheduler_vars.task_list[TASKID_RES]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_RES)==TRUE) {
+            consumeTask(TASKID_RES);
 #ifdef OPENWSN_STACK
             timer_res_fired();
 #endif
-         } else if (scheduler_vars.task_list[TASKID_RPL]>0) {
-            scheduler_vars.task_list[TASKID_RPL]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_RPL)==TRUE) {
+            consumeTask(TASKID_RPL);
 #ifdef OPENWSN_STACK
             timer_rpl_fired();
 #endif
-         } else if (scheduler_vars.task_list[TASKID_TCP_TIMEOUT]>0) {
-            scheduler_vars.task_list[TASKID_TCP_TIMEOUT]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_TCP_TIMEOUT)==TRUE) {
+            consumeTask(TASKID_TCP_TIMEOUT);
 #ifdef OPENWSN_STACK
             timer_tcp_fired();
 #endif
-         } else if (scheduler_vars.task_list[TASKID_UDP_TIMER]>0) {
-            scheduler_vars.task_list[TASKID_UDP_TIMER]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_UDP_TIMER)==TRUE) {
+            consumeTask(TASKID_UDP_TIMER);
 #ifdef OPENWSN_STACK
             timer_appudptimer_fired();
 #endif
-         } else if (scheduler_vars.task_list[TASKID_TIMERB4]>0) {
-            scheduler_vars.task_list[TASKID_TIMERB4]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_TIMERB4)==TRUE) {
+            consumeTask(TASKID_TIMERB4);
             // timer available, put your function here
-         } else if (scheduler_vars.task_list[TASKID_TIMERB5]>0) {
-            scheduler_vars.task_list[TASKID_TIMERB5]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_TIMERB5)==TRUE) {
+            consumeTask(TASKID_TIMERB5);
             // timer available, put your function here
-         } else if (scheduler_vars.task_list[TASKID_TIMERB6]>0) {
-            scheduler_vars.task_list[TASKID_TIMERB6]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_TIMERB6)==TRUE) {
+            consumeTask(TASKID_TIMERB6);
             // timer available, put your function here
-         } else if (scheduler_vars.task_list[TASKID_BUTTON]>0) {
-            scheduler_vars.task_list[TASKID_BUTTON]--;
-            scheduler_vars.num_tasks--;
+         } else if (isThereTask(TASKID_BUTTON)==TRUE) {
+            consumeTask(TASKID_BUTTON);
 #ifdef ISR_BUTTON
             isr_button();
 #endif
@@ -114,14 +107,25 @@ void scheduler_start() {
       }
       DEBUG_PIN_TASK_CLR();
       __bis_SR_register(GIE+LPM3_bits);          // sleep, but leave interrupts and ACLK on 
-      DEBUG_PIN_TASK_SET();
+      DEBUG_PIN_TASK_SET();                      // IAR should halt here if nothing to do
    }
 }
 
-void scheduler_push_task(int8_t task_id) {
+__monitor void scheduler_push_task(int8_t task_id) {
    if(task_id>=MAX_NUM_TASKS) { while(1); }
    scheduler_vars.task_list[task_id]++;
    scheduler_vars.num_tasks++;
+}
+
+//=========================== private =========================================
+
+__monitor uint8_t isThereTask(uint8_t taskId) {
+   return (scheduler_vars.task_list[taskId]>0);
+}
+
+__monitor void consumeTask(uint8_t taskId) {
+   scheduler_vars.task_list[taskId]--;
+   scheduler_vars.num_tasks--;
 }
 
 //=========================== interrupt handlers ==============================
