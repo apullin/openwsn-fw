@@ -15,8 +15,8 @@
 #include "idmanager.h"
 #include "openserial.h"
 #include "schedule.h"
-#include "res.h"
 #include "packetfunctions.h"
+#include "scheduler.h"
 #include "leds.h"
 
 //=========================== variables =======================================
@@ -82,6 +82,9 @@ uint16_t asnRead (OpenQueueEntry_t* advFrame);
 // synchronization
 void     synchronize(uint16_t timeReceived,open_addr_t* advFrom);
 void     changeIsSync(bool newIsSync);
+// notifying upper layer
+void     notif_sendDone(OpenQueueEntry_t* packetSent, error_t error);
+void     notif_receive(OpenQueueEntry_t* packetReceived);
 // misc
 uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
 void     changeState(uint8_t newstate);
@@ -128,7 +131,7 @@ void mac_init() {
 This function executes in ISR mode, when the new slot timer fires.
 */
 void isr_ieee154e_newSlot() {
-   TACCR0   =  TsSlotDuration;
+   TACCR0 =  TsSlotDuration;
    if (ieee154e_vars.isSync==FALSE) {
       activity_synchronize_newSlot();
    } else {
@@ -416,6 +419,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       
       // official end of synchronization
       endSlot();
+      
    } else {
       // free the received data buffer so corresponding RAM memory can be recycled
       openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
@@ -431,7 +435,7 @@ inline void activity_ti1ORri1() {
    uint8_t cellType;
    open_addr_t neighbor;
    
-   //stop outputting serial data
+   // stop outputting serial data
    openserial_stop();
    
    // increment ASN (do this first so debug pins are in sync)
@@ -476,7 +480,7 @@ inline void activity_ti1ORri1() {
          openserial_startOutput();
          break;
       case CELLTYPE_ADV:
-         ieee154e_vars.dataToSend = openqueue_getAdvPacket();
+         ieee154e_vars.dataToSend = openqueue_macGetAdvPacket();
          if (ieee154e_vars.dataToSend==NULL) {   // I will be listening for an ADV
             // change state
             changeState(S_RXDATAOFFSET);
@@ -495,7 +499,7 @@ inline void activity_ti1ORri1() {
          break;
       case CELLTYPE_TX:
          schedule_getNeighbor(ieee154e_vars.asn,&neighbor);
-         ieee154e_vars.dataToSend = openqueue_getDataPacket(&neighbor);
+         ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
          if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
             // change state
             changeState(S_TXDATAOFFSET);
@@ -644,7 +648,7 @@ inline void activity_ti5(uint16_t capturedTime) {
       ieee154etimer_schedule(DURATION_tt5);
    } else {
       // indicate that the packet was sent successfully
-      res_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
+      notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
       // abort
@@ -700,9 +704,12 @@ inline void activity_tie5() {
    // transmit failed, decrement transmits left counter
    ieee154e_vars.dataToSend->l2_retriesLeft--;
 
-   // indicate tx fail if no more retries left
    if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
-      res_sendDone(ieee154e_vars.dataToSend,E_FAIL);
+      // indicate tx fail if no more retries left
+      notif_sendDone(ieee154e_vars.dataToSend,E_FAIL);
+   } else {
+      // return packet to the virtual COMPONENT_RES_TO_IEEE802154E component
+      ieee154e_vars.dataToSend->owner = COMPONENT_RES_TO_IEEE802154E;
    }
 
    // reset local variable
@@ -779,7 +786,7 @@ inline void activity_ti9(uint16_t capturedTime) {
    // if frame is a valid ACK, handle
    if (isValidAck(&ieee802514_header)==TRUE) {
       // if packet sent successfully, inform upper layer
-      res_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
+      notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
       ieee154e_vars.dataToSend = NULL;
    }
 
@@ -961,7 +968,7 @@ inline void activity_ri5(uint16_t capturedTime) {
       ieee154etimer_schedule(DURATION_rt5);
    } else {
       // indicate reception to upper layer
-      res_receive(ieee154e_vars.dataReceived);
+      notif_receive(ieee154e_vars.dataReceived);
       // reset local variable
       ieee154e_vars.dataReceived = NULL;
       // abort
@@ -984,7 +991,7 @@ inline void activity_ri6() {
                             0,
                             0);
       // indicate we received a packet anyway (we don't want to loose any)
-      res_receive(ieee154e_vars.dataReceived);
+      notif_receive(ieee154e_vars.dataReceived);
       // free local variable
       ieee154e_vars.dataReceived = NULL;
       // abort
@@ -1108,7 +1115,7 @@ inline void activity_ri9(uint16_t capturedTime) {
    ieee154e_vars.ackToSend = NULL;
    
    // inform upper layer of reception
-   res_receive(ieee154e_vars.dataReceived);
+   notif_receive(ieee154e_vars.dataReceived);
    
    // clear local variable
    ieee154e_vars.dataReceived = NULL;
@@ -1213,6 +1220,30 @@ void changeIsSync(bool newIsSync) {
    }
 }
 
+//======= notifying upper layer
+
+void notif_sendDone(OpenQueueEntry_t* packetSent, error_t error) {
+   // record the outcome of the trasmission attempt
+   packetSent->l2_sendDoneError   = error;
+   // associate this packet with the virtual component
+   // COMPONENT_IEEE802154E_TO_RES so RES can knows it's for it
+   packetSent->owner              = COMPONENT_IEEE802154E_TO_RES;
+   // post RES's sendDone task
+   scheduler_push_task(TASKID_RESNOTIF_TXDONE);
+   // wake up the scheduler
+   SCHEDULER_WAKEUP();
+}
+
+void notif_receive(OpenQueueEntry_t* packetReceived) {
+   // associate this packet with the virtual component
+   // COMPONENT_IEEE802154E_TO_RES so RES can knows it's for it
+   packetReceived->owner          = COMPONENT_IEEE802154E_TO_RES;
+   // post RES's Receive task
+   scheduler_push_task(TASKID_RESNOTIF_RX);
+   // wake up the scheduler
+   SCHEDULER_WAKEUP();
+}
+
 //======= misc
 
 /**
@@ -1314,9 +1345,12 @@ void endSlot() {
       // if everything went well, dataToSend was set to NULL in ti9
       // transmit failed, decrement transmits left counter
       ieee154e_vars.dataToSend->l2_retriesLeft--;
-      // indicate tx fail if no more retries left
       if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
-         res_sendDone(ieee154e_vars.dataToSend,E_FAIL);
+         // indicate tx fail if no more retries left
+         notif_sendDone(ieee154e_vars.dataToSend,E_FAIL);
+      } else {
+         // return packet to the virtual COMPONENT_RES_TO_IEEE802154E component
+         ieee154e_vars.dataToSend->owner = COMPONENT_RES_TO_IEEE802154E;
       }
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
@@ -1327,7 +1361,7 @@ void endSlot() {
       // assume something went wrong. If everything went well, dataReceived
       // would have been set to NULL in ri9.
       // indicate  "received packet" to upper layer since we don't want to loose packets
-      res_receive(ieee154e_vars.dataReceived);
+      notif_receive(ieee154e_vars.dataReceived);
       // reset local variable
       ieee154e_vars.dataReceived = NULL;
    }

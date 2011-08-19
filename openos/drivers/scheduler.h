@@ -15,16 +15,23 @@
 //=========================== define ==========================================
 
 enum {
-   TASKID_RES           = 0, // schedule by timerB CCR0 interrupt
-   TASKID_RPL           = 1, // schedule by timerB CCR1 interrupt
-   TASKID_TCP_TIMEOUT   = 2, // schedule by timerB CCR2 interrupt
-   TASKID_UDP_TIMER     = 3, // schedule by timerB CCR3 interrupt
-   TASKID_TIMERB4       = 4, // schedule by timerB CCR4 interrupt
-   TASKID_TIMERB5       = 5, // schedule by timerB CCR5 interrupt
-   TASKID_TIMERB6       = 6, // schedule by timerB CCR6 interrupt
-   TASKID_BUTTON        = 7, // schedule by P2.7 interrupt
-   MAX_NUM_TASKS        = 8,
+   // tasks trigger by radio
+   TASKID_RESNOTIF_RX        = 0x00, // scheduled by IEEE802.15.4e
+   TASKID_RESNOTIF_TXDONE    = 0x01, // scheduled by IEEE802.15.4e
+   // tasks triggered by timers
+   TASKID_RES                = 0x02, // scheduled by timerB CCR0 interrupt
+   TASKID_RPL                = 0x03, // scheduled by timerB CCR1 interrupt
+   TASKID_TCP_TIMEOUT        = 0x04, // scheduled by timerB CCR2 interrupt
+   TASKID_UDP_TIMER          = 0x05, // scheduled by timerB CCR3 interrupt
+   TASKID_TIMERB4            = 0x06, // scheduled by timerB CCR4 interrupt
+   TASKID_TIMERB5            = 0x07, // scheduled by timerB CCR5 interrupt
+   TASKID_TIMERB6            = 0x08, // scheduled by timerB CCR6 interrupt
+   // tasks trigger by other interrupts
+   TASKID_BUTTON             = 0x09, // scheduled by P2.7 interrupt
+   MAX_NUM_TASKS             = 0x0a,
 };
+
+#define SCHEDULER_WAKEUP()   CACTL1 |= CAIFG
 
 //=========================== typedef =========================================
 

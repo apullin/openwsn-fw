@@ -19,7 +19,11 @@ openqueue_vars_t openqueue_vars;
 
 //=========================== prototypes ======================================
 
+void openqueue_reset_entry(OpenQueueEntry_t* entry);
+
 //=========================== public ==========================================
+
+//======= admin
 
 void openqueue_init() {
    uint8_t i;
@@ -27,6 +31,19 @@ void openqueue_init() {
       openqueue_reset_entry(&(openqueue_vars.queue[i]));
    }
 }
+
+bool openqueue_debugPrint() {
+   debugOpenQueueEntry_t output[QUEUELENGTH];
+   uint8_t i;
+   for (i=0;i<QUEUELENGTH;i++) {
+      output[i].creator = openqueue_vars.queue[i].creator;
+      output[i].owner   = openqueue_vars.queue[i].owner;
+   }
+   openserial_printStatus(STATUS_OPENQUEUE_QUEUE,(uint8_t*)&output,QUEUELENGTH*sizeof(debugOpenQueueEntry_t));
+   return TRUE;
+}
+
+//======= called by any component
 
 OpenQueueEntry_t* openqueue_getFreePacketBuffer() {
    uint8_t i;
@@ -38,6 +55,7 @@ OpenQueueEntry_t* openqueue_getFreePacketBuffer() {
    }
    return NULL;
 }
+
 error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
@@ -49,7 +67,42 @@ error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
    return E_FAIL;
 }
 
-OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t* toNeighbor) {
+void openqueue_removeAllOwnedBy(uint8_t owner) {
+   uint8_t i;
+   for (i=0;i<QUEUELENGTH;i++){
+      if (openqueue_vars.queue[i].owner==owner) {
+         openqueue_reset_entry(&(openqueue_vars.queue[i]));
+      }
+   }
+}
+
+//======= called by RES
+
+OpenQueueEntry_t* openqueue_resGetSentPacket() {
+   uint8_t i;
+   for (i=0;i<QUEUELENGTH;i++) {
+      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E_TO_RES &&
+          openqueue_vars.queue[i].creator!=COMPONENT_IEEE802154E) {
+         return &openqueue_vars.queue[i];
+      }
+   }
+   return NULL;
+}
+
+OpenQueueEntry_t* openqueue_resGetReceivedPacket() {
+   uint8_t i;
+   for (i=0;i<QUEUELENGTH;i++) {
+      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E_TO_RES &&
+          openqueue_vars.queue[i].creator==COMPONENT_IEEE802154E) {
+         return &openqueue_vars.queue[i];
+      }
+   }
+   return NULL;
+}
+
+//======= called by IEEE80215E
+
+OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
@@ -60,7 +113,7 @@ OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t* toNeighbor) {
    return NULL;
 }
 
-OpenQueueEntry_t* openqueue_getAdvPacket() {
+OpenQueueEntry_t* openqueue_macGetAdvPacket() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
@@ -71,27 +124,7 @@ OpenQueueEntry_t* openqueue_getAdvPacket() {
    return NULL;
 }
 
-error_t openqueue_removeAllPacketsToNeighbor(open_addr_t* neighbor) {
-   error_t returnValue=E_FAIL;
-   /*uint8_t i;
-     for (i=0;i<QUEUELENGTH;i++){
-     atomic if (openqueue_vars.queue[i].owner==COMPONENT_MAC && ((IEEE802154_ht*)(openqueue_vars.queue[i].payload))->dest==neighbor) {
-     openqueue_vars.queue[i].owner=COMPONENT_NULL;
-     openqueue_vars.queue[i].l2_retriesLeft=0;
-     returnValue=E_SUCCESS;
-     }
-     }poipoistupid*/
-   return returnValue;
-}
-
-void openqueue_removeAllOwnedBy(uint8_t owner) {
-   uint8_t i;
-   for (i=0;i<QUEUELENGTH;i++){
-      if (openqueue_vars.queue[i].owner==owner) {
-         openqueue_reset_entry(&(openqueue_vars.queue[i]));
-      }
-   }
-}
+//=========================== private =========================================
 
 void openqueue_reset_entry(OpenQueueEntry_t* entry) {
    //admin
@@ -108,16 +141,3 @@ void openqueue_reset_entry(OpenQueueEntry_t* entry) {
    entry->l2_frameType                = IEEE154_TYPE_UNDEFINED;
    entry->l2_retriesLeft              = 0;
 }
-
-bool openqueue_debugPrint() {
-   debugOpenQueueEntry_t output[QUEUELENGTH];
-   uint8_t i;
-   for (i=0;i<QUEUELENGTH;i++) {
-      output[i].creator = openqueue_vars.queue[i].creator;
-      output[i].owner   = openqueue_vars.queue[i].owner;
-   }
-   openserial_printStatus(STATUS_OPENQUEUE_QUEUE,(uint8_t*)&output,QUEUELENGTH*sizeof(debugOpenQueueEntry_t));
-   return TRUE;
-}
-
-//=========================== private =========================================
