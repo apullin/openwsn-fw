@@ -24,7 +24,6 @@
 typedef struct {
    asn_t              asn;                // current absolute slot number
    uint8_t            state;              // state of the FSM
-   uint8_t            dsn;                // data sequence number
    uint16_t           capturedTime;       // last captures time
    uint16_t           syncTimeout;        // how many slots left before looses sync
    bool               isSync;             // TRUE iff mote synchronized to network
@@ -91,8 +90,6 @@ bool     mac_debugPrint();
 
 //=========================== public ==========================================
 
-//======= from upper layer
-
 /**
 \brief This function initializes this module.
 
@@ -108,7 +105,6 @@ void mac_init() {
    // initialize variables
    ieee154e_vars.asn                       = 0;
    ieee154e_vars.state                     = S_SLEEP;
-   ieee154e_vars.dsn                       = 0;
    ieee154e_vars.dataToSend                = NULL;
    ieee154e_vars.dataReceived              = NULL;
    ieee154e_vars.ackToSend                 = NULL;
@@ -122,38 +118,6 @@ void mac_init() {
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
-}
-
-/**
-\brief Function called by the upper layer when it wants to send a packet
-
-This function adds a IEEE802.15.4 header to the packet and leaves it the 
-OpenQueue buffer, waiting to be transmitted.
-
-\param [in] msg The packet to the transmitted
-
-\returns E_SUCCESS iff successful.
-*/
-error_t mac_send(OpenQueueEntry_t* msg) {
-   msg->owner = COMPONENT_IEEE802154E;
-   if (packetfunctions_isBroadcastMulticast(&(msg->l2_nextORpreviousHop))==TRUE) {
-      msg->l2_retriesLeft = 1;
-   } else {
-      msg->l2_retriesLeft = TXRETRIES;
-   }
-   msg->l1_txPower = TX_POWER;
-   // record the location, in the packet, where the l2 payload starts
-   msg->l2_payload = msg->payload;
-   //IEEE802.15.4 header
-   ieee802154_prependHeader(msg,
-                            msg->l2_frameType,
-                            IEEE154_SEC_NO_SECURITY,
-                            ieee154e_vars.dsn++,
-                            &(msg->l2_nextORpreviousHop)
-                            );
-   // space for 2-byte CRC
-   packetfunctions_reserveFooterSize(msg,2);
-   return E_SUCCESS;
 }
 
 //======= events
@@ -513,16 +477,16 @@ inline void activity_ti1ORri1() {
          break;
       case CELLTYPE_ADV:
          ieee154e_vars.dataToSend = openqueue_getAdvPacket();
-         if (ieee154e_vars.dataToSend==NULL) {
-            // I will be listening for an ADV
+         if (ieee154e_vars.dataToSend==NULL) {   // I will be listening for an ADV
             // change state
             changeState(S_RXDATAOFFSET);
             // arm rt1
             ieee154etimer_schedule(DURATION_rt1);
-         } else {
-            // I will be sending an ADV
+         } else {                                // I will be sending an ADV
             // change state
             changeState(S_TXDATAOFFSET);
+            // change owner
+            ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
             // fill in the ASN field of the ADV
             asnWrite(ieee154e_vars.dataToSend);
             // arm tt1
@@ -532,10 +496,11 @@ inline void activity_ti1ORri1() {
       case CELLTYPE_TX:
          schedule_getNeighbor(ieee154e_vars.asn,&neighbor);
          ieee154e_vars.dataToSend = openqueue_getDataPacket(&neighbor);
-         if (ieee154e_vars.dataToSend!=NULL) {
-            // I have a packet to send
+         if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
             // change state
             changeState(S_TXDATAOFFSET);
+            // change owner
+            ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
             // arm tt1
             ieee154etimer_schedule(DURATION_tt1);
          } else {

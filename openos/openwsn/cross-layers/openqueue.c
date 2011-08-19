@@ -52,7 +52,7 @@ error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
 OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t* toNeighbor) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
-      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E &&
+      if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
          packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop)) {
          return &openqueue_vars.queue[i];
       }
@@ -63,7 +63,8 @@ OpenQueueEntry_t* openqueue_getDataPacket(open_addr_t* toNeighbor) {
 OpenQueueEntry_t* openqueue_getAdvPacket() {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
-      if (openqueue_vars.queue[i].owner==COMPONENT_IEEE802154E && openqueue_vars.queue[i].creator==COMPONENT_RES) {
+      if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
+          openqueue_vars.queue[i].creator==COMPONENT_RES) {
          return &openqueue_vars.queue[i];
       }
    }

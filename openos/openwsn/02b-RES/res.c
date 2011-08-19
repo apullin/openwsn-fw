@@ -22,20 +22,24 @@
 //=========================== variables =======================================
 
 typedef struct {
-uint16_t periodMaintenance;
-bool     busySending;
+   uint16_t periodMaintenance;
+   bool     busySending;
+   uint8_t  dsn;                // current data sequence number
 } res_vars_t;
 
 res_vars_t res_vars;
 
 //=========================== prototypes ======================================
 
+error_t res_send_internal(OpenQueueEntry_t* msg);
+
 //=========================== public ==========================================
 
 void res_init() {
    res_vars.periodMaintenance = 16384+random_get16b()%32768; // fires after 1 sec on average
-   timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
    res_vars.busySending       = FALSE;
+   res_vars.dsn               = 0;
+   timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
 }
 
 //======= from upper layer
@@ -43,7 +47,7 @@ void res_init() {
 error_t res_send(OpenQueueEntry_t *msg) {
    msg->owner        = COMPONENT_RES;
    msg->l2_frameType = IEEE154_TYPE_DATA;
-   return mac_send(msg);
+   return res_send_internal(msg);
 }
 
 //======= from lower layer
@@ -121,10 +125,47 @@ void timer_res_fired() {
       adv->l2_nextORpreviousHop.addr_16b[0] = 0xff;
       adv->l2_nextORpreviousHop.addr_16b[1] = 0xff;
       
-      // send to MAC
-      mac_send(adv);
+      // put in queue for MAC to handle
+      res_send_internal(adv);
       res_vars.busySending = TRUE;
    }
 }
 
 //=========================== private =========================================
+
+/**
+\brief Transfer packet to MAC.
+
+This function adds a IEEE802.15.4 header to the packet and leaves it the 
+OpenQueue buffer. The very last thing it does is assigning this packet to the 
+virtual component COMPONENT_RES_TO_IEEE802154E. Whenever it gets a change,
+IEEE802154E will handle the packet.
+
+\param [in] msg The packet to the transmitted
+
+\returns E_SUCCESS iff successful.
+*/
+error_t res_send_internal(OpenQueueEntry_t* msg) {
+   // assign a number of retries
+   if (packetfunctions_isBroadcastMulticast(&(msg->l2_nextORpreviousHop))==TRUE) {
+      msg->l2_retriesLeft = 1;
+   } else {
+      msg->l2_retriesLeft = TXRETRIES;
+   }
+   // assign a TX power
+   msg->l1_txPower = TX_POWER;
+   // record the location, in the packet, where the l2 payload starts
+   msg->l2_payload = msg->payload;
+   // add a IEEE802.15.4 header
+   ieee802154_prependHeader(msg,
+                            msg->l2_frameType,
+                            IEEE154_SEC_NO_SECURITY,
+                            res_vars.dsn++,
+                            &(msg->l2_nextORpreviousHop)
+                            );
+   // reserve space for 2-byte CRC
+   packetfunctions_reserveFooterSize(msg,2);
+   // change owner
+   msg->owner  = COMPONENT_RES_TO_IEEE802154E;
+   return E_SUCCESS;
+}

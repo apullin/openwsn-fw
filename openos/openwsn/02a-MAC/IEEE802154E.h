@@ -114,9 +114,8 @@ typedef struct {
 //=========================== prototypes ======================================
 
 
-// from upper layer
+// admin
 void    mac_init();
-error_t mac_send(OpenQueueEntry_t* msg);
 
 // events
 void    ieee154e_startOfFrame(uint16_t capturedTime);
