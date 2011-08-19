@@ -22,15 +22,18 @@
 //=========================== variables =======================================
 
 typedef struct {
+   // misc
    asn_t              asn;                // current absolute slot number
-   uint8_t            state;              // state of the FSM
-   uint16_t           capturedTime;       // last captures time
    uint16_t           syncTimeout;        // how many slots left before looses sync
    bool               isSync;             // TRUE iff mote synchronized to network
+   // as shown on the chronogram
+   uint8_t            state;              // state of the FSM
    OpenQueueEntry_t*  dataToSend;         // pointer to the data to send
    OpenQueueEntry_t*  dataReceived;       // pointer to the data received
    OpenQueueEntry_t*  ackToSend;          // pointer to the ack to send
    OpenQueueEntry_t*  ackReceived;        // pointer to the ack received
+   uint16_t           lastCapturedTime;   // last captured time
+   uint16_t           syncCapturedTime;   // captured time used to sync
 } ieee154e_vars_t;
 
 ieee154e_vars_t ieee154e_vars;
@@ -107,17 +110,19 @@ void mac_init() {
    
    // initialize variables
    ieee154e_vars.asn                       = 0;
-   ieee154e_vars.state                     = S_SLEEP;
-   ieee154e_vars.dataToSend                = NULL;
-   ieee154e_vars.dataReceived              = NULL;
-   ieee154e_vars.ackToSend                 = NULL;
-   ieee154e_vars.ackReceived               = NULL;
-   ieee154e_vars.capturedTime              = 0;
+   ieee154e_vars.syncTimeout               = 0;
    if (idmanager_getIsDAGroot()==TRUE) {
       changeIsSync(TRUE);
    } else {
       changeIsSync(FALSE);
    }
+   ieee154e_vars.state                     = S_SLEEP;
+   ieee154e_vars.dataToSend                = NULL;
+   ieee154e_vars.dataReceived              = NULL;
+   ieee154e_vars.ackToSend                 = NULL;
+   ieee154e_vars.ackReceived               = NULL;
+   ieee154e_vars.lastCapturedTime          = 0;
+   ieee154e_vars.syncCapturedTime          = 0;
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
@@ -345,7 +350,7 @@ inline void activity_synchronize_startOfFrame(uint16_t capturedTime) {
    openserial_stop();
    
    // record the captured time 
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
 }
 
 inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
@@ -406,7 +411,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
       
       // synchronize the slots to the sender's
-      synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
+      synchronize(ieee154e_vars.lastCapturedTime,&ieee802514_header.src);
       
       // declare synchronized
       changeIsSync(TRUE);
@@ -600,11 +605,7 @@ inline void activity_ti4(uint16_t capturedTime) {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
-   
-   if (ieee154e_vars.capturedTime!=62) {
-      __no_operation();
-   }
+   ieee154e_vars.lastCapturedTime = capturedTime;
    
    // arm tt4
    ieee154etimer_schedule(DURATION_tt4);
@@ -634,7 +635,7 @@ inline void activity_ti5(uint16_t capturedTime) {
    radio_rfOff();
 
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
 
    // decides whether to listen for an ACK
    if (packetfunctions_isBroadcastMulticast(&ieee154e_vars.dataToSend->l2_nextORpreviousHop)==TRUE) {
@@ -727,7 +728,7 @@ inline void activity_ti8(uint16_t capturedTime) {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
 
    // arm tt8
    ieee154etimer_schedule(DURATION_tt8);
@@ -751,7 +752,7 @@ inline void activity_ti9(uint16_t capturedTime) {
    radio_rfOff();
 
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
    
    // get a buffer to put the (received) ACK in
    ieee154e_vars.ackReceived = openqueue_getFreePacketBuffer();
@@ -859,7 +860,10 @@ inline void activity_ri4(uint16_t capturedTime) {
    ieee154etimer_cancel();
 
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
+   
+   // record the captured time to sync
+   ieee154e_vars.syncCapturedTime = capturedTime;
 
    // arm rt4
    ieee154etimer_schedule(DURATION_rt4);
@@ -929,7 +933,7 @@ inline void activity_ri5(uint16_t capturedTime) {
          };
          
          // synchronize the slots to the sender's
-         synchronize(ieee154e_vars.capturedTime,&ieee802514_header.src);
+         synchronize(ieee154e_vars.lastCapturedTime,&ieee802514_header.src);
          
          // declare synchronized
          changeIsSync(TRUE);
@@ -947,7 +951,7 @@ inline void activity_ri5(uint16_t capturedTime) {
    }
    
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
    
    // if I juts received an invalid data frame, stop
    if (isValidData(&ieee802514_header)==FALSE) {
@@ -1081,7 +1085,7 @@ inline void activity_ri8(uint16_t capturedTime) {
    ieee154etimer_cancel();
    
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
    
    // arm rt8
    ieee154etimer_schedule(DURATION_rt8);
@@ -1106,7 +1110,7 @@ inline void activity_ri9(uint16_t capturedTime) {
    ieee154etimer_cancel();
    
    // record the captured time
-   ieee154e_vars.capturedTime = capturedTime;
+   ieee154e_vars.lastCapturedTime = capturedTime;
    
    // free the ack we just sent so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.ackToSend);
@@ -1337,8 +1341,9 @@ void endSlot() {
    // clear any pending timer
    ieee154etimer_cancel();
    
-   // reset capturedTime
-   ieee154e_vars.capturedTime = 0;
+   // reset capturedTimes
+   ieee154e_vars.lastCapturedTime = 0;
+   ieee154e_vars.syncCapturedTime = 0;
    
    // clean up dataToSend
    if (ieee154e_vars.dataToSend!=NULL) {
