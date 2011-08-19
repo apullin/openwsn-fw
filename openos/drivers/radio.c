@@ -213,15 +213,18 @@ be received.
 \param [out] writeToBuffer The buffer to which to write the bytes.
 */
 void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
-   uint8_t temp_crc_reg_value;
+   uint8_t temp_reg_value;
    
    // initialize the buffer
    writeToBuffer->payload = &(writeToBuffer->packet[0]);
    
-   // check if CRC is correct
-   temp_crc_reg_value = spi_read_register(RG_PHY_RSSI);
-   writeToBuffer->l1_rssi =  temp_crc_reg_value & 0x1F;      // last 5 lsb's are RSSI
-   writeToBuffer->l1_crc  = (temp_crc_reg_value & 0x80)>>7;  // msb is whether packet passed CRC
+   // read whether CRC was is correct
+   temp_reg_value = spi_read_register(RG_PHY_RSSI);
+   writeToBuffer->l1_crc  = (temp_reg_value & 0x80)>>7;  // msb is whether packet passed CRC
+   
+   // read the RSSI
+   temp_reg_value = spi_read_register(RG_PHY_ED_LEVEL);
+   writeToBuffer->l1_rssi = temp_reg_value;
    
    // copy packet from rx buffer in radio over SPI
    spi_read_buffer(writeToBuffer,2); // first read only 2 bytes to receive the length
