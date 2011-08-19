@@ -185,33 +185,34 @@ enum {
    ERR_6LOWPAN_UNSUPPORTED             = 0x0b, // unsupported 6LoWPAN parameter     [IPHC] arg1=location arg2=param
    ERR_NO_NEXTHOP                      = 0x0c, // no nextHop                        [RPL]   
    // l2
-   ERR_WRONG_STATE_IN_STARTSLOT        = 0x0d, // wrong state in startSlot          [IEEE802154EP]  arg1=state arg2=slotOffset
-   ERR_WRONG_STATE_IN_TIMERFIRES       = 0x0e, // wrong state in timer fires        [IEEE154E] arg1=state, arg2=slotOffset  
-   ERR_WRONG_STATE_IN_NEWSLOT          = 0x0f, // wrong state in start of frame     [IEEE154E] arg1=state,  arg2=slotOffset
-   ERR_WRONG_STATE_IN_ENDOFFRAME       = 0x10, // wrong state in end of frame       [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_MAXTXDATAPREPARE_OVERFLOW       = 0x11, // maxTxDataPrepare overflows        [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_MAXRXACKPREPARE_OVERFLOWS       = 0x12, // maxRxAckPrepapre overflows        [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_MAXRXDATAPREPARE_OVERFLOWS      = 0x13, // maxRxDataPrepapre overflows       [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_MAXTXACKPREPARE_OVERFLOWS       = 0x14, // maxTxAckPrepapre overflows        [IEEE154E] arg1=state, arg2=slotOffset   
-   ERR_WDDATADURATION_OVERFLOWS        = 0x15, // wdDataDuration overflows          [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WDRADIO_OVERFLOW                = 0x16, // wdRadio overflows                 [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WDRADIOTX_OVERFLOWS             = 0x17, // wdRadioTx overflows               [IEEE154E] arg1=state, arg2=slotOffset
-   ERR_WDACKDURATION_OVERFLOWS         = 0x18, // wdAckDuration overflows           [IEEE154E] arg1=state, arg2=slotOffset   
-   ERR_IEEE154_UNSUPPORTED             = 0x19, // unsupported 802154 parameter      [IEEE802154EP] arg1=location arg2=param   
-   ERR_NEIGHBORS_FULL                  = 0x1a, // neighbors table is full           [NeighborsP] arg1=MAXNUMNEIGHBORS
-   ERR_WRONG_CELLTYPE                  = 0x1b, // wrong celltype                    [Schedule,IEEE802154EP,OpenQueueP] arg1=type      
+   ERR_WRONG_STATE_IN_ENDFRAME_SYNC    = 0x0d, // wrong state in end of frame+sync
+   ERR_WRONG_STATE_IN_STARTSLOT        = 0x0e, // wrong state in startSlot          [IEEE802154EP]  arg1=state arg2=slotOffset
+   ERR_WRONG_STATE_IN_TIMERFIRES       = 0x0f, // wrong state in timer fires        [IEEE154E] arg1=state, arg2=slotOffset  
+   ERR_WRONG_STATE_IN_NEWSLOT          = 0x10, // wrong state in start of frame     [IEEE154E] arg1=state,  arg2=slotOffset
+   ERR_WRONG_STATE_IN_ENDOFFRAME       = 0x11, // wrong state in end of frame       [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXTXDATAPREPARE_OVERFLOW       = 0x12, // maxTxDataPrepare overflows        [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXRXACKPREPARE_OVERFLOWS       = 0x13, // maxRxAckPrepapre overflows        [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXRXDATAPREPARE_OVERFLOWS      = 0x14, // maxRxDataPrepapre overflows       [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_MAXTXACKPREPARE_OVERFLOWS       = 0x15, // maxTxAckPrepapre overflows        [IEEE154E] arg1=state, arg2=slotOffset   
+   ERR_WDDATADURATION_OVERFLOWS        = 0x16, // wdDataDuration overflows          [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDRADIO_OVERFLOW                = 0x17, // wdRadio overflows                 [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDRADIOTX_OVERFLOWS             = 0x18, // wdRadioTx overflows               [IEEE154E] arg1=state, arg2=slotOffset
+   ERR_WDACKDURATION_OVERFLOWS         = 0x19, // wdAckDuration overflows           [IEEE154E] arg1=state, arg2=slotOffset   
+   ERR_IEEE154_UNSUPPORTED             = 0x1a, // unsupported 802154 parameter      [IEEE802154EP] arg1=location arg2=param   
+   ERR_NEIGHBORS_FULL                  = 0x1b, // neighbors table is full           [NeighborsP] arg1=MAXNUMNEIGHBORS
+   ERR_WRONG_CELLTYPE                  = 0x1c, // wrong celltype                    [Schedule,IEEE802154EP,OpenQueueP] arg1=type      
    // drivers
-   ERR_WRONG_IRQ_STATUS                = 0x1c, // wrong IRQ_STATUS                  [radio] arg1=irq_status
+   ERR_WRONG_IRQ_STATUS                = 0x1d, // wrong IRQ_STATUS                  [radio] arg1=irq_status
    // general
-   ERR_BUSY_SENDING                    = 0x1d, // busy sending a packet             [RPLP,TCPP] arg1=location
-   ERR_UNEXPECTED_SENDDONE             = 0x1e, // sendDone for packet I didn't send [App,Advertise,KeepAlive,Reservation]
-   ERR_NO_FREE_PACKET_BUFFER           = 0x1f, // no free Queuepkt Cell             [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
-   ERR_UNSUPPORTED_COMMAND             = 0x20, // unsupported command=arg1          [SerialIOP] arg1=command
-   ERR_MSG_UNKNOWN_TYPE                = 0x21, // received message of unknown type  [NRESC,OpenQueueP] arg1=type
-   ERR_WRONG_ADDR_TYPE                 = 0x22, // wrong address type                [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
-   ERR_BRIDGE_MISMATCH                 = 0x23, // isBridge mismatch                 [NRES] arg1=code_location
-   ERR_HEADER_TOO_LONG                 = 0x24, // header too long                   [PacketFunctions] arg1=code_location
-   ERR_INPUTBUFFER_LENGTH              = 0x25, // input length problem              [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location   
+   ERR_BUSY_SENDING                    = 0x1e, // busy sending a packet             [RPLP,TCPP] arg1=location
+   ERR_UNEXPECTED_SENDDONE             = 0x1f, // sendDone for packet I didn't send [App,Advertise,KeepAlive,Reservation]
+   ERR_NO_FREE_PACKET_BUFFER           = 0x20, // no free Queuepkt Cell             [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
+   ERR_UNSUPPORTED_COMMAND             = 0x21, // unsupported command=arg1          [SerialIOP] arg1=command
+   ERR_MSG_UNKNOWN_TYPE                = 0x22, // received message of unknown type  [NRESC,OpenQueueP] arg1=type
+   ERR_WRONG_ADDR_TYPE                 = 0x23, // wrong address type                [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
+   ERR_BRIDGE_MISMATCH                 = 0x24, // isBridge mismatch                 [NRES] arg1=code_location
+   ERR_HEADER_TOO_LONG                 = 0x25, // header too long                   [PacketFunctions] arg1=code_location
+   ERR_INPUTBUFFER_LENGTH              = 0x26, // input length problem              [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location   
 };
 
 //=========================== typedef =========================================

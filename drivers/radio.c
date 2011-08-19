@@ -274,7 +274,7 @@ by checking the contents of the RG_IRQ_STATUS register off the radio.
 Reading this register also lowers the IRQ_RF pin.
 */
 void isr_radio() {
-   uint8_t capturedTime;
+   uint16_t capturedTime;
    uint8_t irq_status;
    // capture the time
    capturedTime = ieee154etimer_getCapturedTime();
