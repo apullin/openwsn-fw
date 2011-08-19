@@ -25,14 +25,18 @@ typedef struct {
 
 //=========================== prototypes ======================================
 
+// admin
 void               openqueue_init();
+bool               openqueue_debugPrint();
+// called by any component
 OpenQueueEntry_t*  openqueue_getFreePacketBuffer();
 error_t            openqueue_freePacketBuffer(OpenQueueEntry_t* pkt);
-OpenQueueEntry_t*  openqueue_getDataPacket(open_addr_t* toNeighbor);
-OpenQueueEntry_t*  openqueue_getAdvPacket();
-error_t            openqueue_removeAllPacketsToNeighbor(open_addr_t* neighbor);
 void               openqueue_removeAllOwnedBy(uint8_t owner);
-void               openqueue_reset_entry(OpenQueueEntry_t* entry);
-bool               openqueue_debugPrint();
+// called by res
+OpenQueueEntry_t*  openqueue_resGetSentPacket();
+OpenQueueEntry_t*  openqueue_resGetReceivedPacket();
+// called by IEEE80215E
+OpenQueueEntry_t*  openqueue_macGetDataPacket(open_addr_t* toNeighbor);
+OpenQueueEntry_t*  openqueue_macGetAdvPacket();
 
 #endif

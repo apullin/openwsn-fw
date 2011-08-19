@@ -1,7 +1,7 @@
 /**
 \brief Implementation of the IEEE802.15.4e RES layer
 
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
 */
 
 #include "openwsn.h"
@@ -42,6 +42,13 @@ void res_init() {
    timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
 }
 
+bool res_debugPrint() {
+   uint16_t output=0;
+   output = neighbors_getMyDAGrank();
+   openserial_printStatus(STATUS_RES_DAGRANK,(uint8_t*)&output,1);
+   return TRUE;
+}
+
 //======= from upper layer
 
 error_t res_send(OpenQueueEntry_t *msg) {
@@ -52,7 +59,19 @@ error_t res_send(OpenQueueEntry_t *msg) {
 
 //======= from lower layer
 
-void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
+void task_resNotifSendDone() {
+   OpenQueueEntry_t* msg;
+   // get recently-sent packet from openqueue
+   msg = openqueue_resGetSentPacket();
+   if (msg==NULL) {
+      // log the error
+      openserial_printError(COMPONENT_RES,
+                            ERR_NO_SENT_PACKET,
+                            0,
+                            0);
+      // abort
+      return;
+   }
    msg->owner = COMPONENT_RES;
    if (msg->creator == COMPONENT_RES) {
       // discard (ADV) packets this component has created
@@ -64,11 +83,23 @@ void res_sendDone(OpenQueueEntry_t* msg, error_t error) {
       timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
    } else {
       // send the rest up the stack
-      iphc_sendDone(msg,error);
+      iphc_sendDone(msg,msg->l2_sendDoneError);
    }
 }
 
-void res_receive(OpenQueueEntry_t* msg) {
+void task_resNotifReceive() {
+   OpenQueueEntry_t* msg;
+   // get received packet from openqueue
+   msg = openqueue_resGetReceivedPacket();
+   if (msg==NULL) {
+      // log the error
+      openserial_printError(COMPONENT_RES,
+                            ERR_NO_RECEIVED_PACKET,
+                            0,
+                            0);
+      // abort
+      return;
+   }
    msg->owner = COMPONENT_RES;
    // send the rest up the stack
    switch (msg->l2_frameType) {
@@ -77,16 +108,12 @@ void res_receive(OpenQueueEntry_t* msg) {
          break;
       default:
          openqueue_freePacketBuffer(msg);
-         openserial_printError(COMPONENT_RES,ERR_MSG_UNKNOWN_TYPE,msg->l2_frameType,0);
+         openserial_printError(COMPONENT_RES,
+                               ERR_MSG_UNKNOWN_TYPE,
+                               msg->l2_frameType,
+                               0);
          break;
    }
-}
-
-bool res_debugPrint() {
-   uint16_t output=0;
-   output = neighbors_getMyDAGrank();
-   openserial_printStatus(STATUS_RES_DAGRANK,(uint8_t*)&output,1);
-   return TRUE;
 }
 
 //======= timer

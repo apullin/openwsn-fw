@@ -7,7 +7,6 @@
 #include "gina_config.h"
 #include "radio.h"
 #include "packetfunctions.h"
-#include "openqueue.h"
 #include "IEEE802154E.h"
 #include "ieee154etimer.h"
 #include "spi.h"

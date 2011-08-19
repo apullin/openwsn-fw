@@ -1,8 +1,8 @@
 /**
 \brief Minimal FCFS scheduler for the GINA2.2b/c boards.
 
-\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
 \author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
+\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
 */
 
 //ISR_RADIO
@@ -19,13 +19,13 @@
 #include "ieee154etimer.h"
 #include "IEEE802154E.h"
 #include "i2c.h"
+#include "res.h"
 #include "openserial.h"
 
 //=========================== variables =======================================
 
 typedef struct {
    uint8_t task_list[MAX_NUM_TASKS];
-   uint8_t index_first_task;
    uint8_t num_tasks;
 } scheduler_vars_t;
 
@@ -38,20 +38,35 @@ extern timers_vars_t timers_vars;
 //=========================== public ==========================================
 
 void scheduler_init() {
-   uint8_t task_counter;
-   scheduler_vars.index_first_task = 0;
-   scheduler_vars.num_tasks        = 0;
+   uint8_t i;
+   // enable debug pins
    DEBUG_PIN_TASK_INIT();
    DEBUG_PIN_ISR_INIT();
-   for (task_counter=0;task_counter<MAX_NUM_TASKS;task_counter++) {
-      scheduler_vars.task_list[task_counter] = 0;
+   // initialization module variables
+   scheduler_vars.num_tasks       = 0;
+   for (i=0;i<MAX_NUM_TASKS;i++) {
+      scheduler_vars.task_list[i] = 0;
    }
+   // enable the comparatorA interrupt to SW can wake up the scheduler
+   CACTL1 = CAIE;
 }
 
 void scheduler_start() {
    while (1) {                                   // IAR should halt here if nothing to do
       while(scheduler_vars.num_tasks>0) {
-         if (scheduler_vars.task_list[TASKID_RES]>0) {
+         if        (scheduler_vars.task_list[TASKID_RESNOTIF_RX]>0) {
+            scheduler_vars.task_list[TASKID_RESNOTIF_RX]--;
+            scheduler_vars.num_tasks--;
+#ifdef OPENWSN_STACK
+            task_resNotifReceive();
+#endif
+         } else if (scheduler_vars.task_list[TASKID_RESNOTIF_TXDONE]>0) {
+            scheduler_vars.task_list[TASKID_RESNOTIF_TXDONE]--;
+            scheduler_vars.num_tasks--;
+#ifdef OPENWSN_STACK
+            task_resNotifSendDone();
+#endif
+         } else if (scheduler_vars.task_list[TASKID_RES]>0) {
             scheduler_vars.task_list[TASKID_RES]--;
             scheduler_vars.num_tasks--;
 #ifdef OPENWSN_STACK
@@ -111,7 +126,19 @@ void scheduler_push_task(int8_t task_id) {
 
 //=========================== interrupt handlers ==============================
 
-//======= handled as tasks
+//======= interrupt which wakes up the scheduler from SW
+
+#pragma vector = COMPARATORA_VECTOR
+__interrupt void COMPARATORA_ISR (void) {
+   CAPTURE_TIME();
+   DEBUG_PIN_ISR_SET();
+#ifdef OPENWSN_STACK
+   __bic_SR_register_on_exit(CPUOFF);            // restart CPU
+#endif
+   DEBUG_PIN_ISR_CLR();
+}
+
+//======= interrupts which post a task
 
 #pragma vector = PORT2_VECTOR
 __interrupt void PORT2_ISR (void) {
@@ -221,7 +248,7 @@ __interrupt void TIMERB1through6_ISR (void) {
    DEBUG_PIN_ISR_CLR();
 }
 
-//======= handled in ISR mode
+//======= interrupts handled directly in ISR mode
 
 /*
 // TimerA CCR0 interrupt service routine
