@@ -59,11 +59,11 @@ void idmanager_init() {
    }
 }
 
-bool idmanager_getIsDAGroot() {
+__monitor bool idmanager_getIsDAGroot() {
    return idmanager_vars.isDAGroot;
 }
 
-void idmanager_setIsDAGroot(bool newRole) {
+__monitor void idmanager_setIsDAGroot(bool newRole) {
    idmanager_vars.isDAGroot = newRole;
    neighbors_updateMyDAGrankAndNeighborPreference();
 }
@@ -76,7 +76,7 @@ void idmanager_setIsBridge(bool newRole) {
    idmanager_vars.isBridge = newRole;
 }
 
-open_addr_t* idmanager_getMyID(uint8_t type) {
+__monitor open_addr_t* idmanager_getMyID(uint8_t type) {
    switch (type) {
       case ADDR_16B:
          return &idmanager_vars.my16bID;
@@ -95,7 +95,8 @@ open_addr_t* idmanager_getMyID(uint8_t type) {
          return NULL;
    }
 }
-error_t idmanager_setMyID(open_addr_t* newID) {
+
+__monitor error_t idmanager_setMyID(open_addr_t* newID) {
    switch (newID->type) {
       case ADDR_16B:
          memcpy(&idmanager_vars.my16bID,newID,sizeof(open_addr_t));
@@ -120,7 +121,7 @@ error_t idmanager_setMyID(open_addr_t* newID) {
    return E_SUCCESS;
 }
 
-bool idmanager_isMyAddress(open_addr_t* addr) {
+__monitor bool idmanager_isMyAddress(open_addr_t* addr) {
    open_addr_t temp_my128bID;
    switch (addr->type) {
       case ADDR_16B:
