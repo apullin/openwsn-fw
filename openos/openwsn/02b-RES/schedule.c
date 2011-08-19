@@ -124,25 +124,25 @@ void schedule_init() {
    schedule_vars.schedule[6].type                          = CELLTYPE_SERIALRX;
 }
 
-cellType_t schedule_getType(asn_t asn_param) {
+__monitor cellType_t schedule_getType(asn_t asn_param) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
    return schedule_vars.schedule[slotOffset].type;
 }
 
-channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
+__monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
    return schedule_vars.schedule[slotOffset].channelOffset;
 }
 
-void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
+__monitor void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
    memcpy(addrToWrite,&schedule_vars.schedule[slotOffset].neighbor,sizeof(open_addr_t));
 }
 
-void schedule_indicateUse(asn_t asn, bool ack){
+__monitor void schedule_indicateUse(asn_t asn, bool ack){
    uint16_t slotOffset;
    
    slotOffset = asn%SCHEDULELENGTH;
