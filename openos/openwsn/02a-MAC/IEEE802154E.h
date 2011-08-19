@@ -17,36 +17,39 @@
 #define TXRETRIES              3
 #define SYNCTIMEOUT          300 // @10ms per slot -> 3 seconds
 #define TX_POWER              31 //1=-25dBm, 31=0dBm (max value)
+#define RESYNCHRONIZATIONGUARD 5 // in 32kHz ticks. min distance to the end of the slot to succesfully synchronize
 
 // the different states of the IEEE802.15.4e state machine
 enum ieee154e_state_enum {
    S_SLEEP                   = 0x00,   // ready for next slot
    // synchronizing
-   S_SYNCHRONIZING           = 0x01,   // synchronizing to the network
+   S_SYNCLISTEN              = 0x01,   // listened for packet to synchronize to network
+   S_SYNCRX                  = 0x02,   // receiving packet to synchronize to network
+   S_SYNCPROC                = 0x03,   // processing packet just received
    // TX
-   S_TXDATAOFFSET            = 0x02,   // waiting to prepare for Tx data
-   S_TXDATAPREPARE           = 0x03,   // preparing for Tx data
-   S_TXDATAREADY             = 0x04,   // ready to Tx data, waiting for 'go'
-   S_TXDATADELAY             = 0x05,   // 'go' signal given, waiting for SFD Tx data
-   S_TXDATA                  = 0x06,   // Tx data SFD received, sending bytes
-   S_RXACKOFFSET             = 0x07,   // Tx data done, waiting to prepare for Rx ACK
-   S_RXACKPREPARE            = 0x08,   // preparing for Rx ACK
-   S_RXACKREADY              = 0x09,   // ready to Rx ACK, waiting for 'go'
-   S_RXACKLISTEN             = 0x0a,   // idle listening for ACK
-   S_RXACK                   = 0x0b,   // Rx ACK SFD received, receiving bytes
-   S_TXPROC                  = 0x0c,   // processing sent data
+   S_TXDATAOFFSET            = 0x04,   // waiting to prepare for Tx data
+   S_TXDATAPREPARE           = 0x05,   // preparing for Tx data
+   S_TXDATAREADY             = 0x06,   // ready to Tx data, waiting for 'go'
+   S_TXDATADELAY             = 0x07,   // 'go' signal given, waiting for SFD Tx data
+   S_TXDATA                  = 0x08,   // Tx data SFD received, sending bytes
+   S_RXACKOFFSET             = 0x09,   // Tx data done, waiting to prepare for Rx ACK
+   S_RXACKPREPARE            = 0x0a,   // preparing for Rx ACK
+   S_RXACKREADY              = 0x0b,   // ready to Rx ACK, waiting for 'go'
+   S_RXACKLISTEN             = 0x0c,   // idle listening for ACK
+   S_RXACK                   = 0x0d,   // Rx ACK SFD received, receiving bytes
+   S_TXPROC                  = 0x0e,   // processing sent data
    // RX
-   S_RXDATAOFFSET            = 0x0d,   // waiting to prepare for Rx data
-   S_RXDATAPREPARE           = 0x0e,   // preparing for Rx data
-   S_RXDATAREADY             = 0x0f,   // ready to Rx data, waiting for 'go'
-   S_RXDATALISTEN            = 0x10,   // idle listening for data
-   S_RXDATA                  = 0x11,   // data SFD received, receiving more bytes
-   S_TXACKOFFSET             = 0x12,   // waiting to prepare for Tx ACK
-   S_TXACKPREPARE            = 0x13,   // preparing for Tx ACK
-   S_TXACKREADY              = 0x14,   // Tx ACK ready, waiting for 'go'
-   S_TXACKDELAY              = 0x15,   // 'go' signal given, waiting for SFD Tx ACK
-   S_TXACK                   = 0x16,   // Tx ACK SFD received, sending bytes
-   S_RXPROC                  = 0x17,   // processing received data
+   S_RXDATAOFFSET            = 0x0f,   // waiting to prepare for Rx data
+   S_RXDATAPREPARE           = 0x10,   // preparing for Rx data
+   S_RXDATAREADY             = 0x11,   // ready to Rx data, waiting for 'go'
+   S_RXDATALISTEN            = 0x12,   // idle listening for data
+   S_RXDATA                  = 0x13,   // data SFD received, receiving more bytes
+   S_TXACKOFFSET             = 0x14,   // waiting to prepare for Tx ACK
+   S_TXACKPREPARE            = 0x15,   // preparing for Tx ACK
+   S_TXACKREADY              = 0x16,   // Tx ACK ready, waiting for 'go'
+   S_TXACKDELAY              = 0x17,   // 'go' signal given, waiting for SFD Tx ACK
+   S_TXACK                   = 0x18,   // Tx ACK SFD received, sending bytes
+   S_RXPROC                  = 0x19,   // processing received data
 };
 
 // Atomic durations

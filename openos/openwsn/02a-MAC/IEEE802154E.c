@@ -332,11 +332,16 @@ bool mac_debugPrint() {
 //======= SYNCHRONIZING
 
 inline void activity_synchronize_newSlot() {
+   // I'm in the middle of receiving a packet
+   if (ieee154e_vars.state==S_SYNCRX) {
+      return;
+   }
+   
    // if this is the first time I call this function while not synchronized,
    // switch on the radio in Rx mode
-   if (ieee154e_vars.state!=S_SYNCHRONIZING) {
+   if (ieee154e_vars.state!=S_SYNCLISTEN) {
       // change state
-      changeState(S_SYNCHRONIZING);
+      changeState(S_SYNCLISTEN);
       
       // turn off the radio (in case it wasn't yet)
       radio_rfOff();
@@ -349,25 +354,49 @@ inline void activity_synchronize_newSlot() {
       radio_rxNow();
    }
 
-   //we want to be able to receive and transmist serial even when not synchronized
-   //take turns every other slot to send or receive
+   // we want to be able to receive and transmist serial even when not synchronized
+   // take turns every other slot to send or receive
    openserial_stop();
-   if(ieee154e_vars.asn%2 == 0){
+   if (ieee154e_vars.asn%2==0) {
       openserial_startOutput();
-   }else{
+   } else {
       openserial_startInput();
    }
 }
 
 inline void activity_synchronize_startOfFrame(uint16_t capturedTime) {
-   // get the captured time 
+   
+   // don't care about packet if I'm not listening
+   if (ieee154e_vars.state!=S_SYNCLISTEN) {
+      return;
+   }
+   
+   // change state
+   changeState(S_SYNCRX);
+   
+   // stop the serial
+   openserial_stop();
+   
+   // record the captured time 
    ieee154e_vars.capturedTime = capturedTime;
-   //just in case, stop the serial if it's running
-   openserial_stop();   
 }
 
 inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    ieee802154_header_iht ieee802514_header;
+   
+   // check state
+   if (ieee154e_vars.state!=S_SYNCRX) {
+      // log the error
+      openserial_printError(COMPONENT_IEEE802154E,
+                            ERR_WRONG_STATE_IN_ENDFRAME_SYNC,
+                            ieee154e_vars.state,
+                            0);
+      // abort
+      endSlot();
+   }
+   
+   // change state
+   changeState(S_SYNCPROC);
    
    // get a buffer to put the (received) frame in
    ieee154e_vars.dataReceived = openqueue_getFreePacketBuffer();
@@ -415,15 +444,21 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       // declare synchronized
       changeIsSync(TRUE);
       
-      // change state
-      changeState(S_SLEEP);
+      // free the received data buffer so corresponding RAM memory can be recycled
+      openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
+      
+      // clear local variable
+      ieee154e_vars.dataReceived = NULL;
+      
+      // official end of synchronization
+      endSlot();
+   } else {
+      // free the received data buffer so corresponding RAM memory can be recycled
+      openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
+      
+      // clear local variable
+      ieee154e_vars.dataReceived = NULL;
    }
-   
-   // free the received data buffer so corresponding RAM memory can be recycled
-   openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
-   
-   // clear local variable
-   ieee154e_vars.dataReceived = NULL;
 }
 
 //======= TX
@@ -1179,14 +1214,24 @@ inline uint16_t asnRead(OpenQueueEntry_t* advFrame) {
 void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
    int16_t  correction;
    uint16_t newTaccr0;
+   uint16_t currentTar;
+   uint16_t currentTaccr0;
+   // record the current states of the TAR and TACCR0 registers
+   currentTar    = TAR;
+   currentTaccr0 = TACCR0;
+   // only resynchronize if I'm not a DAGroot
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
-      if (ieee154e_vars.isSync==TRUE) {
-         correction        = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
-         newTaccr0      =   TsSlotDuration;
-      } else {
-         correction        = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
-         //newTaccr0      = 2*TsSlotDuration;
-         newTaccr0      = TsSlotDuration;
+      correction        = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+      newTaccr0         = TsSlotDuration;
+      // detect whether I'm too close to the edge of the slot, in that case,
+      // skip a slot and increase the temporary slot length to be 2 slots long
+      if (currentTar<timeReceived ||
+          currentTaccr0-currentTar<RESYNCHRONIZATIONGUARD) {
+         DEBUG_PIN_SLOT_TOGGLE();
+         TACTL         &= ~TAIFG;
+         newTaccr0     +=  TsSlotDuration;
+         ieee154e_vars.asn++;
+         DEBUG_PIN_SLOT_TOGGLE();
       }
       newTaccr0         = (uint16_t)((int16_t)newTaccr0+correction);
       TACCR0            = newTaccr0;
@@ -1242,7 +1287,7 @@ void changeState(uint8_t newstate) {
    ieee154e_vars.state = newstate;
    // wiggle the FSM debug pin
    switch (ieee154e_vars.state) {
-      case S_SYNCHRONIZING:
+      case S_SYNCLISTEN:
       case S_TXDATAOFFSET:
          DEBUG_PIN_FSM_SET();
          break;
@@ -1250,6 +1295,8 @@ void changeState(uint8_t newstate) {
       case S_RXDATAOFFSET:
          DEBUG_PIN_FSM_CLR();
          break;
+      case S_SYNCRX:
+      case S_SYNCPROC:
       case S_TXDATAPREPARE:
       case S_TXDATAREADY:
       case S_TXDATADELAY:
