@@ -1,7 +1,9 @@
 /**
 \defgroup TCP TCP
 
-\brief TCP implementation (as per http://tools.ietf.org/html/rfc793)
+\brief TCP implementation.
+
+This implementation follows  http://tools.ietf.org/html/rfc793.
 
 See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation.
 

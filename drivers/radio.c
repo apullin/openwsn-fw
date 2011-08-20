@@ -9,8 +9,17 @@
 
 //=========================== variables =======================================
 
+/**
+Internal variables of the Radio module.
+*/
 typedef struct {
-   uint8_t state;  // the current state of the radio (only used for debug)
+   /**
+   The current state of the radio. Possible values are listed in
+   radio_state_enum. Note that the radio driver does not enforce any state
+   machine, so this state is kept up to date by the driver only for inspection
+   during debug.
+   */
+   uint8_t state;
 } radio_vars_t;
 
 radio_vars_t radio_vars;
@@ -68,8 +77,8 @@ This function will write the frequency register in the radio over
 SPI.
 
 \param [in] frequency The frequency to set the radio at, an
-                      integer between 11 (2.405GHz) and
-                      26 (2.480GHz).
+                      integer between 11 (for 2.405GHz) and
+                      26 (for 2.480GHz).
 */
 void radio_setFrequency(uint8_t frequency) {
    // change state
@@ -143,6 +152,10 @@ void radio_txEnable() {
 \brief Start transmitting.
 
 Tells the radio to transmit the packet immediately.
+
+\note After this function is called, it takes the radio
+      about 220us to transmit the SFD. This is the time it takes to transmit
+      a 4B phyiscal preamble (120us) and some 100us of overhead.
 */
 void radio_txNow() {
    // change state
