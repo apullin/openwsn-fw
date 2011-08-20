@@ -7,6 +7,13 @@
 #ifndef __TIMER_H
 #define __TIMER_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Timer
+\{
+*/
+
 #include "msp430x26x.h" 
 
 //=========================== define ==========================================
@@ -45,5 +52,10 @@ void pwm_nexttick(void);
 void pwm_sleep(int ticks);
 int  pwm_test(void);
 void pwm_squiggle(void);
+
+/**
+\}
+\}
+*/
 
 #endif

@@ -7,6 +7,13 @@
 #ifndef __NEIGHBORS_H
 #define __NEIGHBORS_H
 
+/**
+\addtogroup MAChigh
+\{
+\addtogroup Neighbors
+\{
+*/
+
 //=========================== define ==========================================
 
 #define MAXNUMNEIGHBORS            10
@@ -54,5 +61,10 @@ dagrank_t neighbors_getMyDAGrank();
 uint8_t   neighbors_getNumNeighbors();
 void      neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type);
 bool      neighbors_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif

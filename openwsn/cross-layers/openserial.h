@@ -7,6 +7,13 @@
 #ifndef __OPENSERIAL_H
 #define __OPENSERIAL_H
 
+/**
+\addtogroup cross-layers
+\{
+\addtogroup OpenSerial
+\{
+*/
+
 //=========================== define ==========================================
 
 #define SERIAL_OUTPUT_BUFFER_SIZE 300
@@ -39,5 +46,10 @@ bool    openserial_debugPrint();
 // interrupt handlers
 void    isr_openserial_rx();
 void    isr_openserial_tx();
+
+/**
+\}
+\}
+*/
 
 #endif

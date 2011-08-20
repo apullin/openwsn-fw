@@ -7,6 +7,13 @@
 #ifndef __ICMPv6ROUTER_H
 #define __ICMPv6ROUTER_H
 
+/**
+\addtogroup IPv6
+\{
+\addtogroup ICMPv6Router
+\{
+*/
+
 //=========================== define ==========================================
 
 //=========================== typedef =========================================
@@ -20,5 +27,10 @@ void icmpv6router_trigger();
 void icmpv6router_sendDone(OpenQueueEntry_t* msg, error_t error);
 void icmpv6router_receive(OpenQueueEntry_t* msg);
 bool icmpv6router_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif

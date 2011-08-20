@@ -11,6 +11,13 @@
 #ifndef __I2C_H
 #define __I2C_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup I2C
+\{
+*/
+
 #include "stdint.h"
 
 //=========================== define ==========================================
@@ -39,5 +46,10 @@ unsigned char i2c_slave_present(int bus_num,unsigned char slave_address);
 // interrupt handlers
 void isr_i2c_tx(int bus_num);
 void isr_i2c_rx(int bus_num);
+
+/**
+\}
+\}
+*/
 
 #endif

@@ -8,6 +8,13 @@
 #ifndef __TIMERS_H
 #define __TIMERS_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Timers
+\{
+*/
+
 #include "openwsn.h"
 
 //=========================== define ==========================================
@@ -55,5 +62,10 @@ void timer_rpl_fired();
 void timer_tcp_fired();
 void timer_appudptimer_fired();
 #endif
+
+/**
+\}
+\}
+*/
 
 #endif

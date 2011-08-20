@@ -7,6 +7,13 @@
 #ifndef __IPHC_H
 #define __IPHC_H
 
+/**
+\addtogroup LoWPAN
+\{
+\addtogroup IPHC
+\{
+*/
+
 //=========================== define ==========================================
 
 enum IPHC_enums {
@@ -101,5 +108,10 @@ error_t iphc_sendFromBridge(OpenQueueEntry_t *msg);
 void    iphc_sendDone(OpenQueueEntry_t* msg, error_t error);
 void    iphc_receive(OpenQueueEntry_t* msg);
 bool    iphc_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif

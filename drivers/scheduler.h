@@ -8,6 +8,13 @@
 #ifndef __SCHEDULER_H
 #define __SCHEDULER_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Scheduler
+\{
+*/
+
 #include "msp430x26x.h"
 #include "stdint.h"
 #include "radio.h"
@@ -78,5 +85,10 @@ void isr_i2crx();
 #ifdef ISR_I2CTX
 void isr_i2ctx();
 #endif
+
+/**
+\}
+\}
+*/
 
 #endif

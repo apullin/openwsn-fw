@@ -7,6 +7,13 @@
 #ifndef __SCHEDULE_H
 #define __SCHEDULE_H
 
+/**
+\addtogroup MAChigh
+\{
+\addtogroup Schedule
+\{
+*/
+
 #include "openwsn.h"
 
 //=========================== define ==========================================
@@ -49,4 +56,9 @@ __monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param);
 __monitor void            schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite);
           bool            schedule_debugPrint();
 
+/**
+\}
+\}
+*/
+          
 #endif

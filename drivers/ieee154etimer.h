@@ -1,4 +1,4 @@
-/**
+ /**
 \brief Driver for the IEEE802.15.4e timers.
 
 \author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
@@ -6,6 +6,13 @@
 
 #ifndef __IEEE154ETIMER_H
 #define __IEEE154ETIMER_H
+
+/**
+\addtogroup MAClow
+\{
+\addtogroup IEEE802154Etimer
+\{
+*/
 
 #include "openwsn.h"
 
@@ -31,5 +38,10 @@ void     ieee154etimer_init();
 void     ieee154etimer_schedule(uint16_t offset);
 void     ieee154etimer_cancel();
 uint16_t ieee154etimer_getCapturedTime();
+
+/**
+\}
+\}
+*/
 
 #endif

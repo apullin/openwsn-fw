@@ -7,6 +7,13 @@
 #ifndef __MAGNETOMETER_H
 #define __MAGNETOMETER_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Magnetometer
+\{
+*/
+
 #include "msp430x26x.h"
 #include "stdint.h"
 #include "i2c.h"
@@ -57,5 +64,10 @@ void magnetometer_enable();
 void magnetometer_disable();
 void magnetometer_get_config();
 void magnetometer_get_measurement(uint8_t* spaceToWrite);
+
+/**
+\}
+\}
+*/
 
 #endif

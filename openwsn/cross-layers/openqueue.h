@@ -7,6 +7,13 @@
 #ifndef __OPENQUEUE_H
 #define __OPENQUEUE_H
 
+/**
+\addtogroup cross-layers
+\{
+\addtogroup OpenQueue
+\{
+*/
+
 #include "openwsn.h"
 #include "IEEE802154.h"
 
@@ -38,5 +45,10 @@ __monitor OpenQueueEntry_t*  openqueue_resGetReceivedPacket();
 // called by IEEE80215E
 __monitor OpenQueueEntry_t*  openqueue_macGetDataPacket(open_addr_t* toNeighbor);
 __monitor OpenQueueEntry_t*  openqueue_macGetAdvPacket();
+
+/**
+\}
+\}
+*/
 
 #endif

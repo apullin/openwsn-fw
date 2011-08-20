@@ -7,6 +7,13 @@
 #ifndef __IDMANAGER_H
 #define __IDMANAGER_H
 
+/**
+\addtogroup cross-layers
+\{
+\addtogroup IDManager
+\{
+*/
+
 #include "openwsn.h"
 
 //=========================== define ==========================================
@@ -37,5 +44,10 @@ __monitor bool         idmanager_isMyAddress(open_addr_t* addr);
           void         idmanager_triggerAboutBridge();
           void         idmanager_triggerAboutRoot();
           bool         idmanager_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif

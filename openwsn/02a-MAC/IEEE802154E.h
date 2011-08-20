@@ -1,10 +1,9 @@
 /**
-\brief IEEE802.15.4e TSCH
-
-\author Branko Kerkez   <bkerkez@berkeley.edu>, March 2011
-\author Fabien Chraim   <chraim@eecs.berkeley.edu>, June 2011
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
- */
+\addtogroup MAClow
+\{
+\addtogroup IEEE802154E
+\{
+*/
 
 #ifndef __IEEE802154E_H
 #define __IEEE802154E_H
@@ -123,5 +122,10 @@ void    ieee154e_endOfFrame(uint16_t capturedTime);
 
 // misc
 bool    mac_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif
