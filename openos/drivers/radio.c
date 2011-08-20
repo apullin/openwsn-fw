@@ -29,10 +29,9 @@ radio_vars_t radio_vars;
 //=========================== public ==========================================
 
 /**
-\brief This function initializes this module.
+\brief Initializes this module.
 
-Call this function once before any other function in this module, possibly
-during boot-up.
+\pre Call this function once before any other function in this module.
 */
 void radio_init() {
    // change state
@@ -73,10 +72,12 @@ void radio_init() {
 /**
 \brief Set the radio frequency.
 
-This function will write the frequency register in the radio over
-SPI.
+Writes the frequency register in the radio over SPI.
 
-\param [in] frequency The frequency to set the radio at, an
+\pre The RF chain of the radio must be off for this
+     to have any effect.
+
+\param [in] frequency The frequency to set the radio at: an
                       integer between 11 (for 2.405GHz) and
                       26 (for 2.480GHz).
 */
@@ -98,6 +99,8 @@ void radio_setFrequency(uint8_t frequency) {
 
 /**
 \brief Load a packet in the radio's TX buffer.
+
+\pre The RF chain of the radio must be off when calling this function.
 
 \param [in] packet The packet to write into the buffer.
 */
@@ -129,8 +132,13 @@ void radio_loadPacket(OpenQueueEntry_t* packet) {
 /**
 \brief Enable the radio in TX mode.
 
-This function turns everything on in the radio so it can
-transmit, but does not actually transmit the bytes.
+Turns everything on in the radio so it can transmit
+
+\pre Call #radio_loadPacket before calling this function.
+
+\post Everything is ready in the radio to transmit the packet, but only
+      when #radio_txNow is called in the packet actually sent. #radio_txEnable
+      and #radio_txNow are always supposed to be called in sequence.
 */
 void radio_txEnable() {
    // change state
@@ -153,9 +161,12 @@ void radio_txEnable() {
 
 Tells the radio to transmit the packet immediately.
 
+\pre Call #radio_txEnable before calling this function.
+
 \note After this function is called, it takes the radio
       about 220us to transmit the SFD. This is the time it takes to transmit
-      a 4B phyiscal preamble (120us) and some 100us of overhead.
+      a 4B phyiscal preamble (120us) and some 100us of overhead. This value
+      might change if you configure the radio to sent more/less preamble bytes.
 */
 void radio_txNow() {
    // change state
@@ -166,9 +177,12 @@ void radio_txNow() {
    P4OUT &= ~0x80;
    
    // The AT86RF231 does not generate an interrupt when the radio transmits the
-   // SFD. If we leave this funtion like this, tt3 will expire, triggering tie2.
-   // Instead, we will cheat an mimick a start of frame event by calling
-   // ieee154e_startOfFrame from here
+   // SFD, which messes up the MAC state machine. The danger is that, if we leave
+   // this funtion like this, any radio watchdog timer will expire.
+   // Instead, we cheat an mimick a start of frame event by calling
+   // ieee154e_startOfFrame from here. This also means that software can never catch
+   // a radio glitch by which #radio_txEnable would not be followed by a packet being
+   // transmitted (I've never seen that).
    ieee154e_startOfFrame(ieee154etimer_getCapturedTime());
 }
 
@@ -177,8 +191,13 @@ void radio_txNow() {
 /**
 \brief Enable the radio in RX mode.
 
-This function turns everything on in the radio so it can
-receive, but does not actually receive the bytes.
+Turns everything on in the radio so it can receive.
+
+\pre The radio should not be busy transmitting when calling this function.
+
+\note This radio also actually starts receiving. From MAC's point
+of view, it needs to call #radio_rxNow to start receiving, but this
+radio does not allow this functionality.
 */
 void radio_rxEnable() {
    // change state
@@ -199,13 +218,15 @@ void radio_rxEnable() {
 }
 
 /**
-\brief Start receoving.
+\brief Start receiving.
 
-Tells the radio to starte listening for a packet immediately.
+\pre Call #radio_rxEnable before calling this function.
+
+\note This is a dummy function which does not do anything since
+this radio is already listening after #radio_rxEnable is called.
+This function is however "implemented" to be compliant with the MAC.
 */
 void radio_rxNow() {
-   // this function doesn't do anything since this radio is already
-   // listening after radio_rxEnable() is called.
 }
 
 /**
@@ -214,7 +235,12 @@ void radio_rxNow() {
 Copies the bytes of the packet in the buffer provided as an argument.
 If, for some reason, the length byte of the received packet indicates
 a length >127 (which is impossible), only the first two bytes will
-be received.
+be received. And the reception will be aborted.
+
+This function also populates the #OpenQueueEntry_t->l1_crc and
+#OpenQueueEntry_t->l1_rssi fields.
+
+\pre You must have received a packet before calling this function.
 
 \param [out] writeToBuffer The buffer to which to write the bytes.
 */
@@ -277,10 +303,10 @@ void radio_rfOff() {
 /**
 \brief Radio interrupt handler function.
 
-this function is called by the scheduler when the radio pulses
-the IRQ_RF pin. This function will check what caused the interrupt
-by checking the contents of the RG_IRQ_STATUS register off the radio.
-Reading this register also lowers the IRQ_RF pin.
+Called by the scheduler when the radio pulses the <tt>IRQ_RF</tt> pin.
+This function checks what caused the interrupt by looking at the contents
+of the <tt>RG_IRQ_STATUS</tt> register of the radio. Reading this register
+also lowers the <tt>IRQ_RF</tt> pin.
 */
 void isr_radio() {
    uint16_t capturedTime;
