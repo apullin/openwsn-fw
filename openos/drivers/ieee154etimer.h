@@ -4,7 +4,7 @@
 /**
 \addtogroup MAClow
 \{
-\addtogroup IEEE802154Etimer
+\addtogroup ieee154etimer
 \{
 */
 

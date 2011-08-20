@@ -4,7 +4,7 @@
 /**
 \addtogroup drivers
 \{
-\addtogroup Timer
+\addtogroup PWM
 \{
 */
 

@@ -1,0 +1,5 @@
+/**
+\defgroup LoWPAN LoWPAN
+
+Implementation of IPv6 header compression.
+*/

@@ -2,7 +2,7 @@
 #define __TCP_H
 
 /**
-\addtogroup TRAN
+\addtogroup Transport
 \{
 \addtogroup TCP
 \{
