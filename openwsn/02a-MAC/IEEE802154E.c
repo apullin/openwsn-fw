@@ -83,7 +83,8 @@ bool     isValidAck (ieee802154_header_iht* ieee802514_header);
 void     asnWrite(OpenQueueEntry_t* advFrame);
 uint16_t asnRead (OpenQueueEntry_t* advFrame);
 // synchronization
-void     synchronize(uint16_t timeReceived, open_addr_t* advFrom);
+void     synchronizePacket(uint16_t timeReceived, open_addr_t* advFrom);
+void     synchronizeAck(int16_t timeCorrection, open_addr_t* advFrom);
 void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, error_t error);
@@ -412,10 +413,10 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       // record the ASN
       ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
       
-      // synchronize the slots to the sender's (ADV-based)
-      synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+      // synchronize (for the first time) to the sender's ADV
+      synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
       
-      // declare synchronized (and reset desynchronization timer)
+      // declare synchronized
       changeIsSync(TRUE);
       
       // free the received data buffer so corresponding RAM memory can be recycled
@@ -789,9 +790,11 @@ inline void activity_ti9(uint16_t capturedTime) {
    
    // if frame is a valid ACK, handle
    if (isValidAck(&ieee802514_header)==TRUE) {
+      
       // resynchronize
       timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
-      // poipoipoipoi
+      synchronizeAck(timeCorrection,&(ieee154e_vars.ackReceived->l2_nextORpreviousHop));
+      
       // inform upper layer
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
       ieee154e_vars.dataToSend = NULL;
@@ -943,11 +946,8 @@ inline void activity_ri5(uint16_t capturedTime) {
             ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
          };
          
-         // synchronize the slots to the sender's (ADV-based)
-         synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
-         
-         // declare synchronized (and reset desynchronization timer)
-         changeIsSync(TRUE);
+         // re-synchronize to the sender's ADV
+         synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
       }
       
       // free the received data so corresponding RAM memory can be recycled
@@ -1133,8 +1133,8 @@ inline void activity_ri9(uint16_t capturedTime) {
    // clear local variable
    ieee154e_vars.ackToSend = NULL;
    
-   // resynchronize
-   synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+   // re-synchronize to the sender's DATA
+   synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
    
    // inform upper layer of reception
    notif_receive(ieee154e_vars.dataReceived);
@@ -1205,18 +1205,18 @@ inline uint16_t asnRead(OpenQueueEntry_t* advFrame) {
 
 //======= synchronization
 
-void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
+void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
    int16_t  correction;
    uint16_t newTaccr0;
    uint16_t currentTar;
    uint16_t currentTaccr0;
    // record the current states of the TAR and TACCR0 registers
-   currentTar    = TAR;
-   currentTaccr0 = TACCR0;
+   currentTar           =  TAR;
+   currentTaccr0        =  TACCR0;
    // only resynchronize if I'm not a DAGroot
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
-      correction        = (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
-      newTaccr0         = TsSlotDuration;
+      correction        =  (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+      newTaccr0         =  TsSlotDuration;
       // detect whether I'm too close to the edge of the slot, in that case,
       // skip a slot and increase the temporary slot length to be 2 slots long
       if (currentTar<timeReceived ||
@@ -1227,8 +1227,21 @@ void synchronize(uint16_t timeReceived,open_addr_t* advFrom) {
          ieee154e_vars.asn++;
          DEBUG_PIN_SLOT_TOGGLE();
       }
-      newTaccr0         = (uint16_t)((int16_t)newTaccr0+correction);
-      TACCR0            = newTaccr0;
+      newTaccr0         =  (uint16_t)((int16_t)newTaccr0+correction);
+      TACCR0            =  newTaccr0;
+      ieee154e_vars.syncTimeout = SYNCTIMEOUT;
+   }
+}
+
+void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
+   uint16_t newTaccr0;
+   uint16_t currentTaccr0;
+   // record the current states of the TAR and TACCR0 registers
+   currentTaccr0        =  TACCR0;
+   // only resynchronize if I'm not a DAGroot
+   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
+      newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
+      TACCR0            =  newTaccr0;
       ieee154e_vars.syncTimeout = SYNCTIMEOUT;
    }
 }
