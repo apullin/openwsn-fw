@@ -21,18 +21,18 @@ After you get an interrupt from the radio, read the status register
 (RG_IRQ_STATUS) to know what type it is, amoung the following.
 */
 enum radio_irqstatus_enum {
-   AT_IRQ_BAT_LOW                 = 0x80,   // supply voltage below the programmed threshold
-   AT_IRQ_TRX_UR                  = 0x40,   // frame buffer access violation
-   AT_IRQ_AMI                     = 0x20,   // address matching
-   AT_IRQ_CCA_ED_DONE             = 0x10,   // end of a CCA or ED measurement
-   AT_IRQ_TRX_END                 = 0x08,   // completion of a frame transmission/reception
-   AT_IRQ_RX_START                = 0x04,   // start of a PSDU reception
-   AT_IRQ_PLL_UNLOCK              = 0x02,   // PLL unlock
-   AT_IRQ_PLL_LOCK                = 0x01,   // PLL lock
+   AT_IRQ_BAT_LOW                 = 0x80,   /**< supply voltage below the programmed threshold */
+   AT_IRQ_TRX_UR                  = 0x40,   /**< frame buffer access violation */
+   AT_IRQ_AMI                     = 0x20,   /**< address matching */
+   AT_IRQ_CCA_ED_DONE             = 0x10,   /**< end of a CCA or ED measurement */
+   AT_IRQ_TRX_END                 = 0x08,   /**< completion of a frame transmission/reception */
+   AT_IRQ_RX_START                = 0x04,   /**< start of a PSDU reception */
+   AT_IRQ_PLL_UNLOCK              = 0x02,   /**< PLL unlock */
+   AT_IRQ_PLL_LOCK                = 0x01,   /**< PLL lock */
 };
 
 /**
-\brief States of the radio FSM.
+\brief Current stat of the the radio FSM.
 
 The radio driver is very minimal in that it does not follow a state machine.
 It is up to the MAC layer to ensure that the different radio operations 
@@ -41,20 +41,20 @@ are called in the righr order.
 The radio keeps a state for debugging purposes only.
 */
 enum radio_state_enum {
-   RADIOSTATE_STOPPED             = 0x00,
-   RADIOSTATE_RFOFF               = 0x01,
-   RADIOSTATE_SETTING_FREQUENCY   = 0x02,
-   RADIOSTATE_FREQUENCY_SET       = 0x03,
-   RADIOSTATE_LOADING_PACKET      = 0x04,
-   RADIOSTATE_PACKET_LOADED       = 0x05,
-   RADIOSTATE_ENABLING_TX         = 0x06,
-   RADIOSTATE_TX_ENABLED          = 0x07,
-   RADIOSTATE_TRANSMITTING        = 0x08,
-   RADIOSTATE_ENABLING_RX         = 0x09,
-   RADIOSTATE_LISTENING           = 0x0a,
-   RADIOSTATE_RECEIVING           = 0x0b,
-   RADIOSTATE_TXRX_DONE           = 0x0c,
-   RADIOSTATE_TURNING_OFF         = 0x0d,
+   RADIOSTATE_STOPPED             = 0x00,   /**< Completely stopped. */
+   RADIOSTATE_RFOFF               = 0x01,   /**< Listening for commands by RF chain is off. */
+   RADIOSTATE_SETTING_FREQUENCY   = 0x02,   /**< Configuring the frequency. */
+   RADIOSTATE_FREQUENCY_SET       = 0x03,   /**< Done configuring the frequency. */
+   RADIOSTATE_LOADING_PACKET      = 0x04,   /**< Loading packet to send over SPI. */
+   RADIOSTATE_PACKET_LOADED       = 0x05,   /**< Packet is loaded in the TX buffer. */
+   RADIOSTATE_ENABLING_TX         = 0x06,   /**< The RF Tx chaing is being enabled (includes locked the PLL). */
+   RADIOSTATE_TX_ENABLED          = 0x07,   /**< Radio completely ready to transmit. */
+   RADIOSTATE_TRANSMITTING        = 0x08,   /**< Busy transmitting bytes. */
+   RADIOSTATE_ENABLING_RX         = 0x09,   /**< The RF Rx chaing is being enabled (includes locked the PLL). */
+   RADIOSTATE_LISTENING           = 0x0a,   /**< RF chain is on, listening, but no packet received yet. */
+   RADIOSTATE_RECEIVING           = 0x0b,   /**< Busy receiving bytes. */
+   RADIOSTATE_TXRX_DONE           = 0x0c,   /**< Frame has been sent/received completely. */
+   RADIOSTATE_TURNING_OFF         = 0x0d,   /**< Turning the RF chain off. */
 };
 
 /**
@@ -65,8 +65,8 @@ in the radio's RG_ANT_DIV register, which sets which of the
 two antennas to use.
 */
 enum radio_antennaselection_enum {
-   RADIO_UFL_ANTENNA              = 0x06,   // always use the U.FL antenna
-   RADIO_CHIP_ANTENNA             = 0x05,   // always use the chip antenna
+   RADIO_UFL_ANTENNA              = 0x06,   /**< always use the U.FL antenna */
+   RADIO_CHIP_ANTENNA             = 0x05,   /**< always use the chip antenna */
 };
 
 //=========================== typedef =========================================
