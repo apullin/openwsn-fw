@@ -1,10 +1,3 @@
-/**
-\brief Driver for the Leds of the GINA2.2b/c boards..
-
-\author Ankur Mehta <mehtank@eecs.berkeley.edu>, August 2010
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "leds.h"
 
 //=========================== variables =======================================

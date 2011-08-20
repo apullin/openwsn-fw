@@ -1,9 +1,3 @@
-/**
-\brief A library of functions useful for manipulating packets and addresses
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __PACKETFUNCTIONS_H
 #define __PACKETFUNCTIONS_H
 

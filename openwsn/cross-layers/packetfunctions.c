@@ -1,9 +1,3 @@
-/**
-\brief A library of functions useful for manipulating packets and addresses
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "packetfunctions.h"
 #include "openserial.h"
 #include "idmanager.h"

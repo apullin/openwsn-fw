@@ -1,10 +1,3 @@
-/**
-\brief Minimal FCFS scheduler for the GINA2.2b/c boards.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
-*/
-
 #ifndef __SCHEDULER_H
 #define __SCHEDULER_H
 

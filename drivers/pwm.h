@@ -1,9 +1,3 @@
-/**
-\brief Drivers for configuring the timer in Pulse Width Modulation mode
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __TIMER_H
 #define __TIMER_H
 

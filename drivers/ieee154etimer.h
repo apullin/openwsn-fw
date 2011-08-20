@@ -1,9 +1,3 @@
- /**
-\brief Driver for the IEEE802.15.4e timers.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #ifndef __IEEE154ETIMER_H
 #define __IEEE154ETIMER_H
 

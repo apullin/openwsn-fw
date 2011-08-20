@@ -1,9 +1,3 @@
-/**
-\brief The component which manages the pool of packet buffers.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __OPENQUEUE_H
 #define __OPENQUEUE_H
 

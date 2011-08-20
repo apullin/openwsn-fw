@@ -1,9 +1,3 @@
-/**
-\brief OpenWSN IDManager
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __IDMANAGER_H
 #define __IDMANAGER_H
 

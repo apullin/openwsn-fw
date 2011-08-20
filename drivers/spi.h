@@ -1,9 +1,3 @@
-/**
-\brief Driver for the SPI bus.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __SPI_H
 #define __SPI_H
 
