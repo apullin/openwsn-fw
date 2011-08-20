@@ -13,21 +13,21 @@
  
 //=========================== define ==========================================
 
-#define LED_D1_ON()       P2OUT |=  0x01;
-#define LED_D1_OFF()      P2OUT &= ~0x01;
-#define LED_D1_TOGGLE()   P2OUT ^=  0x01;
+#define LED_RADIO_ON()       P2OUT |=  0x01; // yellow
+#define LED_RADIO_OFF()      P2OUT &= ~0x01;
+#define LED_RADIO_TOGGLE()   P2OUT ^=  0x01;
 
-#define LED_D2_ON()       P2OUT |=  0x02;
-#define LED_D2_OFF()      P2OUT &= ~0x02;
-#define LED_D2_TOGGLE()   P2OUT ^=  0x02;
+#define LED_SYNC_ON()        P2OUT |=  0x02; // green
+#define LED_SYNC_OFF()       P2OUT &= ~0x02;
+#define LED_SYNC_TOGGLE()    P2OUT ^=  0x02;
 
-#define LED_D3_ON()       P2OUT |=  0x04;
-#define LED_D3_OFF()      P2OUT &= ~0x04;
-#define LED_D3_TOGGLE()   P2OUT ^=  0x04;
+#define LED_D3_ON()          P2OUT |=  0x04; // orange
+#define LED_D3_OFF()         P2OUT &= ~0x04;
+#define LED_D3_TOGGLE()      P2OUT ^=  0x04;
 
-#define LED_D4_ON()       P2OUT |=  0x08;
-#define LED_D4_OFF()      P2OUT &= ~0x08;
-#define LED_D4_TOGGLE()   P2OUT ^=  0x08;
+#define LED_ERROR_ON()       P2OUT |=  0x08; // red
+#define LED_ERROR_OFF()      P2OUT &= ~0x08;
+#define LED_ERROR_TOGGLE()   P2OUT ^=  0x08;
 
 //=========================== typedef =========================================
 
