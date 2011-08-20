@@ -83,7 +83,7 @@ bool     isValidAck (ieee802154_header_iht* ieee802514_header);
 void     asnWrite(OpenQueueEntry_t* advFrame);
 uint16_t asnRead (OpenQueueEntry_t* advFrame);
 // synchronization
-void     synchronize(uint16_t timeReceived,open_addr_t* advFrom);
+void     synchronize(uint16_t timeReceived, open_addr_t* advFrom);
 void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, error_t error);
@@ -415,7 +415,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       // synchronize the slots to the sender's (ADV-based)
       synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
       
-      // declare synchronized
+      // declare synchronized (and reset desynchronization timer)
       changeIsSync(TRUE);
       
       // free the received data buffer so corresponding RAM memory can be recycled
@@ -743,6 +743,7 @@ inline void activity_tie6() {
 
 inline void activity_ti9(uint16_t capturedTime) {
    ieee802154_header_iht ieee802514_header;
+   volatile int16_t  timeCorrection;
    
    // change state
    changeState(S_TXPROC);
@@ -788,7 +789,10 @@ inline void activity_ti9(uint16_t capturedTime) {
    
    // if frame is a valid ACK, handle
    if (isValidAck(&ieee802514_header)==TRUE) {
-      // if packet sent successfully, inform upper layer
+      // resynchronize
+      timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
+      // poipoipoipoi
+      // inform upper layer
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
       ieee154e_vars.dataToSend = NULL;
    }
@@ -927,8 +931,8 @@ inline void activity_ri5(uint16_t capturedTime) {
    // if I just received a valid ADV, handle and stop
    if (isValidAdv(&ieee802514_header)==TRUE) {
       
+      // synchronize
       if (idmanager_getIsDAGroot()==FALSE) {
-
          if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
             // log the error
             openserial_printError(COMPONENT_IEEE802154E,
@@ -942,7 +946,7 @@ inline void activity_ri5(uint16_t capturedTime) {
          // synchronize the slots to the sender's (ADV-based)
          synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
          
-         // declare synchronized
+         // declare synchronized (and reset desynchronization timer)
          changeIsSync(TRUE);
       }
       
@@ -960,7 +964,7 @@ inline void activity_ri5(uint16_t capturedTime) {
    // record the captured time
    ieee154e_vars.lastCapturedTime = capturedTime;
    
-   // if I juts received an invalid data frame, stop
+   // if I just received an invalid data frame, stop
    if (isValidData(&ieee802514_header)==FALSE) {
       // free the received data so corresponding RAM memory can be recycled
       openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
@@ -988,6 +992,7 @@ inline void activity_ri5(uint16_t capturedTime) {
 }
 
 inline void activity_ri6() {
+   int16_t correction;
    uint8_t frequency;
    
    // change state
@@ -1014,10 +1019,13 @@ inline void activity_ri6() {
    ieee154e_vars.ackToSend->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.ackToSend->owner   = COMPONENT_IEEE802154E;
    
+   // calculate the time correction
+   correction = (int16_t)((int16_t)ieee154e_vars.syncCapturedTime-(int16_t)TsTxOffset);
+   
    // add the payload to the ACK (i.e. the timeCorrection)
    packetfunctions_reserveHeaderSize(ieee154e_vars.ackToSend,sizeof(IEEE802154E_ACK_ht));
-   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[0] = 0x00;//todo
-   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[1] = 0x00;//todo
+   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[0] = (correction >> 0) & 0xff;
+   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[1] = (correction >> 8) & 0xff;
    
    // prepend the IEEE802.15.4 header to the ACK
    ieee154e_vars.ackToSend->l2_frameType = IEEE154_TYPE_ACK;

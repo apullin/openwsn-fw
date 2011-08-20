@@ -104,8 +104,8 @@ void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
    ieee802514_header->valid=FALSE;
    
    ieee802514_header->headerLength = 0;
+   //fcf, byte 1
    if (ieee802514_header->headerLength>msg->length) {  return; }
-   //fcf
    temp_8b = *((uint8_t*)(msg->payload)+ieee802514_header->headerLength);
    ieee802514_header->frameType         = (temp_8b >> IEEE154_FCF_FRAME_TYPE      ) & 0x07;//3b
    ieee802514_header->securityEnabled   = (temp_8b >> IEEE154_FCF_SECURITY_ENABLED) & 0x01;//1b
@@ -113,6 +113,7 @@ void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
    ieee802514_header->ackRequested      = (temp_8b >> IEEE154_FCF_ACK_REQ         ) & 0x01;//1b
    ieee802514_header->panIDCompression  = (temp_8b >> IEEE154_FCF_INTRAPAN        ) & 0x01;//1b
    ieee802514_header->headerLength += 1;
+   //fcf, byte 2
    if (ieee802514_header->headerLength>msg->length) {  return; }
    temp_8b = *((uint8_t*)(msg->payload)+ieee802514_header->headerLength);
    switch ( (temp_8b >> IEEE154_FCF_DEST_ADDR_MODE ) & 0x03 ) {
@@ -148,23 +149,19 @@ void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
          break;
    }
    ieee802514_header->headerLength += 1;
-   if (ieee802514_header->headerLength>msg->length) {  return; }
    //sequenceNumber
+   if (ieee802514_header->headerLength>msg->length) {  return; }
    ieee802514_header->dsn  = *((uint8_t*)(msg->payload)+ieee802514_header->headerLength);
    ieee802514_header->headerLength += 1;
-   if (ieee802514_header->headerLength>msg->length) {  return; }
    //panID
-   if (ieee802514_header->frameType == IEEE154_TYPE_ACK) {
-      ieee802514_header->panid.type = ADDR_NONE;
-   } else {
-      packetfunctions_readAddress(((uint8_t*)(msg->payload)+ieee802514_header->headerLength),
-                                  ADDR_PANID,
-                                  &ieee802514_header->panid,
-                                  LITTLE_ENDIAN);
-      ieee802514_header->headerLength += 2;
-      if (ieee802514_header->headerLength>msg->length) {  return; }
-   }
+   if (ieee802514_header->headerLength>msg->length) {  return; }
+   packetfunctions_readAddress(((uint8_t*)(msg->payload)+ieee802514_header->headerLength),
+                               ADDR_PANID,
+                               &ieee802514_header->panid,
+                               LITTLE_ENDIAN);
+   ieee802514_header->headerLength += 2;
    //dest
+   if (ieee802514_header->headerLength>msg->length) {  return; }
    switch (ieee802514_header->dest.type) {
       case ADDR_NONE:
          break;
