@@ -18,27 +18,25 @@
 \brief Possible values for the status of the radio.
 
 After you get an interrupt from the radio, read the status register
-(RG_IRQ_STATUS) to know what type it is, amoung the following.
+(<tt>RG_IRQ_STATUS</tt>) to know what type it is, amoung the following.
 */
 enum radio_irqstatus_enum {
-   AT_IRQ_BAT_LOW                 = 0x80,   /**< supply voltage below the programmed threshold */
-   AT_IRQ_TRX_UR                  = 0x40,   /**< frame buffer access violation */
-   AT_IRQ_AMI                     = 0x20,   /**< address matching */
-   AT_IRQ_CCA_ED_DONE             = 0x10,   /**< end of a CCA or ED measurement */
-   AT_IRQ_TRX_END                 = 0x08,   /**< completion of a frame transmission/reception */
-   AT_IRQ_RX_START                = 0x04,   /**< start of a PSDU reception */
-   AT_IRQ_PLL_UNLOCK              = 0x02,   /**< PLL unlock */
-   AT_IRQ_PLL_LOCK                = 0x01,   /**< PLL lock */
+   AT_IRQ_BAT_LOW                 = 0x80,   /**< Supply voltage below the programmed threshold. */
+   AT_IRQ_TRX_UR                  = 0x40,   /**< Frame buffer access violation. */
+   AT_IRQ_AMI                     = 0x20,   /**< Address matching. */
+   AT_IRQ_CCA_ED_DONE             = 0x10,   /**< End of a CCA or ED measurement. */
+   AT_IRQ_TRX_END                 = 0x08,   /**< Completion of a frame transmission/reception. */
+   AT_IRQ_RX_START                = 0x04,   /**< Start of a PSDU reception. */
+   AT_IRQ_PLL_UNLOCK              = 0x02,   /**< PLL unlock. */
+   AT_IRQ_PLL_LOCK                = 0x01,   /**< PLL lock. */
 };
 
 /**
-\brief Current stat of the the radio FSM.
+\brief Current state of the radio.
 
-The radio driver is very minimal in that it does not follow a state machine.
-It is up to the MAC layer to ensure that the different radio operations 
-are called in the righr order.
-
-The radio keeps a state for debugging purposes only.
+\note This radio driver is very minimal in that it does not follow a state machine.
+      It is up to the MAC layer to ensure that the different radio operations 
+      are called in the righr order. The radio keeps a state for debugging purposes only.
 */
 enum radio_state_enum {
    RADIOSTATE_STOPPED             = 0x00,   /**< Completely stopped. */
@@ -61,12 +59,12 @@ enum radio_state_enum {
 \brief Setting for which antenna to use
 
 The following setting are the options which can be written
-in the radio's RG_ANT_DIV register, which sets which of the 
+in the radio's <tt>RG_ANT_DIV</tt> register, which sets which of the 
 two antennas to use.
 */
 enum radio_antennaselection_enum {
-   RADIO_UFL_ANTENNA              = 0x06,   /**< always use the U.FL antenna */
-   RADIO_CHIP_ANTENNA             = 0x05,   /**< always use the chip antenna */
+   RADIO_UFL_ANTENNA              = 0x06,   /**< Use the antenna connected by U.FL. */
+   RADIO_CHIP_ANTENNA             = 0x05,   /**< Use the on-board chip antenna. */
 };
 
 //=========================== typedef =========================================
