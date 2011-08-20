@@ -1,9 +1,3 @@
-/**
-\brief OpenWSN IDManager
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "idmanager.h"
 #include "packetfunctions.h"

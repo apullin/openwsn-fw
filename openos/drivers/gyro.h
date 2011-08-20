@@ -1,9 +1,3 @@
-/**
-\brief Drivers for the gyroscope of the GINA2.2b/c board.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __GYRO_H
 #define __GYRO_H
 

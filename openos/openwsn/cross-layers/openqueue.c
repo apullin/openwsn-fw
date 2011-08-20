@@ -1,9 +1,3 @@
-/**
-\brief The component which managing the buffer of packet
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "openqueue.h"
 #include "openserial.h"

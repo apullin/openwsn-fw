@@ -1,9 +1,3 @@
-/**
-\brief Radio driver for the Atmel AT86RF231 IEEE802.15.4-compliant radio
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #ifndef __RADIO_H
 #define __RADIO_H
 

@@ -1,9 +1,3 @@
-/**
-\brief A pseudo-random number generator
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #include "openwsn.h"
 #include "random.h"
 #include "idmanager.h"

@@ -1,9 +1,3 @@
-/**
-\brief The component which managing input/output over the serial port
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __OPENSERIAL_H
 #define __OPENSERIAL_H
 

@@ -1,10 +1,3 @@
-/**
-\brief Driver for the timers.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-\author Ankur Mehta <watteyne@eecs.berkeley.edu>, October 2010
-*/
-
 #ifndef __TIMERS_H
 #define __TIMERS_H
 

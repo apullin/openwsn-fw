@@ -1,9 +1,3 @@
-/**
-\brief Radio driver for the Atmel AT86RF231 IEEE802.15.4-compliant radio
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #include "gina_config.h"
 #include "radio.h"
 #include "packetfunctions.h"

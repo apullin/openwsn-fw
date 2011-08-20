@@ -1,9 +1,3 @@
-/**
-\brief Drivers for the sensitive accelerometer and temperature sensor of the GINA2.2b/c board.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "sensitive_accel_temperature.h"
 
