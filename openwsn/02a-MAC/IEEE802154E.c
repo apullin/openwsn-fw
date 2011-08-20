@@ -1249,9 +1249,9 @@ void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
 void changeIsSync(bool newIsSync) {
    ieee154e_vars.isSync = newIsSync;
    if (ieee154e_vars.isSync==TRUE) {
-      LED_D1_ON();
+      LED_SYNC_ON();
    } else {
-      LED_D1_OFF();
+      LED_SYNC_OFF();
    }
 }
 
