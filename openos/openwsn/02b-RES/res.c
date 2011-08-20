@@ -1,9 +1,3 @@
-/**
-\brief Implementation of the IEEE802.15.4e RES layer
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #include "openwsn.h"
 #include "res.h"
 #include "idmanager.h"
