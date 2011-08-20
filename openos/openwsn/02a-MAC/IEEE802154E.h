@@ -1,12 +1,12 @@
+#ifndef __IEEE802154E_H
+#define __IEEE802154E_H
+
 /**
 \addtogroup MAClow
 \{
 \addtogroup IEEE802154E
 \{
 */
-
-#ifndef __IEEE802154E_H
-#define __IEEE802154E_H
 
 #include "openwsn.h"
 
