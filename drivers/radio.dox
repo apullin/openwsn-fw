@@ -24,7 +24,7 @@ You can use this feature to:
 
 The IEEE802.15.4 PHY standard uses DSSS to convert a 2Mbps raw chip rate into a effective 250kbps data rate. This radio, however, allows you to disable this function and directly use the 2Mbps mode. This might be useful in very good links where DSSS might not be needed. Packets can be transmitted 8 times faster.
 
-\section dontlike What we don't like
+\section dontlike What we don't like (so much)
 
 It's a bit annoying that the radio can not generate an interrupt when the SFD is transmitted.
 
