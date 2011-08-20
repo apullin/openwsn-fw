@@ -1,9 +1,3 @@
-/**
-\brief UDP Echo application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __APPUDPECHO_H
 #define __APPUDPECHO_H
 

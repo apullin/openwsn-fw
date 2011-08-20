@@ -1,9 +1,3 @@
-/**
-\brief ICMPv6 common definitions
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __ICMPv6_H
 #define __ICMPv6_H
 

@@ -1,11 +1,3 @@
-/**
-\brief TCP implementation (as per http://tools.ietf.org/html/rfc793)
-
-See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation.
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "tcp.h"
 #include "openserial.h"

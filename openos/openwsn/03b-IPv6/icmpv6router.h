@@ -1,9 +1,3 @@
-/**
-\brief ICMPv6 router advertisement implementation
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __ICMPv6ROUTER_H
 #define __ICMPv6ROUTER_H
 

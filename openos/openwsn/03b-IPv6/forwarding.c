@@ -1,9 +1,3 @@
-/**
-\brief Forwarding engine
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "forwarding.h"
 #include "iphc.h"

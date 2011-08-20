@@ -1,9 +1,3 @@
-/**
-\brief UDP Timer application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __APPUDPTIMER_H
 #define __APPUDPTIMER_H
 

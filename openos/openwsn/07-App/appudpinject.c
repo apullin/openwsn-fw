@@ -1,9 +1,3 @@
-/**
-\brief UDP Inject application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "appudpinject.h"
 #include "udp.h"

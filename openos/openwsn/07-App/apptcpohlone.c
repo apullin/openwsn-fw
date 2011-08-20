@@ -1,10 +1,3 @@
-/**
-\brief Ohlone, world's smaller web server
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
-*/
-
 #include "openwsn.h"
 #include "apptcpohlone.h"
 #include "openqueue.h"

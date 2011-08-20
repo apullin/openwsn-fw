@@ -1,9 +1,3 @@
-/**
-\brief UDP GINA application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
-*/
-
 #ifndef __APPUDPGINA_H
 #define __APPUDPGINA_H
 

@@ -1,9 +1,3 @@
-/**
-\brief ICMPv6 echo (ping) implementation
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __ICMPv6ECHO_H
 #define __ICMPv6ECHO_H
 

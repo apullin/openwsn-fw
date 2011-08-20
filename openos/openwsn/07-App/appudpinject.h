@@ -1,9 +1,3 @@
-/**
-\brief UDP Inject application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __APPUDPINJECT_H
 #define __APPUDPINJECT_H
 

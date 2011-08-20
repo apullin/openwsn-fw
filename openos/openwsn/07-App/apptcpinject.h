@@ -1,9 +1,3 @@
-/**
-\brief TCP Echo Inject
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __APPTCPINJECT_H
 #define __APPTCPINJECT_H
 

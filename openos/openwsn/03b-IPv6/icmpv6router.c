@@ -1,9 +1,3 @@
-/**
-\brief ICMPv6 router advertisement implementation
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "icmpv6router.h"
 #include "icmpv6.h"

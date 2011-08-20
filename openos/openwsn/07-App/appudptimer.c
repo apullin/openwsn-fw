@@ -1,9 +1,3 @@
-/**
-\brief UDP Timer application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "appudptimer.h"
 #include "udp.h"

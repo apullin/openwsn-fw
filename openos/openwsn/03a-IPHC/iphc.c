@@ -1,9 +1,3 @@
-/**
-\brief Implementation of IPHC
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "iphc.h"
 #include "packetfunctions.h"

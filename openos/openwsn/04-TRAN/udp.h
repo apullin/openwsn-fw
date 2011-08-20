@@ -1,9 +1,3 @@
-/**
-\brief UDP implementation (as per http://tools.ietf.org/html/rfc768)
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __UDP_H
 #define __UDP_H
 
