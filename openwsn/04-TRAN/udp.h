@@ -2,7 +2,7 @@
 #define __UDP_H
 
 /**
-\addtogroup TRAN
+\addtogroup Transport
 \{
 \addtogroup UDP
 \{
