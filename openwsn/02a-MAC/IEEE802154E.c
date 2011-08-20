@@ -351,6 +351,9 @@ inline void activity_synchronize_startOfFrame(uint16_t capturedTime) {
    
    // record the captured time 
    ieee154e_vars.lastCapturedTime = capturedTime;
+   
+   // record the captured time (for sync)
+   ieee154e_vars.syncCapturedTime = capturedTime;
 }
 
 inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
@@ -407,11 +410,10 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       radio_rfOff();
       
       // record the ASN
-      //ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived)+1;
       ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
       
-      // synchronize the slots to the sender's
-      synchronize(ieee154e_vars.lastCapturedTime,&ieee802514_header.src);
+      // synchronize the slots to the sender's (ADV-based)
+      synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
       
       // declare synchronized
       changeIsSync(TRUE);
@@ -926,14 +928,19 @@ inline void activity_ri5(uint16_t capturedTime) {
    if (isValidAdv(&ieee802514_header)==TRUE) {
       
       if (idmanager_getIsDAGroot()==FALSE) {
-         // record the ASN
-         //ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
+
          if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
-            __no_operation();
+            // log the error
+            openserial_printError(COMPONENT_IEEE802154E,
+                                  ERR_ASN_MISALIGNEMENT,
+                                  0,
+                                  0);
+            // update the ASN to try to recover
+            ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
          };
          
-         // synchronize the slots to the sender's
-         synchronize(ieee154e_vars.lastCapturedTime,&ieee802514_header.src);
+         // synchronize the slots to the sender's (ADV-based)
+         synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
          
          // declare synchronized
          changeIsSync(TRUE);
@@ -1117,6 +1124,9 @@ inline void activity_ri9(uint16_t capturedTime) {
    
    // clear local variable
    ieee154e_vars.ackToSend = NULL;
+   
+   // resynchronize
+   //synchronize(ieee154e_vars.lastCapturedTime,poipoipoipoi);
    
    // inform upper layer of reception
    notif_receive(ieee154e_vars.dataReceived);
