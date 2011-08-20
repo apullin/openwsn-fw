@@ -1,9 +1,3 @@
-/**
-\brief Implementation of the IEEE802.15.4e RES layer
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #ifndef __RES_H
 #define __RES_H
 

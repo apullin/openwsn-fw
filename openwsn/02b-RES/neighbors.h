@@ -1,9 +1,3 @@
-/**
-\brief Implementation of neighbors
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __NEIGHBORS_H
 #define __NEIGHBORS_H
 
