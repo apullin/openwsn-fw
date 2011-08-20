@@ -1,9 +1,3 @@
-/**
-\brief ICMPv6 RPL implementation
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "icmpv6rpl.h"
 #include "icmpv6.h"

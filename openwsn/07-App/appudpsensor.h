@@ -1,9 +1,3 @@
-/**
-\brief UDP Sensor application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __APPUDPSENSOR_H
 #define __APPUDPSENSOR_H
 

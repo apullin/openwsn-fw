@@ -1,9 +1,3 @@
-/**
-\brief Forwarding engine
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __FORWARDING_H
 #define __FORWARDING_H
 

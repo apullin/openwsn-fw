@@ -1,9 +1,3 @@
-/**
-\brief UDP Helicopter application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
-*/
-
 #ifndef __APPUDPHELI_H
 #define __APPUDPHELI_H
 

@@ -1,9 +1,3 @@
-/**
-\brief TCP Print application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "apptcpprint.h"
 #include "openserial.h"

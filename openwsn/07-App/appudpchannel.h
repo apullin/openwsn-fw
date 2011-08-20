@@ -1,9 +1,3 @@
-/**
-\brief UDP application to change the channel of a mote
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __APPUDPCHANNEL_H
 #define __APPUDPCHANNEL_H
 

@@ -1,9 +1,3 @@
-/**
-\brief UDP Sensor application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "appudpsensor.h"
 #include "udp.h"

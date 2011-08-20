@@ -1,9 +1,3 @@
-/**
-\brief UDP LEDs application
-
-\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
-*/
-
 #include "openwsn.h"
 #include "appudpleds.h"
 //openwsn stack

@@ -1,9 +1,3 @@
-/**
-\brief Implementation of IPHC
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __IPHC_H
 #define __IPHC_H
 

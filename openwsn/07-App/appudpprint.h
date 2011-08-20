@@ -1,9 +1,3 @@
-/**
-\brief UDP Print application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #ifndef __APPUDPPRINT_H
 #define __APPUDPPRINT_H
 

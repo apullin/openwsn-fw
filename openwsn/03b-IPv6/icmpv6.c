@@ -1,9 +1,3 @@
-/**
-\brief ICMPv6 common definitions
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "icmpv6.h"
 #include "icmpv6echo.h"

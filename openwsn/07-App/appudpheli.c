@@ -1,10 +1,3 @@
-/**
-\brief UDP Helicopter application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
-\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
-*/
-
 #include "openwsn.h"
 #include "appudpheli.h"
 //openwsn stack

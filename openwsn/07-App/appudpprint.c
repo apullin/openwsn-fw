@@ -1,9 +1,3 @@
-/**
-\brief UDP Print application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-*/
-
 #include "openwsn.h"
 #include "appudpprint.h"
 #include "openqueue.h"

@@ -1,9 +1,3 @@
-/**
-\brief UDP GINA application
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, September 2010
-*/
-
 #include "openwsn.h"
 #include "appudpgina.h"
 //drivers

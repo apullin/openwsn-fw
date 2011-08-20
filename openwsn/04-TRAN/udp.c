@@ -1,10 +1,3 @@
-/**
-\brief UDP implementation (as per http://tools.ietf.org/html/rfc768)
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2010
-\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
-*/
-
 #include "openwsn.h"
 #include "udp.h"
 #include "openserial.h"

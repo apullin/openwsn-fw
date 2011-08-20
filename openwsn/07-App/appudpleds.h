@@ -1,9 +1,3 @@
-/**
-\brief UDP LEDs application
-
-\author Ankur Mehta <mehtank@eecs.berkeley.edu>, September 2010
-*/
-
 #ifndef __APPUDPLEDS_H
 #define __APPUDPLEDS_H
 
