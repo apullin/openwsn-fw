@@ -1126,7 +1126,7 @@ inline void activity_ri9(uint16_t capturedTime) {
    ieee154e_vars.ackToSend = NULL;
    
    // resynchronize
-   //synchronize(ieee154e_vars.lastCapturedTime,poipoipoipoi);
+   synchronize(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
    
    // inform upper layer of reception
    notif_receive(ieee154e_vars.dataReceived);
