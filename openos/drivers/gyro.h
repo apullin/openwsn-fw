@@ -7,6 +7,13 @@
 #ifndef __GYRO_H
 #define __GYRO_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Gyro
+\{
+*/
+
 #include "msp430x26x.h"
 #include "stdint.h"
 #include "i2c.h"
@@ -47,5 +54,10 @@ void gyro_init();
 void gyro_disable();
 void gyro_get_config();
 void gyro_get_measurement(uint8_t* spaceToWrite);
+
+/**
+\}
+\}
+*/
 
 #endif

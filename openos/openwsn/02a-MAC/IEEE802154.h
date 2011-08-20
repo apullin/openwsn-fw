@@ -7,6 +7,13 @@
 #ifndef __IEEE802154_H
 #define __IEEE802154_H
 
+/**
+\addtogroup helpers
+\{
+\addtogroup IEEE802154
+\{
+*/
+
 #include "openwsn.h"
 
 //=========================== define ==========================================
@@ -84,5 +91,10 @@ void ieee802154_prependHeader  (OpenQueueEntry_t*      msg,
                                 open_addr_t*           nextHop);
 void ieee802154_retrieveHeader (OpenQueueEntry_t*      msg,
                                 ieee802154_header_iht* ieee802514_header);
+
+/**
+\}
+\}
+*/
 
 #endif

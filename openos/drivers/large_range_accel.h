@@ -7,6 +7,13 @@
 #ifndef __LARGE_RANGE_ACCEL_H
 #define __LARGE_RANGE_ACCEL_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup LargeRangeAccel
+\{
+*/
+
 #include "msp430x26x.h"
 #include "stdint.h"
 #include "i2c.h"
@@ -61,5 +68,10 @@ void large_range_accel_init();
 void large_range_accel_disable();
 void large_range_accel_get_config();
 void large_range_accel_get_measurement(uint8_t* spaceToWrite);
+
+/**
+\}
+\}
+*/
 
 #endif

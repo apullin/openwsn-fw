@@ -7,6 +7,13 @@
 #ifndef __BUTTON_H
 #define __BUTTON_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Button
+\{
+*/
+
 #include "msp430x26x.h"
 
 //=========================== define ==========================================
@@ -18,5 +25,10 @@
 //=========================== prototypes ======================================
 
 void button_init();
+
+/**
+\}
+\}
+*/
 
 #endif

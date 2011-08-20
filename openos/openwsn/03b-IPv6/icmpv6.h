@@ -7,6 +7,13 @@
 #ifndef __ICMPv6_H
 #define __ICMPv6_H
 
+/**
+\addtogroup IPv6
+\{
+\addtogroup ICMPv6
+\{
+*/
+
 //=========================== define ==========================================
 
 //=========================== typedef =========================================
@@ -50,5 +57,10 @@ error_t icmpv6_send(OpenQueueEntry_t* msg);
 void    icmpv6_sendDone(OpenQueueEntry_t* msg, error_t error);
 void    icmpv6_receive(OpenQueueEntry_t* msg);
 bool    icmpv6_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif

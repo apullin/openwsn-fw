@@ -7,6 +7,13 @@
 #ifndef __UDP_H
 #define __UDP_H
 
+/**
+\addtogroup TRAN
+\{
+\addtogroup UDP
+\{
+*/
+
 //=========================== define ==========================================
 
 enum UDP_enums {
@@ -49,5 +56,10 @@ error_t udp_send(OpenQueueEntry_t* msg);
 void    udp_sendDone(OpenQueueEntry_t* msg, error_t error);
 void    udp_receive(OpenQueueEntry_t* msg);
 bool    udp_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif

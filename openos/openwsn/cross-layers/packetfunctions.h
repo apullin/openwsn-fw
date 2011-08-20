@@ -7,6 +7,13 @@
 #ifndef __PACKETFUNCTIONS_H
 #define __PACKETFUNCTIONS_H
 
+/**
+\addtogroup helpers
+\{
+\addtogroup PacketFunctions
+\{
+*/
+
 #include "openwsn.h"
 
 //=========================== define ==========================================
@@ -51,5 +58,10 @@ void     packetfunctions_htons( uint16_t val, uint8_t* dest );
 uint16_t packetfunctions_ntohs( uint8_t* src );
 void     packetfunctions_htonl( uint32_t val, uint8_t* dest );
 uint32_t packetfunctions_ntohl( uint8_t* src );
+
+/**
+\}
+\}
+*/
 
 #endif

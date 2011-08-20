@@ -7,6 +7,13 @@
 #ifndef __RADIO_H
 #define __RADIO_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Radio
+\{
+*/
+
 #include "openwsn.h"
 #include "msp430x26x.h"
 #include "atmel.h"
@@ -87,5 +94,10 @@ void radio_rfOff();
 
 // interrupt handlers
 void isr_radio();
+
+/**
+\}
+\}
+*/
 
 #endif

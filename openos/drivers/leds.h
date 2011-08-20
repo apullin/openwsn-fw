@@ -8,6 +8,13 @@
 #ifndef __LEDS_H
 #define __LEDS_H
 
+/**
+\addtogroup drivers
+\{
+\addtogroup Leds
+\{
+*/
+
 #include "msp430x26x.h"
 #include "stdint.h"
  
@@ -38,5 +45,10 @@
 void leds_init();
 void leds_circular_shift();
 void leds_increment();
+
+/**
+\}
+\}
+*/
 
 #endif

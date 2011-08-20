@@ -9,6 +9,13 @@ See http://openwsn.berkeley.edu/wiki/OpenTcp for state machine and documentation
 #ifndef __TCP_H
 #define __TCP_H
 
+/**
+\addtogroup TRAN
+\{
+\addtogroup TCP
+\{
+*/
+
 //=========================== define ==========================================
 
 enum {
@@ -110,5 +117,10 @@ void     tcp_sendDone(OpenQueueEntry_t* msg, error_t error);
 void     tcp_receive(OpenQueueEntry_t* msg);
 error_t  tcp_close();
 bool     tcp_debugPrint();
+
+/**
+\}
+\}
+*/
 
 #endif
