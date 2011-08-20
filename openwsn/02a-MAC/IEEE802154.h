@@ -1,9 +1,3 @@
-/**
-\brief IEEE802.15.4 header manipulation funtions
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #ifndef __IEEE802154_H
 #define __IEEE802154_H
 

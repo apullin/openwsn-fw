@@ -1,9 +1,3 @@
-/**
-\brief IEEE802.15.4 header manipulation funtions
-
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, August 2011
-*/
-
 #include "openwsn.h"
 #include "IEEE802154.h"
 #include "packetfunctions.h"
