@@ -18,7 +18,7 @@ neighbors_vars_t neighbors_vars;
 
 //=========================== prototypes ======================================
 
-void registerNewNeighbor(open_addr_t* neighborID,dagrank_t hisDAGrank);
+void registerNewNeighbor(open_addr_t* neighborID);
 bool isNeighbor(open_addr_t* neighbor);
 void removeNeighbor(uint8_t neighborIndex);
 bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber);
@@ -60,7 +60,7 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
          }
       }
    } else {
-      registerNewNeighbor(&(msg->l2_nextORpreviousHop),*((uint8_t*)(msg->payload)) );
+      registerNewNeighbor(&(msg->l2_nextORpreviousHop));
    }
    //neighbors_updateMyDAGrankAndNeighborPreference(); poipoi forces single hop
 }
@@ -97,6 +97,8 @@ void neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi) {
       }
       i++;   
    }
+   // you only reach this line if none of the rows correspond to this address
+   registerNewNeighbor(l2_src);
 }
 
 void neighbors_indicateTx(open_addr_t* l2_dest, bool was_acked) {
@@ -205,13 +207,9 @@ bool debugPrint_neighbors() {
 
 //=========================== private =========================================
 
-void registerNewNeighbor(open_addr_t* address,dagrank_t hisDAGrank) {
-   /*open_addr_t temp_prefix;
-     open_addr_t temp_addr16b;
-     open_addr_t temp_addr64b;
-     open_addr_t temp_addr128b;*///removed to save RAM
+void registerNewNeighbor(open_addr_t* address) {
    uint8_t  i;
-   if (address->type!=ADDR_16B && address->type!=ADDR_64B && address->type!=ADDR_128B) {
+   if (address->type!=ADDR_64B) {
       openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
             (errorparameter_t)address->type,
             (errorparameter_t)1);
@@ -223,44 +221,10 @@ void registerNewNeighbor(open_addr_t* address,dagrank_t hisDAGrank) {
          if (neighbors_vars.neighbors[i].used==FALSE) {
             neighbors_vars.neighbors[i].used                   = TRUE;
             neighbors_vars.neighbors[i].parentPreference       = 0;
-            neighbors_vars.neighbors[i].stableNeighbor         = TRUE;//poipoipoi speed up for workshop
+            neighbors_vars.neighbors[i].stableNeighbor         = FALSE;
             neighbors_vars.neighbors[i].switchStabilityCounter = 0;
-            //neighbors[i].addr_16b.type          = ADDR_NONE;//removed to save RAM
-            neighbors_vars.neighbors[i].addr_64b.type          = ADDR_NONE;
-            //neighbors[i].addr_128b.type         = ADDR_NONE;//removed to save RAM
-            switch (address->type) {
-               /*case ADDR_16B:
-                 packetfunctions_mac16bToMac64b(address,&temp_addr64b);
-                 packetfunctions_mac64bToIp128b(
-                 idmanager_getMyID(ADDR_PREFIX),
-                 &temp_addr64b,
-                 &temp_addr128b);
-                 memcpy(&neighbors[i].addr_16b,  address,        sizeof(open_addr_t));
-                 memcpy(&neighbors[i].addr_64b,  &temp_addr64b,  sizeof(open_addr_t));
-                 memcpy(&neighbors[i].addr_128b, &temp_addr128b, sizeof(open_addr_t));
-                 break;*///removed to save RAM
-               case ADDR_64B:
-                  /*packetfunctions_mac64bToMac16b(address,&temp_addr16b);
-                    packetfunctions_mac64bToIp128b(
-                    idmanager_getMyID(ADDR_PREFIX),
-                    address,
-                    &temp_addr128b);
-                    memcpy(&neighbors[i].addr_16b,  &temp_addr16b,  sizeof(open_addr_t));*///removed to save RAM
-                  memcpy(&neighbors_vars.neighbors[i].addr_64b,  address,        sizeof(open_addr_t));
-                  //memcpy(&neighbors[i].addr_128b, &temp_addr128b, sizeof(open_addr_t));//removed to save RAM
-                  break;
-                  /*case ADDR_128B:
-                    packetfunctions_ip128bToMac64b(
-                    address,
-                    &temp_prefix,
-                    &temp_addr64b);
-                    packetfunctions_mac64bToMac16b(&temp_addr64b,&temp_addr16b);
-                    memcpy(&neighbors[i].addr_16b,  &temp_addr16b,  sizeof(open_addr_t));
-                    memcpy(&neighbors[i].addr_64b,  &temp_addr64b,  sizeof(open_addr_t));
-                    memcpy(&neighbors[i].addr_128b, address,        sizeof(open_addr_t));
-                    break;*///removed to save RAM
-            }
-            neighbors_vars.neighbors[i].DAGrank                = hisDAGrank;
+            memcpy(&neighbors_vars.neighbors[i].addr_64b,  address, sizeof(open_addr_t));
+            neighbors_vars.neighbors[i].DAGrank                = 255;
             neighbors_vars.neighbors[i].linkQuality            = 0;
             neighbors_vars.neighbors[i].numRx                  = 1;
             neighbors_vars.neighbors[i].numTx                  = 0;

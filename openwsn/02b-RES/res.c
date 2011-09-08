@@ -66,7 +66,15 @@ void task_resNotifSendDone() {
       // abort
       return;
    }
+   // declare it as mine
    msg->owner = COMPONENT_RES;
+   // indicate transmission (to update statistics)
+   if (msg->l2_sendDoneError==E_SUCCESS) {
+      neighbors_indicateTx(&(msg->l2_nextORpreviousHop),TRUE);
+   } else {
+      neighbors_indicateTx(&(msg->l2_nextORpreviousHop),FALSE);
+   }
+   // send the packet to where it belongs
    if (msg->creator == COMPONENT_RES) {
       // discard (ADV) packets this component has created
       openqueue_freePacketBuffer(msg);
@@ -94,8 +102,11 @@ void task_resNotifReceive() {
       // abort
       return;
    }
+   // declare it as mine
    msg->owner = COMPONENT_RES;
-   // send the rest up the stack
+   // indicate reception (to update statistics)
+   neighbors_indicateRx(&(msg->l2_nextORpreviousHop),msg->l1_rssi);
+   // send the packet up the stack
    switch (msg->l2_frameType) {
       case IEEE154_TYPE_DATA:
          iphc_receive(msg);
