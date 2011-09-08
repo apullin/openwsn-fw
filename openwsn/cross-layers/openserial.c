@@ -186,17 +186,42 @@ void openserial_startOutput() {
    //schedule a task to get new status in the output buffer
    uint8_t temp_openserial_debugPrintCounter; //to avoid many atomics
    __disable_interrupt();
-   openserial_vars.debugPrintCounter=(openserial_vars.debugPrintCounter+1)%7;
+   openserial_vars.debugPrintCounter=(openserial_vars.debugPrintCounter+1)%STATUS_MAX;
    temp_openserial_debugPrintCounter = openserial_vars.debugPrintCounter;
    __enable_interrupt();
    switch (temp_openserial_debugPrintCounter) {
-      case  0: if(debugPrint_id()                == TRUE) {break;};
-      case  1: if(debugPrint_myDAGrank()         == TRUE) {break;};
-      case  2: if(debugPrint_outBufferIndexes()  == TRUE) {break;};
-      case  3: if(debugPrint_asn()               == TRUE) {break;};
-      case  4: if(debugPrint_schedule()          == TRUE) {break;};
-      case  5: if(debugPrint_queue()             == TRUE) {break;};
-      case  6: if(debugPrint_neighbors()         == TRUE) {break;};
+      case STATUS_ISSYNC:
+         if (debugPrint_isSync()==TRUE) {
+            break;
+         }
+      case STATUS_ID:
+         if (debugPrint_id()==TRUE) {
+            break;
+         }
+      case STATUS_DAGRANK:
+         if (debugPrint_myDAGrank()==TRUE) {
+            break;
+         }
+      case STATUS_OUTBUFFERINDEXES:
+         if(debugPrint_outBufferIndexes()==TRUE) {
+            break;
+         }
+      case STATUS_ASN:
+         if(debugPrint_asn()==TRUE) {
+            break;
+         }
+      case STATUS_SCHEDULE:
+         if(debugPrint_schedule()== TRUE) {
+            break;
+         }
+      case STATUS_QUEUE:
+         if(debugPrint_queue()==TRUE) {
+            break;
+         }
+      case STATUS_NEIGHBORS:
+         if(debugPrint_neighbors()==TRUE) {
+            break;
+         }
       default:
          __disable_interrupt();
          openserial_vars.debugPrintCounter=0;
