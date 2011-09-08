@@ -6,8 +6,8 @@
 //=========================== variables =======================================
 
 typedef struct {
-   cellUsageInformation_t schedule[SCHEDULELENGTH];
-   slotOffset_t           debugPrintRow;
+   scheduleRow_t schedule[SCHEDULELENGTH];
+   slotOffset_t  debugPrintRow;
 } schedule_vars_t;
 
 schedule_vars_t schedule_vars;
@@ -119,7 +119,14 @@ void schedule_init() {
 }
 
 bool debugPrint_schedule() {
-   return FALSE;
+   debugScheduleRow_t temp;
+   schedule_vars.debugPrintRow = (schedule_vars.debugPrintRow+1)%SCHEDULELENGTH;
+   temp.row        = schedule_vars.debugPrintRow;
+   temp.cellUsage  = schedule_vars.schedule[schedule_vars.debugPrintRow];
+   openserial_printStatus(STATUS_SCHEDULE,
+                          (uint8_t*)&temp,
+                          sizeof(debugScheduleRow_t));
+   return TRUE;
 }
 
 __monitor cellType_t schedule_getType(asn_t asn_param) {
@@ -153,17 +160,6 @@ __monitor void schedule_indicateUse(asn_t asn, bool ack){
       schedule_vars.schedule[slotOffset].numTxACK++;
    }
    schedule_vars.schedule[slotOffset].timestamp=asn;
-}
-
-bool schedule_debugPrint() {
-   debugCellUsageInformation_t temp;
-   schedule_vars.debugPrintRow = (schedule_vars.debugPrintRow+1)%SCHEDULELENGTH;
-   temp.row        = schedule_vars.debugPrintRow;
-   temp.cellUsage  = schedule_vars.schedule[schedule_vars.debugPrintRow];
-   openserial_printStatus(STATUS_SCHEDULE,
-                          (uint8_t*)&temp,
-                          sizeof(debugCellUsageInformation_t));
-   return TRUE;
 }
 
 //=========================== private =========================================
