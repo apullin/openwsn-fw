@@ -65,13 +65,15 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
    //neighbors_updateMyDAGrankAndNeighborPreference(); poipoi forces single hop
 }
 
-void neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi) {
+void neighbors_indicateRx(open_addr_t* l2_src,
+                          uint16_t     rssi,
+                          asn_t        asnTimestamp) {
    uint8_t i=0;
    while (i<MAXNUMNEIGHBORS) {
       if (isThisRowMatching(l2_src,i)) {
          neighbors_vars.neighbors[i].numRx++;
          neighbors_vars.neighbors[i].linkQuality=rssi;
-         neighbors_vars.neighbors[i].timestamp=0;//poipoi implement timing
+         neighbors_vars.neighbors[i].timestamp=asnTimestamp;
          if (neighbors_vars.neighbors[i].stableNeighbor==FALSE) {
             if (neighbors_vars.neighbors[i].linkQuality>BADNEIGHBORMAXPOWER || neighbors_vars.neighbors[i].linkQuality<129) {
                neighbors_vars.neighbors[i].switchStabilityCounter++;
@@ -101,7 +103,10 @@ void neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi) {
    registerNewNeighbor(l2_src);
 }
 
-void neighbors_indicateTx(open_addr_t* dest, uint8_t numTxAttempts, bool was_finally_acked) {
+void neighbors_indicateTx(open_addr_t* dest,
+                          uint8_t      numTxAttempts,
+                          bool         was_finally_acked,
+                          asn_t        asnTimestamp) {
    uint8_t i=0;
    if (packetfunctions_isBroadcastMulticast(dest)==FALSE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
@@ -113,7 +118,7 @@ void neighbors_indicateTx(open_addr_t* dest, uint8_t numTxAttempts, bool was_fin
             neighbors_vars.neighbors[i].numTx += numTxAttempts;
             if (was_finally_acked==TRUE) {
                neighbors_vars.neighbors[i].numTxACK++;
-               neighbors_vars.neighbors[i].timestamp=0;//poipoi implement timing
+               neighbors_vars.neighbors[i].timestamp=asnTimestamp;
             }
             return;
          }
