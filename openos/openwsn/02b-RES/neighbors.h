@@ -25,9 +25,7 @@ typedef struct {
    uint8_t          parentPreference;
    bool             stableNeighbor;
    uint8_t          switchStabilityCounter;
-   //open_addr_t      addr_16b;        //removed to save RAM
    open_addr_t      addr_64b;
-   //open_addr_t      addr_128b;       //removed to save RAM
    dagrank_t        DAGrank;
    uint8_t          linkQuality;
    uint8_t          numRx;
