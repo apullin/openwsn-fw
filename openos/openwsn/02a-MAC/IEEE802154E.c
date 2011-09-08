@@ -504,6 +504,8 @@ inline void activity_ti1ORri1() {
             ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
             // fill in the ASN field of the ADV
             asnWrite(ieee154e_vars.dataToSend);
+            // record that I attempt to transmit this packet
+            ieee154e_vars.dataToSend->l2_numTxAttempts++;
             // arm tt1
             ieee154etimer_schedule(DURATION_tt1);
          }
@@ -516,6 +518,8 @@ inline void activity_ti1ORri1() {
             changeState(S_TXDATAOFFSET);
             // change owner
             ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
+            // record that I attempt to transmit this packet
+            ieee154e_vars.dataToSend->l2_numTxAttempts++;
             // arm tt1
             ieee154etimer_schedule(DURATION_tt1);
          } else {

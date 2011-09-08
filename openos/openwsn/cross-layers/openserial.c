@@ -211,7 +211,7 @@ void openserial_startOutput() {
             break;
          }
       case STATUS_SCHEDULE:
-         if(debugPrint_schedule()== TRUE) {
+         if(debugPrint_schedule()==TRUE) {
             break;
          }
       case STATUS_QUEUE:

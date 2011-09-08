@@ -70,9 +70,9 @@ void task_resNotifSendDone() {
    msg->owner = COMPONENT_RES;
    // indicate transmission (to update statistics)
    if (msg->l2_sendDoneError==E_SUCCESS) {
-      neighbors_indicateTx(&(msg->l2_nextORpreviousHop),TRUE);
+      neighbors_indicateTx(&(msg->l2_nextORpreviousHop),msg->l2_numTxAttempts,TRUE);
    } else {
-      neighbors_indicateTx(&(msg->l2_nextORpreviousHop),FALSE);
+      neighbors_indicateTx(&(msg->l2_nextORpreviousHop),msg->l2_numTxAttempts,FALSE);
    }
    // send the packet to where it belongs
    if (msg->creator == COMPONENT_RES) {
@@ -184,6 +184,8 @@ error_t res_send_internal(OpenQueueEntry_t* msg) {
    } else {
       msg->l2_retriesLeft = TXRETRIES;
    }
+   // This is a new packet which I never attempted to send
+   msg->l2_numTxAttempts = 0;
    // assign a TX power
    msg->l1_txPower = TX_POWER;
    // record the location, in the packet, where the l2 payload starts
