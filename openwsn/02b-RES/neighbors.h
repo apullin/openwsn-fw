@@ -47,7 +47,7 @@ void      neighbors_init();
 void      neighbors_receiveDIO(OpenQueueEntry_t* msg);
 void      neighbors_updateMyDAGrankAndNeighborPreference();
 void      neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi);
-void      neighbors_indicateTx(open_addr_t* dest, bool was_acked);
+void      neighbors_indicateTx(open_addr_t* dest, uint8_t numTxAttempts, bool was_finally_acked);
 bool      neighbors_isStableNeighbor(open_addr_t* address);
 dagrank_t neighbors_getMyDAGrank();
 uint8_t   neighbors_getNumNeighbors();

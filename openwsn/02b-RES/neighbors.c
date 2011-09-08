@@ -101,17 +101,17 @@ void neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi) {
    registerNewNeighbor(l2_src);
 }
 
-void neighbors_indicateTx(open_addr_t* l2_dest, bool was_acked) {
+void neighbors_indicateTx(open_addr_t* dest, uint8_t numTxAttempts, bool was_finally_acked) {
    uint8_t i=0;
-   if (packetfunctions_isBroadcastMulticast(l2_dest)==FALSE) {
+   if (packetfunctions_isBroadcastMulticast(dest)==FALSE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
-         if (isThisRowMatching(l2_dest,i)) {
+         if (isThisRowMatching(dest,i)) {
             if (neighbors_vars.neighbors[i].numTx==255) {
                neighbors_vars.neighbors[i].numTx/=2;
                neighbors_vars.neighbors[i].numTxACK/=2;
             }
-            neighbors_vars.neighbors[i].numTx++;
-            if (was_acked==TRUE) {
+            neighbors_vars.neighbors[i].numTx += numTxAttempts;
+            if (was_finally_acked==TRUE) {
                neighbors_vars.neighbors[i].numTxACK++;
                neighbors_vars.neighbors[i].timestamp=0;//poipoi implement timing
             }
