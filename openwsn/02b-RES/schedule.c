@@ -118,6 +118,10 @@ void schedule_init() {
    schedule_vars.schedule[6].type                          = CELLTYPE_SERIALRX;
 }
 
+bool debugPrint_schedule() {
+   return FALSE;
+}
+
 __monitor cellType_t schedule_getType(asn_t asn_param) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
@@ -156,7 +160,7 @@ bool schedule_debugPrint() {
    schedule_vars.debugPrintRow = (schedule_vars.debugPrintRow+1)%SCHEDULELENGTH;
    temp.row        = schedule_vars.debugPrintRow;
    temp.cellUsage  = schedule_vars.schedule[schedule_vars.debugPrintRow];
-   openserial_printStatus(STATUS_SCHEDULE_SCHEDULE,
+   openserial_printStatus(STATUS_SCHEDULE,
                           (uint8_t*)&temp,
                           sizeof(debugCellUsageInformation_t));
    return TRUE;

@@ -194,7 +194,7 @@ void neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type
    }
 }
 
-bool neighbors_debugPrint() {
+bool debugPrint_neighbors() {
 
    debugNeighborEntry_t temp;
    uint8_t num_iterations;
@@ -206,7 +206,7 @@ bool neighbors_debugPrint() {
    if (num_iterations<MAXNUMNEIGHBORS+1) {
       temp.row=neighbors_vars.debugRow;
       temp.neighborEntry=neighbors_vars.neighbors[neighbors_vars.debugRow];
-      openserial_printStatus(STATUS_NEIGHBORS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
+      openserial_printStatus(STATUS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
       return TRUE;
    }
    return FALSE;
@@ -215,7 +215,7 @@ bool neighbors_debugPrint() {
      neighbors_vars.debugRow=(neighbors_vars.debugRow+1)%MAXNUMNEIGHBORS;
      temp.row=neighbors_vars.debugRow;
      temp.neighborEntry=neighbors[neighbors_vars.debugRow];
-     openserial_printStatus(STATUS_NEIGHBORS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
+     openserial_printStatus(STATUS_NEIGHBORS,(uint8_t*)&temp,sizeof(debugNeighborEntry_t));
      return TRUE;*/
 }
 

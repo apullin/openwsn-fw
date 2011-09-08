@@ -78,10 +78,6 @@ void forwarding_receive(OpenQueueEntry_t* msg, ipv6_header_iht ipv6_header) {
    }
 }
 
-bool forwarding_debugPrint() {
-   return FALSE;
-}
-
 //=========================== private =========================================
 
 error_t fowarding_send_internal(OpenQueueEntry_t *msg) {

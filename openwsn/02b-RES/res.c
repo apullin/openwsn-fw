@@ -36,10 +36,10 @@ void res_init() {
    timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
 }
 
-bool res_debugPrint() {
-   uint16_t output=0;
+bool debugPrint_myDAGrank() {
+   uint8_t output=0;
    output = neighbors_getMyDAGrank();
-   openserial_printStatus(STATUS_RES_DAGRANK,(uint8_t*)&output,1);
+   openserial_printStatus(STATUS_DAGRANK,(uint8_t*)&output,sizeof(uint8_t));
    return TRUE;
 }
 

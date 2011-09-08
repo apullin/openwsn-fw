@@ -117,8 +117,4 @@ void icmpv6router_receive(OpenQueueEntry_t* msg) {
    openqueue_freePacketBuffer(msg);
 }
 
-bool icmpv6router_debugPrint() {
-   return FALSE;
-}
-
 //=========================== private =========================================

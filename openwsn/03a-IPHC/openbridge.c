@@ -60,8 +60,4 @@ void openbridge_receive(OpenQueueEntry_t* msg) {
    openqueue_freePacketBuffer(msg);
 }
 
-bool openbridge_debugPrint() {
-   return FALSE;
-}
-
 //=========================== private =========================================

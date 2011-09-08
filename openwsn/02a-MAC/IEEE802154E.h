@@ -121,7 +121,7 @@ void    ieee154e_startOfFrame(uint16_t capturedTime);
 void    ieee154e_endOfFrame(uint16_t capturedTime);
 
 // misc
-bool    mac_debugPrint();
+bool    debugPrint_asn();
 
 /**
 \}

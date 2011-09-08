@@ -35,7 +35,7 @@ uint8_t openserial_getInputBuffer(uint8_t* bufferToWrite, uint8_t maxNumBytes);
 void    openserial_startInput();
 void    openserial_startOutput();
 void    openserial_stop();
-bool    openserial_debugPrint();
+bool    debugPrint_outBufferIndexes();
 
 // interrupt handlers
 void    isr_openserial_rx();
