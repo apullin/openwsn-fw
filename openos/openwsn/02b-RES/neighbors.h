@@ -46,12 +46,18 @@ typedef struct {
 void      neighbors_init();
 void      neighbors_receiveDIO(OpenQueueEntry_t* msg);
 void      neighbors_updateMyDAGrankAndNeighborPreference();
-void      neighbors_indicateRx(open_addr_t* l2_src,uint16_t rssi);
-void      neighbors_indicateTx(open_addr_t* dest, uint8_t numTxAttempts, bool was_finally_acked);
+void      neighbors_indicateRx(open_addr_t* l2_src,
+                               uint16_t     rssi,
+                               asn_t        asnTimestamp);
+void      neighbors_indicateTx(open_addr_t* dest,
+                               uint8_t      numTxAttempts,
+                               bool         was_finally_acked,
+                               asn_t        asnTimestamp);
 bool      neighbors_isStableNeighbor(open_addr_t* address);
 dagrank_t neighbors_getMyDAGrank();
 uint8_t   neighbors_getNumNeighbors();
-void      neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type);
+void      neighbors_getPreferredParent(open_addr_t* addressToWrite,
+                                       uint8_t addr_type);
 bool      debugPrint_neighbors();
 
 /**
