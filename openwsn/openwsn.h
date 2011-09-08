@@ -269,6 +269,7 @@ typedef struct {
    uint8_t       l2_frameType;                   // beacon, data, ack, cmd
    uint8_t       l2_retriesLeft;                 // number Tx retries left before packet dropped (dropped when hits 0)
    uint8_t       l2_numTxAttempts;               // number Tx attempts
+   asn_t         l2_TxRxAsnTimestamp;            // at what ASN the packet was Tx'ed or Rx'ed
    uint8_t*      l2_payload;                     // pointer to the start of the payload of l2 (used for MAC to fill in ASN in ADV)
    //l1 (drivers)
    uint8_t       l1_txPower;                     // power for packet to Tx at
