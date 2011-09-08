@@ -113,13 +113,15 @@ enum {
 
 //status elements
 enum {
-   STATUS_ID                           = 0,
-   STATUS_DAGRANK                      = 1,
-   STATUS_OUTBUFFERINDEXES             = 2,
-   STATUS_ASN                          = 3,
-   STATUS_SCHEDULE                     = 4,
-   STATUS_QUEUE                        = 5,
-   STATUS_NEIGHBORS                    = 6,
+   STATUS_ISSYNC                       = 0,
+   STATUS_ID                           = 1,
+   STATUS_DAGRANK                      = 2,
+   STATUS_OUTBUFFERINDEXES             = 3,
+   STATUS_ASN                          = 4,
+   STATUS_SCHEDULE                     = 5,
+   STATUS_QUEUE                        = 6,
+   STATUS_NEIGHBORS                    = 7,
+   STATUS_MAX                          = 8,
 };
 
 //component identifiers

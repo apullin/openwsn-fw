@@ -86,6 +86,7 @@ uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
 void     changeState(uint8_t newstate);
 void     endSlot();
 bool     debugPrint_asn();
+bool     debugPrint_isSync();
 
 //=========================== public ==========================================
 
@@ -292,6 +293,13 @@ bool debugPrint_asn() {
    uint16_t output=0;
    output = ieee154e_vars.asn;
    openserial_printStatus(STATUS_ASN,(uint8_t*)&output,sizeof(uint16_t));
+   return TRUE;
+}
+
+bool debugPrint_isSync() {
+   uint8_t output=0;
+   output = ieee154e_vars.isSync;
+   openserial_printStatus(STATUS_ISSYNC,(uint8_t*)&output,sizeof(uint8_t));
    return TRUE;
 }
 

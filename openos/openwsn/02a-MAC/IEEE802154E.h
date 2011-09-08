@@ -122,6 +122,7 @@ void    ieee154e_endOfFrame(uint16_t capturedTime);
 
 // misc
 bool    debugPrint_asn();
+bool    debugPrint_isSync();
 
 /**
 \}
