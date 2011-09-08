@@ -54,7 +54,7 @@ bool      neighbors_isStableNeighbor(open_addr_t* address);
 dagrank_t neighbors_getMyDAGrank();
 uint8_t   neighbors_getNumNeighbors();
 void      neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type);
-bool      neighbors_debugPrint();
+bool      debugPrint_neighbors();
 
 /**
 \}

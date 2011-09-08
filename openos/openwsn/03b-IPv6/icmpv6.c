@@ -61,7 +61,3 @@ void icmpv6_receive(OpenQueueEntry_t* msg) {
          break;
    }
 }
-
-bool icmpv6_debugPrint() {
-   return FALSE;
-}

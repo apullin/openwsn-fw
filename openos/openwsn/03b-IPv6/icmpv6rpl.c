@@ -85,10 +85,6 @@ void icmpv6rpl_receive(OpenQueueEntry_t* msg) {
    openqueue_freePacketBuffer(msg);
 }
 
-bool icmpv6rpl_debugPrint() {
-   return FALSE;
-}
-
 //======= timer
 
 void timer_rpl_fired() {

@@ -37,7 +37,7 @@ __monitor error_t      idmanager_setMyID(open_addr_t* newID);
 __monitor bool         idmanager_isMyAddress(open_addr_t* addr);
           void         idmanager_triggerAboutBridge();
           void         idmanager_triggerAboutRoot();
-          bool         idmanager_debugPrint();
+          bool         debugPrint_id();
 
 /**
 \}

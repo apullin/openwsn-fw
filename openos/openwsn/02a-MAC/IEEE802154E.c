@@ -85,7 +85,7 @@ void     notif_receive(OpenQueueEntry_t* packetReceived);
 uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
 void     changeState(uint8_t newstate);
 void     endSlot();
-bool     mac_debugPrint();
+bool     debugPrint_asn();
 
 //=========================== public ==========================================
 
@@ -288,8 +288,11 @@ void ieee154e_endOfFrame(uint16_t capturedTime) {
 
 //======= misc
 
-bool mac_debugPrint() {
-   return FALSE;
+bool debugPrint_asn() {
+   uint16_t output=0;
+   output = ieee154e_vars.asn;
+   openserial_printStatus(STATUS_ASN,(uint8_t*)&output,sizeof(uint16_t));
+   return TRUE;
 }
 
 //=========================== private =========================================

@@ -17,6 +17,7 @@
 #include "openbridge.h"
 #include "appudpchannel.h"
 #include "leds.h"
+#include "schedule.h"
 
 //=========================== variables =======================================
 
@@ -185,23 +186,17 @@ void openserial_startOutput() {
    //schedule a task to get new status in the output buffer
    uint8_t temp_openserial_debugPrintCounter; //to avoid many atomics
    __disable_interrupt();
-   openserial_vars.debugPrintCounter=(openserial_vars.debugPrintCounter+1)%13;
+   openserial_vars.debugPrintCounter=(openserial_vars.debugPrintCounter+1)%6;
    temp_openserial_debugPrintCounter = openserial_vars.debugPrintCounter;
    __enable_interrupt();
    switch (temp_openserial_debugPrintCounter) {
-      case  0: if(mac_debugPrint()          == TRUE) {break;};
-      case  1: if(neighbors_debugPrint()    == TRUE) {break;};
-      case  2: if(res_debugPrint()          == TRUE) {break;};
-      case  3: if(iphc_debugPrint()         == TRUE) {break;};
-      case  4: if(forwarding_debugPrint()   == TRUE) {break;};
-      case  5: if(icmpv6_debugPrint()       == TRUE) {break;};
-      case  6: if(icmpv6echo_debugPrint()   == TRUE) {break;};
-      case  7: if(icmpv6router_debugPrint() == TRUE) {break;};
-      case  8: if(icmpv6rpl_debugPrint()    == TRUE) {break;};
-      case  9: if(idmanager_debugPrint()    == TRUE) {break;};
-      case 10: if(openqueue_debugPrint()    == TRUE) {break;};
-      case 11: if(openserial_debugPrint()   == TRUE) {break;};
-      case 12: if(openbridge_debugPrint()   == TRUE) {break;};
+      case  0: if(debugPrint_id()                == TRUE) {break;};
+      case  1: if(debugPrint_myDAGrank()         == TRUE) {break;};
+      case  2: if(debugPrint_outBufferIndexes()  == TRUE) {break;};
+      case  3: if(debugPrint_asn()               == TRUE) {break;};
+      case  4: if(debugPrint_schedule()          == TRUE) {break;};
+      case  5: if(debugPrint_queue()             == TRUE) {break;};
+      case  6: if(debugPrint_neighbors()         == TRUE) {break;};
       default:
          __disable_interrupt();
          openserial_vars.debugPrintCounter=0;
@@ -276,13 +271,13 @@ void openserial_stop() {
    }
 }
 
-bool openserial_debugPrint() {
+bool debugPrint_outBufferIndexes() {
    uint16_t temp_buffer[2];
    __disable_interrupt();
    temp_buffer[0] = openserial_vars.output_buffer_index_write;
    temp_buffer[1] = openserial_vars.output_buffer_index_read;
    __enable_interrupt();
-   openserial_printStatus(STATUS_OPENSERIAL_OUTBUFFERINDEXES,(uint8_t*)temp_buffer,sizeof(temp_buffer));
+   openserial_printStatus(STATUS_OUTBUFFERINDEXES,(uint8_t*)temp_buffer,sizeof(temp_buffer));
    return TRUE;
 }
 

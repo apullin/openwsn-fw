@@ -17,7 +17,7 @@
 //=========================== prototypes ======================================
 
 void    res_init();
-bool    res_debugPrint();
+bool    debugPrint_myDAGrank();
 // from upper layer
 error_t res_send(OpenQueueEntry_t *msg);
 // from lower layer

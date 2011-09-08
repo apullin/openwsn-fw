@@ -26,14 +26,14 @@ void openqueue_init() {
    }
 }
 
-bool openqueue_debugPrint() {
+bool debugPrint_queue() {
    debugOpenQueueEntry_t output[QUEUELENGTH];
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       output[i].creator = openqueue_vars.queue[i].creator;
       output[i].owner   = openqueue_vars.queue[i].owner;
    }
-   openserial_printStatus(STATUS_OPENQUEUE_QUEUE,(uint8_t*)&output,QUEUELENGTH*sizeof(debugOpenQueueEntry_t));
+   openserial_printStatus(STATUS_QUEUE,(uint8_t*)&output,QUEUELENGTH*sizeof(debugOpenQueueEntry_t));
    return TRUE;
 }
 

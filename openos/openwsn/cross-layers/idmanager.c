@@ -201,7 +201,7 @@ void idmanager_triggerAboutRoot() {
    return;
 }
 
-bool idmanager_debugPrint() {
+bool debugPrint_id() {
    debugIDManagerEntry_t output;
    output.isDAGroot = idmanager_vars.isDAGroot;
    output.isBridge  = idmanager_vars.isBridge;
@@ -209,7 +209,7 @@ bool idmanager_debugPrint() {
    output.my64bID   = idmanager_vars.my64bID;
    output.myPANID   = idmanager_vars.myPANID;
    output.myPrefix  = idmanager_vars.myPrefix;
-   openserial_printStatus(STATUS_IDMANAGER_ID,(uint8_t*)&output,sizeof(debugIDManagerEntry_t));
+   openserial_printStatus(STATUS_ID,(uint8_t*)&output,sizeof(debugIDManagerEntry_t));
    return TRUE;
 }
 

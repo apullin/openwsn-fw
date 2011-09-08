@@ -118,10 +118,6 @@ void iphc_receive(OpenQueueEntry_t* msg) {
    }
 }
 
-bool iphc_debugPrint() {
-   return FALSE;
-}
-
 //=========================== private =========================================
 
 error_t prependIPv6Header(OpenQueueEntry_t* msg,
