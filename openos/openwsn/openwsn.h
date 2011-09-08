@@ -221,6 +221,7 @@ enum {
    ERR_BRIDGE_MISMATCH                 = 0x27, // isBridge mismatch                 [NRES] arg1=code_location
    ERR_HEADER_TOO_LONG                 = 0x28, // header too long                   [PacketFunctions] arg1=code_location
    ERR_INPUTBUFFER_LENGTH              = 0x29, // input length problem              [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location   
+   ERR_POIPOI                          = 0x30, // popipoi                           [openSerial, all components which get Triggered]
 };
 
 //=========================== typedef =========================================

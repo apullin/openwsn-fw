@@ -21,11 +21,13 @@ appudptimer_vars_t appudptimer_vars;
 
 void appudptimer_init() {
    appudptimer_vars.busySending = FALSE;
-   timer_startPeriodic(TIMER_UDPTIMER,32768/10);
+   timer_startPeriodic(TIMER_UDPTIMER,32768);
 }
 
 void timer_appudptimer_fired() {
    OpenQueueEntry_t* pkt;
+   
+   openserial_printError(COMPONENT_APPUDPTIMER,ERR_POIPOI,0,0);
    
    // only send a packet if I received a sendDone for the previous.
    // the packet might be stuck in the queue for a long time for
