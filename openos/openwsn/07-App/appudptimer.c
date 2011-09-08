@@ -26,9 +26,6 @@ void appudptimer_init() {
 
 void timer_appudptimer_fired() {
    OpenQueueEntry_t* pkt;
-   
-   openserial_printError(COMPONENT_APPUDPTIMER,ERR_POIPOI,0,0);
-   
    // only send a packet if I received a sendDone for the previous.
    // the packet might be stuck in the queue for a long time for
    // example while the mote is synchronizing
