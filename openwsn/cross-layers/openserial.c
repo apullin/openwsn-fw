@@ -186,7 +186,7 @@ void openserial_startOutput() {
    //schedule a task to get new status in the output buffer
    uint8_t temp_openserial_debugPrintCounter; //to avoid many atomics
    __disable_interrupt();
-   openserial_vars.debugPrintCounter=(openserial_vars.debugPrintCounter+1)%6;
+   openserial_vars.debugPrintCounter=(openserial_vars.debugPrintCounter+1)%7;
    temp_openserial_debugPrintCounter = openserial_vars.debugPrintCounter;
    __enable_interrupt();
    switch (temp_openserial_debugPrintCounter) {
