@@ -15,10 +15,17 @@
 
 //=========================== variables =======================================
 
+enum {
+   MAC_MGT_TASK_ADV     = 0,
+   MAC_MGT_TASK_KA      = 1,
+   MAC_MGT_TASK_MAX     = 2,
+};
+
 typedef struct {
    uint16_t periodMaintenance;
-   bool     busySending;
-   uint8_t  dsn;                // current data sequence number
+   bool     busySending;     // TRUE when busy sending an advertisement or keep-alive
+   uint8_t  dsn;             // current data sequence number
+   uint8_t  MacMgtTask;      // MAC management task to execute
 } res_vars_t;
 
 res_vars_t res_vars;
@@ -26,13 +33,16 @@ res_vars_t res_vars;
 //=========================== prototypes ======================================
 
 error_t res_send_internal(OpenQueueEntry_t* msg);
+void    sendAdv();
+void    sendKa();
 
 //=========================== public ==========================================
 
 void res_init() {
-   res_vars.periodMaintenance = 16384+random_get16b()%32768; // fires after 1 sec on average
+   res_vars.periodMaintenance = 16384+random_get16b()%32768; // fires every 1 sec on average
    res_vars.busySending       = FALSE;
    res_vars.dsn               = 0;
+   res_vars.MacMgtTask        = MAC_MGT_TASK_ADV;
    timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
 }
 
@@ -82,9 +92,9 @@ void task_resNotifSendDone() {
    }
    // send the packet to where it belongs
    if (msg->creator == COMPONENT_RES) {
-      // discard (ADV) packets this component has created
+      // discard (ADV or KA) packets this component has created
       openqueue_freePacketBuffer(msg);
-      // I can send the next ADV
+      // I can send the next ADV or KA
       res_vars.busySending = FALSE;
       // restart a random timer
       res_vars.periodMaintenance = 16384+random_get16b()%32768;
@@ -131,43 +141,26 @@ void task_resNotifReceive() {
 
 //======= timer
 
+/**
+\brief Timer handlers which triggers MAC management task.
+
+This function is called in task context by the scheduler after the RES timer
+has fired. This timer is set to fire every second, on average.
+
+The body of this function executes one of the MAC management task, alternating
+between all in a round-robin fashion.
+*/
 void timer_res_fired() {
-   OpenQueueEntry_t* adv;
-   
-   // only send a packet if I received a sendDone for the previous.
-   // the packet might be stuck in the queue for a long time for
-   // example while the mote is synchronizing
-   if (res_vars.busySending==FALSE) {
-      // get a free packet buffer
-      adv = openqueue_getFreePacketBuffer();
-      if (adv==NULL) {
-         openserial_printError(ERR_NO_FREE_PACKET_BUFFER,
-                               COMPONENT_RES,
-                               0,
-                               0);
-         return;
-      }
-      
-      // declare ownership over that packet
-      adv->creator = COMPONENT_RES;
-      adv->owner   = COMPONENT_RES;
-      
-      // add ADV-specific header
-      packetfunctions_reserveHeaderSize(adv,sizeof(IEEE802154E_ADV_ht));
-      // the actual value of the current ASN will be written by the
-      // IEEE802.15.4e when transmitting
-      ((IEEE802154E_ADV_ht*)(adv->payload))->asn[0] = 0x00;
-      ((IEEE802154E_ADV_ht*)(adv->payload))->asn[1] = 0x00;
-      
-      // some l2 information about this packet
-      adv->l2_frameType = IEEE154_TYPE_BEACON;
-      adv->l2_nextORpreviousHop.type = ADDR_16B;
-      adv->l2_nextORpreviousHop.addr_16b[0] = 0xff;
-      adv->l2_nextORpreviousHop.addr_16b[1] = 0xff;
-      
-      // put in queue for MAC to handle
-      res_send_internal(adv);
-      res_vars.busySending = TRUE;
+   res_vars.MacMgtTask = (res_vars.MacMgtTask+1)%MAC_MGT_TASK_MAX;
+   switch (res_vars.MacMgtTask) {
+      case MAC_MGT_TASK_ADV:
+         sendAdv();
+         break;
+      case MAC_MGT_TASK_KA:
+         sendKa();
+         break;
+      default:
+         res_vars.MacMgtTask=0;//this should never happen
    }
 }
 
@@ -210,4 +203,67 @@ error_t res_send_internal(OpenQueueEntry_t* msg) {
    // change owner
    msg->owner  = COMPONENT_RES_TO_IEEE802154E;
    return E_SUCCESS;
+}
+
+/**
+\brief Send an advertisement.
+
+This is one of the MAC managament tasks. This function inlines in the
+timer_res_fired() function, but is declared as a separate function for better
+readability of the code.
+*/
+inline void sendAdv() {
+   OpenQueueEntry_t* adv;
+   // only send a packet if I received a sendDone for the previous.
+   // the packet might be stuck in the queue for a long time for
+   // example while the mote is synchronizing
+   if (res_vars.busySending==FALSE) {
+      // get a free packet buffer
+      adv = openqueue_getFreePacketBuffer();
+      if (adv==NULL) {
+         openserial_printError(ERR_NO_FREE_PACKET_BUFFER,
+                               COMPONENT_RES,
+                               0,
+                               0);
+         return;
+      }
+      
+      // declare ownership over that packet
+      adv->creator = COMPONENT_RES;
+      adv->owner   = COMPONENT_RES;
+      
+      // add ADV-specific header
+      packetfunctions_reserveHeaderSize(adv,sizeof(IEEE802154E_ADV_ht));
+      // the actual value of the current ASN will be written by the
+      // IEEE802.15.4e when transmitting
+      ((IEEE802154E_ADV_ht*)(adv->payload))->asn[0] = 0x00;
+      ((IEEE802154E_ADV_ht*)(adv->payload))->asn[1] = 0x00;
+      
+      // some l2 information about this packet
+      adv->l2_frameType = IEEE154_TYPE_BEACON;
+      adv->l2_nextORpreviousHop.type = ADDR_16B;
+      adv->l2_nextORpreviousHop.addr_16b[0] = 0xff;
+      adv->l2_nextORpreviousHop.addr_16b[1] = 0xff;
+      
+      // put in queue for MAC to handle
+      res_send_internal(adv);
+      res_vars.busySending = TRUE;
+   }
+}
+
+/**
+\brief Send an keep-alive message, if nessary.
+
+This is one of the MAC managament tasks. This function inlines in the
+timer_res_fired() function, but is declared as a separate function for better
+readability of the code.
+*/
+inline void sendKa() {
+   OpenQueueEntry_t* ka;
+   // only send a packet if I received a sendDone for the previous.
+   // the packet might be stuck in the queue for a long time for
+   // example while the mote is synchronizing
+   if (res_vars.busySending==FALSE) {
+      // TODO
+   }
 }
