@@ -107,6 +107,7 @@ void task_resNotifSendDone() {
 
 void task_resNotifReceive() {
    OpenQueueEntry_t* msg;
+   
    // get received packet from openqueue
    msg = openqueue_resGetReceivedPacket();
    if (msg==NULL) {
@@ -118,17 +119,29 @@ void task_resNotifReceive() {
       // abort
       return;
    }
+   
    // declare it as mine
    msg->owner = COMPONENT_RES;
+   
    // indicate reception (to update statistics)
    neighbors_indicateRx(&(msg->l2_nextORpreviousHop),
                         msg->l1_rssi,
                         msg->l2_TxRxAsnTimestamp);
-   // send the packet up the stack
+   
+   // send the packet up the stack, if it qualifies
    switch (msg->l2_frameType) {
+      case IEEE154_TYPE_BEACON:
       case IEEE154_TYPE_DATA:
-         iphc_receive(msg);
+      case IEEE154_TYPE_CMD:
+         if (msg->length>0) {
+            // send to upper layer
+            iphc_receive(msg);
+         } else {
+            // free up the RAM
+            openqueue_freePacketBuffer(msg);
+         }
          break;
+      case IEEE154_TYPE_ACK:
       default:
          openqueue_freePacketBuffer(msg);
          openserial_printError(COMPONENT_RES,
@@ -157,7 +170,7 @@ void timer_res_fired() {
          sendAdv();
          break;
       case MAC_MGT_TASK_KA:
-         sendKa();
+         //sendKa();//poipoi disable KA's
          break;
       default:
          res_vars.MacMgtTask=0;//this should never happen
@@ -240,8 +253,8 @@ inline void sendAdv() {
       ((IEEE802154E_ADV_ht*)(adv->payload))->asn[1] = 0x00;
       
       // some l2 information about this packet
-      adv->l2_frameType = IEEE154_TYPE_BEACON;
-      adv->l2_nextORpreviousHop.type = ADDR_16B;
+      adv->l2_frameType                     = IEEE154_TYPE_BEACON;
+      adv->l2_nextORpreviousHop.type        = ADDR_16B;
       adv->l2_nextORpreviousHop.addr_16b[0] = 0xff;
       adv->l2_nextORpreviousHop.addr_16b[1] = 0xff;
       
