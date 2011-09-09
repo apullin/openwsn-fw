@@ -78,9 +78,10 @@ void     activity_ri8(uint16_t capturedTime);
 void     activity_rie6();
 void     activity_ri9(uint16_t capturedTime);
 // frame validity check
-bool     isValidAdv(ieee802154_header_iht* ieee802514_header);
+bool     isValidAdv(ieee802154_header_iht*     ieee802514_header);
 bool     isValidRxFrame(ieee802154_header_iht* ieee802514_header);
-bool     isValidAck(ieee802154_header_iht* ieee802514_header);
+bool     isValidAck(ieee802154_header_iht*     ieee802514_header,
+                    OpenQueueEntry_t*          packetSent);
 // ASN handling
 void     asnWrite(OpenQueueEntry_t* advFrame);
 uint16_t asnRead (OpenQueueEntry_t* advFrame);
@@ -580,7 +581,7 @@ inline void activity_ti1ORri1() {
          ieee154etimer_schedule(DURATION_rt1);
          break;
       case CELLTYPE_SERIALRX:
-         //todo implement
+         // TODO
          break;
       default:
          // log the error
@@ -842,7 +843,7 @@ inline void activity_ti9(uint16_t capturedTime) {
    packetfunctions_tossHeader(ieee154e_vars.ackReceived,ieee802514_header.headerLength);
    
    // if frame is a valid ACK, handle
-   if (isValidAck(&ieee802514_header)==TRUE) {
+   if (isValidAck(&ieee802514_header,ieee154e_vars.dataToSend)==TRUE) {
       
       // resynchronize
       timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
@@ -1073,6 +1074,7 @@ inline void activity_ri6() {
    
    // prepend the IEEE802.15.4 header to the ACK
    ieee154e_vars.ackToSend->l2_frameType = IEEE154_TYPE_ACK;
+   ieee154e_vars.ackToSend->l2_dsn       = ieee154e_vars.dataReceived->l2_dsn;
    ieee802154_prependHeader(ieee154e_vars.ackToSend,
                             ieee154e_vars.ackToSend->l2_frameType,
                             IEEE154_SEC_NO_SECURITY,
@@ -1232,13 +1234,27 @@ inline bool isValidRxFrame(ieee802154_header_iht* ieee802514_header) {
 /**
 \brief Decides whether the packet I just received is a valid ACK
 
+A packet is a valid ACK if it satisfies the following conditions:
+- the IEEE802.15.4 header is valid
+- the frame type is 'ACK'
+- the sequence number in the ACK matches the sequence number of the packet sent
+- the ACK contains my PANid
+- the packet is unicast to me
+- the packet comes from the neighbor I sent the data to
+
 \param [in] ieee802514_header IEEE802.15.4 header of the packet I just received
+\param [in] packetSent points to the packet I just sent
 
 \returns TRUE if packet is a valid ACK, FALSE otherwise
 */
-inline bool isValidAck(ieee802154_header_iht* ieee802514_header) {
-   // TODO: implement
-   return TRUE;
+inline bool isValidAck(ieee802154_header_iht* ieee802514_header,
+                       OpenQueueEntry_t*      packetSent) {
+   return ieee802514_header->valid==TRUE                                                           && \
+          ieee802514_header->frameType==IEEE154_TYPE_ACK                                           && \
+          ieee802514_header->dsn==packetSent->l2_dsn                                               && \
+          packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))     && \
+          idmanager_isMyAddress(&ieee802514_header->dest)                                          && \
+          packetfunctions_sameAddress(&ieee802514_header->src,&packetSent->l2_nextORpreviousHop);
 }
 
 //======= ASN handling

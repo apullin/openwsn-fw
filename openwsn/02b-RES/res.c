@@ -186,6 +186,8 @@ error_t res_send_internal(OpenQueueEntry_t* msg) {
    } else {
       msg->l2_retriesLeft = TXRETRIES;
    }
+   // record this packet's dsn (for matching the ACK)
+   msg->l2_dsn = res_vars.dsn++;
    // this is a new packet which I never attempted to send
    msg->l2_numTxAttempts = 0;
    // transmit with the default TX power
@@ -196,7 +198,7 @@ error_t res_send_internal(OpenQueueEntry_t* msg) {
    ieee802154_prependHeader(msg,
                             msg->l2_frameType,
                             IEEE154_SEC_NO_SECURITY,
-                            res_vars.dsn++,
+                            msg->l2_dsn,
                             &(msg->l2_nextORpreviousHop)
                             );
    // reserve space for 2-byte CRC
