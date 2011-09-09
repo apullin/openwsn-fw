@@ -26,12 +26,17 @@ typedef struct {
    OpenQueueEntry_t*  ackReceived;          // pointer to the ack received
    uint16_t           lastCapturedTime;     // last captured time
    uint16_t           syncCapturedTime;     // captured time used to sync
-   uint8_t            syncCounter;        // counts how many times we synchronized
-   int16_t            maxCorrection;      // stores the maximum correction since we last reported
-   int16_t            minCorrection;      // sotres the minimum correction since we last reported
 } ieee154e_vars_t;
 
 ieee154e_vars_t ieee154e_vars;
+
+typedef struct {
+   uint8_t            syncCounter;          // how many times we synchronized since last reported
+   int16_t            minCorrection;        // minimum time correction since last reported
+   int16_t            maxCorrection;        // maximum time correction since last reported
+} ieee154e_stats_t;
+
+ieee154e_stats_t ieee154e_stats;
 
 //=========================== prototypes ======================================
 
@@ -88,6 +93,7 @@ void     notif_receive(OpenQueueEntry_t* packetReceived);
 uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
 void     changeState(uint8_t newstate);
 void     endSlot();
+void     updateStats(int16_t timeCorrection);
 bool     debugPrint_asn();
 bool     debugPrint_isSync();
 
@@ -120,9 +126,11 @@ void mac_init() {
    ieee154e_vars.ackReceived                = NULL;
    ieee154e_vars.lastCapturedTime           = 0;
    ieee154e_vars.syncCapturedTime           = 0;
-   ieee154e_vars.syncCounter;              = 0;
-   ieee154e_vars.maxCorrection;            = 0xFFFF;
-   ieee154e_vars.minCorrection;            = 0x7FFF;
+   
+   // initialize stats
+   ieee154e_stats.syncCounter               = 0;
+   ieee154e_stats.minCorrection             = 0;
+   ieee154e_stats.maxCorrection             = 0;
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
@@ -315,20 +323,13 @@ bool debugPrint_isSync() {
    return TRUE;
 }
 
-bool debugPrint_syncInfs() {
-   uint8_t output=0;
-   typedef struct {
-   uint8_t            syncCounter;        // counts how many times we synchronized
-   int16_t            maxCorrection;      // stores the maximum correction since we last reported
-   int16_t            minCorrection;      // sotres the minimum correction since we last reported
-   } sync_vars_t;
-   synch_vars_t output;
-   output.syncCounter = ieee154e_vars.syncCounter;
-   output.maxCorrection = ieee154e_vars.maxCorrection;
-   output.minCorrection = ieee154e_vars.minCorrection;
-   
-   openserial_printStatus(STATUS_SYNCINFS,(uint8_t*)&output,5);
-   ieee154e_vars.minCorrection = 0;//reset counter
+bool debugPrint_statsMac() {
+   // send current stats over serial
+   openserial_printStatus(STATUS_STATSMAC,(uint8_t*)&ieee154e_stats,sizeof(ieee154e_stats_t));
+   //reset stats
+   ieee154e_stats.syncCounter     = 0;
+   ieee154e_stats.minCorrection   = 0;
+   ieee154e_stats.maxCorrection   = 0;
    return TRUE;
 }
 
@@ -1021,7 +1022,7 @@ inline void activity_ri5(uint16_t capturedTime) {
 }
 
 inline void activity_ri6() {
-   int16_t correction;
+   int16_t timeCorrection;
    uint8_t frequency;
    
    // change state
@@ -1048,13 +1049,13 @@ inline void activity_ri6() {
    ieee154e_vars.ackToSend->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.ackToSend->owner   = COMPONENT_IEEE802154E;
    
-   // calculate the time correction
-   correction = (int16_t)((int16_t)ieee154e_vars.syncCapturedTime-(int16_t)TsTxOffset);
+   // calculate the time timeCorrection
+   timeCorrection = (int16_t)((int16_t)ieee154e_vars.syncCapturedTime-(int16_t)TsTxOffset);
    
    // add the payload to the ACK (i.e. the timeCorrection)
    packetfunctions_reserveHeaderSize(ieee154e_vars.ackToSend,sizeof(IEEE802154E_ACK_ht));
-   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[0] = (correction >> 0) & 0xff;
-   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[1] = (correction >> 8) & 0xff;
+   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[0] = (timeCorrection >> 0) & 0xff;
+   ((IEEE802154E_ACK_ht*)(ieee154e_vars.ackToSend->payload))->timeCorrection[1] = (timeCorrection >> 8) & 0xff;
    
    // prepend the IEEE802.15.4 header to the ACK
    ieee154e_vars.ackToSend->l2_frameType = IEEE154_TYPE_ACK;
@@ -1245,7 +1246,7 @@ inline uint16_t asnRead(OpenQueueEntry_t* advFrame) {
 //======= synchronization
 
 void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
-   int16_t  correction;
+   int16_t  timeCorrection;
    uint16_t newTaccr0;
    uint16_t currentTar;
    uint16_t currentTaccr0;
@@ -1254,7 +1255,7 @@ void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
    currentTaccr0        =  TACCR0;
    // only resynchronize if I'm not a DAGroot
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
-      correction        =  (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+      timeCorrection    =  (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
       newTaccr0         =  TsSlotDuration;
       // detect whether I'm too close to the edge of the slot, in that case,
       // skip a slot and increase the temporary slot length to be 2 slots long
@@ -1266,16 +1267,11 @@ void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
          ieee154e_vars.asn++;
          DEBUG_PIN_SLOT_TOGGLE();
       }
-      newTaccr0         =  (uint16_t)((int16_t)newTaccr0+correction);
+      newTaccr0         =  (uint16_t)((int16_t)newTaccr0+timeCorrection);
       TACCR0            =  newTaccr0;
       ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
-      
-      //now update max/minCorrection and report every ten synchronizations
-      if (ieee154e_vars.minCorrection>correction)
-        ieee154e_vars.minCorrection = correction;
-      if(ieee154e_vars.maxCorrection<correction)//no else because of the first time we sync
-        ieee154e_vars.maxCorrection = correction;
-      ieee154e_vars.syncCounter++;        
+      // update statistics
+      updateStats(timeCorrection);
    }
 }
 
@@ -1289,14 +1285,8 @@ void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
       newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
       TACCR0            =  newTaccr0;
       ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
-      
-      
-      //now update max/minCorrection and report every ten synchronizations
-      if (ieee154e_vars.minCorrection>correction)
-        ieee154e_vars.minCorrection = correction;
-      if(ieee154e_vars.maxCorrection<correction)//no else because of the first time we sync
-        ieee154e_vars.maxCorrection = correction;
-      ieee154e_vars.syncCounter++;    
+      // update statistics
+      updateStats(timeCorrection);
    }
 }
 
@@ -1408,6 +1398,19 @@ void changeState(uint8_t newstate) {
       case S_RXPROC:
          DEBUG_PIN_FSM_TOGGLE();
          break;
+   }
+}
+
+void updateStats(int16_t timeCorrection) {
+   
+   ieee154e_stats.syncCounter++;
+   
+   if (timeCorrection<ieee154e_stats.minCorrection) {
+     ieee154e_stats.minCorrection = timeCorrection;
+   }
+   
+   if(timeCorrection>ieee154e_stats.maxCorrection) {
+     ieee154e_stats.maxCorrection = timeCorrection;
    }
 }
 

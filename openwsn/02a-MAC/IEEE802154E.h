@@ -125,7 +125,7 @@ __monitor asn_t ieee154e_getAsn();
 // misc
           bool  debugPrint_asn();
           bool  debugPrint_isSync();
-          bool  debugPrint_syncInfs();
+          bool  debugPrint_statsMac();
 
 /**
 \}

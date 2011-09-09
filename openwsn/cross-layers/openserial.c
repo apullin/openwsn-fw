@@ -198,8 +198,8 @@ void openserial_startOutput() {
          if (debugPrint_id()==TRUE) {
             break;
          }
-      case STATUS_SYNCINFS:
-         if (debugPrint_syncInfs()==TRUE) {
+      case STATUS_STATSMAC:
+         if (debugPrint_statsMac()==TRUE) {
             break;
          }
       case STATUS_DAGRANK:
