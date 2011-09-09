@@ -16,7 +16,7 @@
 typedef struct {
    // misc
    asn_t              asn;                // current absolute slot number
-   uint16_t           syncTimeout;        // how many slots left before looses sync
+   uint16_t           deSyncTimeout;      // how many slots left before looses sync
    bool               isSync;             // TRUE iff mote synchronized to network
    // as shown on the chronogram
    uint8_t            state;              // state of the FSM
@@ -88,7 +88,7 @@ void     endSlot();
 bool     debugPrint_asn();
 bool     debugPrint_isSync();
 
-//=========================== public ==========================================
+//=========================== admin ===========================================
 
 /**
 \brief This function initializes this module.
@@ -104,7 +104,7 @@ void mac_init() {
    
    // initialize variables
    ieee154e_vars.asn                       = 0;
-   ieee154e_vars.syncTimeout               = 0;
+   ieee154e_vars.deSyncTimeout               = 0;
    if (idmanager_getIsDAGroot()==TRUE) {
       changeIsSync(TRUE);
    } else {
@@ -120,6 +120,12 @@ void mac_init() {
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
+}
+
+//=========================== public ==========================================
+
+__monitor asn_t ieee154e_getAsn() {
+   return ieee154e_vars.asn;
 }
 
 //======= events
@@ -460,8 +466,8 @@ inline void activity_ti1ORri1() {
    
    // desynchronize if needed
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
-      ieee154e_vars.syncTimeout--;
-      if (ieee154e_vars.syncTimeout==0) {
+      ieee154e_vars.deSyncTimeout--;
+      if (ieee154e_vars.deSyncTimeout==0) {
          changeIsSync(FALSE);
          endSlot();
          return;
@@ -1236,7 +1242,7 @@ void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
       }
       newTaccr0         =  (uint16_t)((int16_t)newTaccr0+correction);
       TACCR0            =  newTaccr0;
-      ieee154e_vars.syncTimeout = SYNCTIMEOUT;
+      ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
    }
 }
 
@@ -1249,7 +1255,7 @@ void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
       newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
       TACCR0            =  newTaccr0;
-      ieee154e_vars.syncTimeout = SYNCTIMEOUT;
+      ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
    }
 }
 

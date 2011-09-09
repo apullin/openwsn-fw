@@ -126,6 +126,31 @@ void neighbors_indicateTx(open_addr_t* dest,
    }
 }
 
+/**
+\brief Find neighbor to which to send KA.
+
+This function iterates through the neighbor table and identifies the neighbor
+we need to send a KA to, if any. This neighbor satisfies the following
+conditions:
+- it is one of our preferred parents
+- we haven't heard it for over 
+
+\return A pointer to te neighbor's address, or NULL if no KA is needed.
+*/
+open_addr_t* neighbors_KaNeighbor() {
+   uint8_t  i;
+   uint16_t timeSinceHeard;
+   for (i=0;i<MAXNUMNEIGHBORS;i++) {
+      if (neighbors_vars.neighbors[i].used==1 && neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
+         timeSinceHeard = ieee154e_getAsn()-neighbors_vars.neighbors[i].timestamp;
+         if (timeSinceHeard>KATIMEOUT) {
+            return &(neighbors_vars.neighbors[i].addr_64b);
+         }
+      }
+   }
+   return NULL;
+}
+
 bool neighbors_isStableNeighbor(open_addr_t* address) {
    uint8_t i=0;
    open_addr_t temp_addr_64b;
@@ -151,6 +176,7 @@ bool neighbors_isStableNeighbor(open_addr_t* address) {
 dagrank_t neighbors_getMyDAGrank() {
    return neighbors_vars.myDAGrank;
 }
+
 uint8_t neighbors_getNumNeighbors() {
    uint8_t i;
    uint8_t returnvalue=0;
@@ -161,6 +187,7 @@ uint8_t neighbors_getNumNeighbors() {
    }
    return returnvalue;
 }
+
 void neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type) {
    //following commented out section is equivalent to setting a default gw
    /*
@@ -213,17 +240,21 @@ bool debugPrint_neighbors() {
 //=========================== private =========================================
 
 void registerNewNeighbor(open_addr_t* address) {
-   uint8_t  i;
+   uint8_t  i,j;
+   bool     iHaveAPreferedParent;
+   // filter errors
    if (address->type!=ADDR_64B) {
       openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
             (errorparameter_t)address->type,
             (errorparameter_t)1);
       return;
    }
+   // add this neighbot
    if (isNeighbor(address)==FALSE) {
       i=0;
       while(i<MAXNUMNEIGHBORS) {
          if (neighbors_vars.neighbors[i].used==FALSE) {
+            // add this neighbor
             neighbors_vars.neighbors[i].used                   = TRUE;
             neighbors_vars.neighbors[i].parentPreference       = 0;
             neighbors_vars.neighbors[i].stableNeighbor         = FALSE;
@@ -234,7 +265,18 @@ void registerNewNeighbor(open_addr_t* address) {
             neighbors_vars.neighbors[i].numRx                  = 1;
             neighbors_vars.neighbors[i].numTx                  = 0;
             neighbors_vars.neighbors[i].numTxACK               = 0;
-            neighbors_vars.neighbors[i].timestamp              = 0;//poipoi implement timing
+            neighbors_vars.neighbors[i].timestamp              = 0;
+            // do I already have a preferred parent ?
+            iHaveAPreferedParent = FALSE;
+            for (j=0;j<MAXNUMNEIGHBORS;j++) {
+               if (neighbors_vars.neighbors[j].parentPreference==MAXPREFERENCE) {
+                  iHaveAPreferedParent = TRUE;
+               }
+            }
+            // if I have none, and I'm not DAGroot, the new neighbor is my preferred
+            if (iHaveAPreferedParent==FALSE && idmanager_getIsDAGroot()==FALSE) {
+               neighbors_vars.neighbors[i].parentPreference     = MAXPREFERENCE;
+            }
             break;
          }
          i++;
@@ -244,6 +286,7 @@ void registerNewNeighbor(open_addr_t* address) {
          return;
       }
    }
+   
 }
 
 bool isNeighbor(open_addr_t* neighbor) {

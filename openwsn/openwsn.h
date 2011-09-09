@@ -61,6 +61,12 @@ enum {
    E_FAIL                              = 1,
 };
 
+// de-synchronization timeouts
+enum {
+   DESYNCTIMEOUT                       = 300, // in slots: @10ms per slot -> 3 seconds
+   KATIMEOUT                           = 100, // in slots: @10ms per slot -> 1 second
+};
+
 // types of addresses
 enum {
    ADDR_NONE                           = 0,

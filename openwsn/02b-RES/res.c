@@ -185,9 +185,9 @@ error_t res_send_internal(OpenQueueEntry_t* msg) {
    } else {
       msg->l2_retriesLeft = TXRETRIES;
    }
-   // This is a new packet which I never attempted to send
+   // this is a new packet which I never attempted to send
    msg->l2_numTxAttempts = 0;
-   // assign a TX power
+   // transmit with the default TX power
    msg->l1_txPower = TX_POWER;
    // record the location, in the packet, where the l2 payload starts
    msg->l2_payload = msg->payload;
@@ -200,7 +200,7 @@ error_t res_send_internal(OpenQueueEntry_t* msg) {
                             );
    // reserve space for 2-byte CRC
    packetfunctions_reserveFooterSize(msg,2);
-   // change owner
+   // change owner to IEEE802154E fetches it from queue
    msg->owner  = COMPONENT_RES_TO_IEEE802154E;
    return E_SUCCESS;
 }
@@ -221,8 +221,8 @@ inline void sendAdv() {
       // get a free packet buffer
       adv = openqueue_getFreePacketBuffer();
       if (adv==NULL) {
-         openserial_printError(ERR_NO_FREE_PACKET_BUFFER,
-                               COMPONENT_RES,
+         openserial_printError(COMPONENT_RES,
+                               ERR_NO_FREE_PACKET_BUFFER,
                                0,
                                0);
          return;
@@ -260,10 +260,40 @@ readability of the code.
 */
 inline void sendKa() {
    OpenQueueEntry_t* ka;
+   open_addr_t* kaNeighAddr;
+   
    // only send a packet if I received a sendDone for the previous.
    // the packet might be stuck in the queue for a long time for
    // example while the mote is synchronizing
    if (res_vars.busySending==FALSE) {
-      // TODO
+      kaNeighAddr = neighbors_KaNeighbor();
+      if (kaNeighAddr!=NULL) {
+         // debug
+         openserial_printError(COMPONENT_RES,
+                               ERR_POIPOI,
+                               0,
+                               0);
+         // get a free packet buffer
+         ka = openqueue_getFreePacketBuffer();
+         if (ka==NULL) {
+            openserial_printError(COMPONENT_RES,
+                                  ERR_NO_FREE_PACKET_BUFFER,
+                                  0,
+                                  0);
+            return;
+         }
+         
+         // declare ownership over that packet
+         ka->creator = COMPONENT_RES;
+         ka->owner   = COMPONENT_RES;
+         
+         // some l2 information about this packet
+         ka->l2_frameType = IEEE154_TYPE_DATA;
+         memcpy(&(ka->l2_nextORpreviousHop),kaNeighAddr,sizeof(open_addr_t));
+         
+         // put in queue for MAC to handle
+         res_send_internal(ka);
+         res_vars.busySending = TRUE;
+      }
    }
 }
