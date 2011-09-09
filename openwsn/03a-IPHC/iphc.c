@@ -142,8 +142,8 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
       case IPHC_DAM_16B:
          if (value_dest->type!=ADDR_16B) {
             openserial_printError(COMPONENT_IPHC,ERR_WRONG_ADDR_TYPE,
-                  (errorparameter_t)value_dest->type,
-                  (errorparameter_t)0);
+                                  (errorparameter_t)value_dest->type,
+                                  (errorparameter_t)0);
             return E_FAIL;
          };
          packetfunctions_writeAddress(msg,value_dest,BIG_ENDIAN);
@@ -151,8 +151,8 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
       case IPHC_DAM_64B:
          if (value_dest->type!=ADDR_64B) {
             openserial_printError(COMPONENT_IPHC,ERR_WRONG_ADDR_TYPE,
-                  (errorparameter_t)value_dest->type,
-                  (errorparameter_t)1);
+                                  (errorparameter_t)value_dest->type,
+                                  (errorparameter_t)1);
             return E_FAIL;
          };
          packetfunctions_writeAddress(msg,value_dest,BIG_ENDIAN);
@@ -160,14 +160,16 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
       case IPHC_DAM_128B:
          if (value_dest->type!=ADDR_128B) {
             openserial_printError(COMPONENT_IPHC,ERR_WRONG_ADDR_TYPE,
-                  (errorparameter_t)value_dest->type,
-                  (errorparameter_t)2);
+                                  (errorparameter_t)value_dest->type,
+                                  (errorparameter_t)2);
             return E_FAIL;
          };
          packetfunctions_writeAddress(msg,value_dest,BIG_ENDIAN);
          break;
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)0,(errorparameter_t)dam);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)0,
+                               (errorparameter_t)dam);
          return E_FAIL;
    }
    //source address
@@ -185,7 +187,9 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
          packetfunctions_writeAddress(msg, (idmanager_getMyID(ADDR_PREFIX)),BIG_ENDIAN);
          break;
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)1,(errorparameter_t)sam);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)1,
+                               (errorparameter_t)sam);
          return E_FAIL;
    }
    //hop limit
@@ -199,7 +203,9 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
       case IPHC_HLIM_255:
          break;
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)2,(errorparameter_t)hlim);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)2,
+                               (errorparameter_t)hlim);
          return E_FAIL;
    }
    //next header
@@ -211,7 +217,9 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
       case IPHC_NH_COMPRESSED:
          //unsupported
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)3,(errorparameter_t)nh);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)3,
+                               (errorparameter_t)nh);
          return E_FAIL;
    }
    //flowlabel
@@ -231,7 +239,9 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
       case IPHC_TF_1B:
          //unsupported
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)4,(errorparameter_t)tf);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)4,
+                               (errorparameter_t)tf);
          return E_FAIL;
    }
    //header
@@ -290,7 +300,9 @@ ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg) {
       case IPHC_DISPATCH_IPHC:
          break;            
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)5,(errorparameter_t)tf);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)5,
+                               (errorparameter_t)tf);
          break;
    }
    //flowlabel
@@ -311,7 +323,9 @@ ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg) {
       case IPHC_TF_1B:
          //unsupported
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)6,(errorparameter_t)tf);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)6,
+                               (errorparameter_t)tf);
          break;
    }
    //next header
@@ -323,7 +337,9 @@ ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg) {
       case IPHC_NH_COMPRESSED:
          //unsupported
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)7,(errorparameter_t)nh);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)7,
+                               (errorparameter_t)nh);
          break;
    }
    //hop limit
@@ -340,7 +356,9 @@ ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg) {
          ipv6_header.hop_limit = 255;
          break;
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)8,(errorparameter_t)hlim);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)8,
+                               (errorparameter_t)hlim);
          break;
    }
    //source address
@@ -364,7 +382,9 @@ ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg) {
          ipv6_header.header_length += 16*sizeof(uint8_t);
          break;
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)9,(errorparameter_t)sam);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)9,
+                               (errorparameter_t)sam);
          break;
    }
    //destination address
@@ -388,7 +408,9 @@ ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg) {
          ipv6_header.header_length += 16*sizeof(uint8_t);
          break;
       default:
-         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,(errorparameter_t)10,(errorparameter_t)sam);
+         openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
+                               (errorparameter_t)10,
+                               (errorparameter_t)sam);
          break;
    }
    return ipv6_header;
