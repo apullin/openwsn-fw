@@ -26,6 +26,9 @@ typedef struct {
    OpenQueueEntry_t*  ackReceived;        // pointer to the ack received
    uint16_t           lastCapturedTime;   // last captured time
    uint16_t           syncCapturedTime;   // captured time used to sync
+   uint8_t            syncCounter;        // counts how many times we synchronized
+   int16_t            maxCorrection;      // stores the maximum correction since we last reported
+   int16_t            minCorrection;      // sotres the minimum correction since we last reported
 } ieee154e_vars_t;
 
 ieee154e_vars_t ieee154e_vars;
@@ -117,6 +120,9 @@ void mac_init() {
    ieee154e_vars.ackReceived               = NULL;
    ieee154e_vars.lastCapturedTime          = 0;
    ieee154e_vars.syncCapturedTime          = 0;
+   ieee154e_vars.syncCounter;              = 0;
+   ieee154e_vars.maxCorrection;            = 0xFFFF;
+   ieee154e_vars.minCorrection;            = 0x7FFF;
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
@@ -306,6 +312,23 @@ bool debugPrint_isSync() {
    uint8_t output=0;
    output = ieee154e_vars.isSync;
    openserial_printStatus(STATUS_ISSYNC,(uint8_t*)&output,sizeof(uint8_t));
+   return TRUE;
+}
+
+bool debugPrint_syncInfs() {
+   uint8_t output=0;
+   typedef struct {
+   uint8_t            syncCounter;        // counts how many times we synchronized
+   int16_t            maxCorrection;      // stores the maximum correction since we last reported
+   int16_t            minCorrection;      // sotres the minimum correction since we last reported
+   } sync_vars_t;
+   synch_vars_t output;
+   output.syncCounter = ieee154e_vars.syncCounter;
+   output.maxCorrection = ieee154e_vars.maxCorrection;
+   output.minCorrection = ieee154e_vars.minCorrection;
+   
+   openserial_printStatus(STATUS_SYNCINFS,(uint8_t*)&output,5);
+   ieee154e_vars.minCorrection = 0;//reset counter
    return TRUE;
 }
 
@@ -1243,6 +1266,13 @@ void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
       newTaccr0         =  (uint16_t)((int16_t)newTaccr0+correction);
       TACCR0            =  newTaccr0;
       ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
+      
+      //now update max/minCorrection and report every ten synchronizations
+      if (ieee154e_vars.minCorrection>correction)
+        ieee154e_vars.minCorrection = correction;
+      if(ieee154e_vars.maxCorrection<correction)//no else because of the first time we sync
+        ieee154e_vars.maxCorrection = correction;
+      ieee154e_vars.syncCounter++;        
    }
 }
 
@@ -1256,6 +1286,14 @@ void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
       newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
       TACCR0            =  newTaccr0;
       ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
+      
+      
+      //now update max/minCorrection and report every ten synchronizations
+      if (ieee154e_vars.minCorrection>correction)
+        ieee154e_vars.minCorrection = correction;
+      if(ieee154e_vars.maxCorrection<correction)//no else because of the first time we sync
+        ieee154e_vars.maxCorrection = correction;
+      ieee154e_vars.syncCounter++;    
    }
 }
 
