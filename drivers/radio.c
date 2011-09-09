@@ -261,13 +261,15 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
    // copy packet from rx buffer in radio over SPI
    spi_read_buffer(writeToBuffer,2); // first read only 2 bytes to receive the length
    writeToBuffer->length = writeToBuffer->payload[1];
-   if (writeToBuffer->length<=127) {
-      // then retrieve whole packet (including 1B SPI address, 1B length, 1B LQI)
+   if (writeToBuffer->length>2 && writeToBuffer->length<=127) {
+      // retrieve the whole packet (including 1B SPI address, 1B length, the packet, 1B LQI)
       spi_read_buffer(writeToBuffer,1+1+writeToBuffer->length+1);
-      // shift by 2B "header" (answer received when MSP sent SPI address, 1B length). Length does not change.
+      // shift start by 2B (1B answer received when MSP sent SPI address + 1B length).
       writeToBuffer->payload += 2;
       // read 1B "footer" (LQI) and store that information
       writeToBuffer->l1_lqi = writeToBuffer->payload[writeToBuffer->length];
+      // toss CRC (2 last bytes)
+      packetfunctions_tossFooter(writeToBuffer, 2);
    }
 }
 
