@@ -30,10 +30,12 @@ typedef struct {
 
 ieee154e_vars_t ieee154e_vars;
 
+// these statistics are reset every time they are reported
 typedef struct {
-   uint8_t            syncCounter;          // how many times we synchronized since last reported
-   int16_t            minCorrection;        // minimum time correction since last reported
-   int16_t            maxCorrection;        // maximum time correction since last reported
+   uint8_t            syncCounter;          // how many times we synchronized
+   int16_t            minCorrection;        // minimum time correction
+   int16_t            maxCorrection;        // maximum time correction
+   int8_t             numDeSync;            // number of times a desync happened
 } ieee154e_stats_t;
 
 ieee154e_stats_t ieee154e_stats;
@@ -89,11 +91,13 @@ void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, error_t error);
 void     notif_receive(OpenQueueEntry_t* packetReceived);
+// statistics
+void     resetStats();
+void     updateStats(int16_t timeCorrection);
 // misc
 uint8_t  calculateFrequency(asn_t asn, uint8_t channelOffset);
 void     changeState(uint8_t newstate);
 void     endSlot();
-void     updateStats(int16_t timeCorrection);
 bool     debugPrint_asn();
 bool     debugPrint_isSync();
 
@@ -127,10 +131,7 @@ void mac_init() {
    ieee154e_vars.lastCapturedTime           = 0;
    ieee154e_vars.syncCapturedTime           = 0;
    
-   // initialize stats
-   ieee154e_stats.syncCounter               = 0;
-   ieee154e_stats.minCorrection             = 0;
-   ieee154e_stats.maxCorrection             = 0;
+   resetStats();
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
@@ -327,9 +328,7 @@ bool debugPrint_statsMac() {
    // send current stats over serial
    openserial_printStatus(STATUS_STATSMAC,(uint8_t*)&ieee154e_stats,sizeof(ieee154e_stats_t));
    //reset stats
-   ieee154e_stats.syncCounter     = 0;
-   ieee154e_stats.minCorrection   = 0;
-   ieee154e_stats.maxCorrection   = 0;
+   resetStats();
    return TRUE;
 }
 
@@ -495,7 +494,19 @@ inline void activity_ti1ORri1() {
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
       ieee154e_vars.deSyncTimeout--;
       if (ieee154e_vars.deSyncTimeout==0) {
+         // declare myself desynchronized
          changeIsSync(FALSE);
+         
+         // log the error
+         openserial_printError(COMPONENT_IEEE802154E,
+                               ERR_DESYNCHRONIZED,
+                               ieee154e_vars.asn,
+                               0);
+            
+         // update the statistics
+         ieee154e_stats.numDeSync++;
+            
+         // abort
          endSlot();
          return;
       }
@@ -1327,6 +1338,28 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
    SCHEDULER_WAKEUP();
 }
 
+//======= stats
+
+void resetStats() {
+   ieee154e_stats.syncCounter     = 0;
+   ieee154e_stats.minCorrection   = 0;
+   ieee154e_stats.maxCorrection   = 0;
+   ieee154e_stats.numDeSync       = 0;
+}
+
+void updateStats(int16_t timeCorrection) {
+   
+   ieee154e_stats.syncCounter++;
+   
+   if (timeCorrection<ieee154e_stats.minCorrection) {
+     ieee154e_stats.minCorrection = timeCorrection;
+   }
+   
+   if(timeCorrection>ieee154e_stats.maxCorrection) {
+     ieee154e_stats.maxCorrection = timeCorrection;
+   }
+}
+
 //======= misc
 
 /**
@@ -1398,19 +1431,6 @@ void changeState(uint8_t newstate) {
       case S_RXPROC:
          DEBUG_PIN_FSM_TOGGLE();
          break;
-   }
-}
-
-void updateStats(int16_t timeCorrection) {
-   
-   ieee154e_stats.syncCounter++;
-   
-   if (timeCorrection<ieee154e_stats.minCorrection) {
-     ieee154e_stats.minCorrection = timeCorrection;
-   }
-   
-   if(timeCorrection>ieee154e_stats.maxCorrection) {
-     ieee154e_stats.maxCorrection = timeCorrection;
    }
 }
 
