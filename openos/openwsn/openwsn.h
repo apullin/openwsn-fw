@@ -225,13 +225,14 @@ enum {
    ERR_BUSY_SENDING                    = 0x22, // busy sending a packet             [RPLP,TCPP] arg1=location
    ERR_UNEXPECTED_SENDDONE             = 0x23, // sendDone for packet I didn't send [App,Advertise,KeepAlive,Reservation]
    ERR_NO_FREE_PACKET_BUFFER           = 0x24, // no free Queuepkt Cell             [NeighborsP, NRESP, AppSensorP, IEEE802154EP] arg1=codeLocation
-   ERR_UNSUPPORTED_COMMAND             = 0x25, // unsupported command=arg1          [SerialIOP] arg1=command
-   ERR_MSG_UNKNOWN_TYPE                = 0x26, // received message of unknown type  [NRESC,OpenQueueP] arg1=type
-   ERR_WRONG_ADDR_TYPE                 = 0x27, // wrong address type                [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
-   ERR_BRIDGE_MISMATCH                 = 0x28, // isBridge mismatch                 [NRES] arg1=code_location
-   ERR_HEADER_TOO_LONG                 = 0x29, // header too long                   [PacketFunctions] arg1=code_location
-   ERR_INPUTBUFFER_LENGTH              = 0x2a, // input length problem              [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location   
-   ERR_POIPOI                          = 0x2b, // poipoi                            [openSerial, all components which get Triggered]
+   ERR_FREEING_UNUSED                  = 0x25, // freeing unused memory             [poipoi]
+   ERR_UNSUPPORTED_COMMAND             = 0x26, // unsupported command=arg1          [SerialIOP] arg1=command
+   ERR_MSG_UNKNOWN_TYPE                = 0x27, // received message of unknown type  [NRESC,OpenQueueP] arg1=type
+   ERR_WRONG_ADDR_TYPE                 = 0x28, // wrong address type                [IEEE802154EP,IDManagerP,PacketFunctions] arg1=addressType arg2=codeLocation
+   ERR_BRIDGE_MISMATCH                 = 0x29, // isBridge mismatch                 [NRES] arg1=code_location
+   ERR_HEADER_TOO_LONG                 = 0x2a, // header too long                   [PacketFunctions] arg1=code_location
+   ERR_INPUTBUFFER_LENGTH              = 0x2b, // input length problem              [openSerial, all components which get Triggered] arg1=input_buffer_length arg2=location   
+   ERR_POIPOI                          = 0x2c, // poipoi                            [openSerial, all components which get Triggered]
 };
 
 //=========================== typedef =========================================

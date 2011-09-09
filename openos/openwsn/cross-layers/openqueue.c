@@ -54,6 +54,12 @@ __monitor error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
    uint8_t i;
    for (i=0;i<QUEUELENGTH;i++) {
       if (&openqueue_vars.queue[i]==pkt) {
+         if (openqueue_vars.queue[i].owner==COMPONENT_NULL) {
+            // log the error
+            openserial_printError(COMPONENT_OPENQUEUE,ERR_FREEING_UNUSED,
+                                  (errorparameter_t)0,
+                                  (errorparameter_t)0);
+         }
          openqueue_reset_entry(&(openqueue_vars.queue[i]));
          return E_SUCCESS;
       }
