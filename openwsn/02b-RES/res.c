@@ -15,17 +15,11 @@
 
 //=========================== variables =======================================
 
-enum {
-   MAC_MGT_TASK_ADV     = 0,
-   MAC_MGT_TASK_KA      = 1,
-   MAC_MGT_TASK_MAX     = 2,
-};
-
 typedef struct {
    uint16_t periodMaintenance;
-   bool     busySending;     // TRUE when busy sending an advertisement or keep-alive
-   uint8_t  dsn;             // current data sequence number
-   uint8_t  MacMgtTask;      // MAC management task to execute
+   bool     busySending;          // TRUE when busy sending an advertisement or keep-alive
+   uint8_t  dsn;                  // current data sequence number
+   uint8_t  MacMgtTaskCounter;    // counter to determine what management task to do
 } res_vars_t;
 
 res_vars_t res_vars;
@@ -42,7 +36,7 @@ void res_init() {
    res_vars.periodMaintenance = 16384+random_get16b()%32768; // fires every 1 sec on average
    res_vars.busySending       = FALSE;
    res_vars.dsn               = 0;
-   res_vars.MacMgtTask        = MAC_MGT_TASK_ADV;
+   res_vars.MacMgtTaskCounter = 0;
    timer_startPeriodic(TIMER_RES,res_vars.periodMaintenance);
 }
 
@@ -160,20 +154,14 @@ void task_resNotifReceive() {
 This function is called in task context by the scheduler after the RES timer
 has fired. This timer is set to fire every second, on average.
 
-The body of this function executes one of the MAC management task, alternating
-between all in a round-robin fashion.
+The body of this function executes one of the MAC management task.
 */
 void timer_res_fired() {
-   res_vars.MacMgtTask = (res_vars.MacMgtTask+1)%MAC_MGT_TASK_MAX;
-   switch (res_vars.MacMgtTask) {
-      case MAC_MGT_TASK_ADV:
-         sendAdv();
-         break;
-      case MAC_MGT_TASK_KA:
-         //sendKa();//poipoi disable KA's
-         break;
-      default:
-         res_vars.MacMgtTask=0;//this should never happen
+   res_vars.MacMgtTaskCounter = (res_vars.MacMgtTaskCounter+1)%10;
+   if (res_vars.MacMgtTaskCounter==0) {
+      sendAdv();
+   } else {
+      sendKa();
    }
 }
 
@@ -281,11 +269,6 @@ inline void sendKa() {
    if (res_vars.busySending==FALSE) {
       kaNeighAddr = neighbors_KaNeighbor();
       if (kaNeighAddr!=NULL) {
-         // debug
-         openserial_printError(COMPONENT_RES,
-                               ERR_POIPOI,
-                               0,
-                               0);
          // get a free packet buffer
          ka = openqueue_getFreePacketBuffer();
          if (ka==NULL) {
