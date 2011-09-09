@@ -64,6 +64,10 @@ __monitor error_t openqueue_freePacketBuffer(OpenQueueEntry_t* pkt) {
          return E_SUCCESS;
       }
    }
+   // log the error
+   openserial_printError(COMPONENT_OPENQUEUE,ERR_FREEING_ERROR,
+                         (errorparameter_t)0,
+                         (errorparameter_t)0);
    return E_FAIL;
 }
 
