@@ -220,7 +220,7 @@ void neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type
             default:
                openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
                      (errorparameter_t)addr_type,
-                     (errorparameter_t)0);
+                     (errorparameter_t)1);
                break;
          }
          return;
@@ -246,7 +246,7 @@ void registerNewNeighbor(open_addr_t* address) {
    if (address->type!=ADDR_64B) {
       openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
             (errorparameter_t)address->type,
-            (errorparameter_t)1);
+            (errorparameter_t)2);
       return;
    }
    // add this neighbot
@@ -317,19 +317,13 @@ void removeNeighbor(uint8_t neighborIndex) {
 
 bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber) {
    switch (address->type) {
-      /*case ADDR_16B:
-        return neighbors[rowNumber].used &&
-        packetfunctions_sameAddress(address,&neighbors[rowNumber].addr_16b);*///removed to save RAM
       case ADDR_64B:
          return neighbors_vars.neighbors[rowNumber].used &&
-            packetfunctions_sameAddress(address,&neighbors_vars.neighbors[rowNumber].addr_64b);
-         /*case ADDR_128B:
-           return neighbors[rowNumber].used &&
-           packetfunctions_sameAddress(address,&neighbors[rowNumber].addr_128b);*///removed to save RAM
+                packetfunctions_sameAddress(address,&neighbors_vars.neighbors[rowNumber].addr_64b);
       default:
          openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
-               (errorparameter_t)address->type,
-               (errorparameter_t)2);
+                               (errorparameter_t)address->type,
+                               (errorparameter_t)3);
          return FALSE;
    }
 }
