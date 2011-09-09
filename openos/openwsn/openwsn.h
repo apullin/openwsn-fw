@@ -63,7 +63,7 @@ enum {
 
 // de-synchronization timeouts
 enum {
-   DESYNCTIMEOUT                       = 300, // in slots: @10ms per slot -> 3 seconds
+   DESYNCTIMEOUT                       = 500, // in slots: @10ms per slot -> 5 seconds
    KATIMEOUT                           = 100, // in slots: @10ms per slot -> 1 second
 };
 
