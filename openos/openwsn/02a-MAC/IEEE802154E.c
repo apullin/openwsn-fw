@@ -1359,10 +1359,11 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
 //======= stats
 
 void resetStats() {
-   ieee154e_stats.syncCounter     = 0;
-   ieee154e_stats.minCorrection   = 0;
-   ieee154e_stats.maxCorrection   = 0;
-   ieee154e_stats.numDeSync       = 0;
+   ieee154e_stats.syncCounter     =    0;
+   ieee154e_stats.minCorrection   =  127;
+   ieee154e_stats.maxCorrection   = -127;
+   // do not reset the numDeSync since we want to have that number increase
+   // thoughout the lifetime of the mote.
 }
 
 void updateStats(int16_t timeCorrection) {
