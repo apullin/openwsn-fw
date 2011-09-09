@@ -15,17 +15,17 @@
 
 typedef struct {
    // misc
-   asn_t              asn;                // current absolute slot number
-   uint16_t           deSyncTimeout;      // how many slots left before looses sync
-   bool               isSync;             // TRUE iff mote synchronized to network
+   asn_t              asn;                  // current absolute slot number
+   uint16_t           deSyncTimeout;        // how many slots left before looses sync
+   bool               isSync;               // TRUE iff mote is synchronized to network
    // as shown on the chronogram
-   uint8_t            state;              // state of the FSM
-   OpenQueueEntry_t*  dataToSend;         // pointer to the data to send
-   OpenQueueEntry_t*  dataReceived;       // pointer to the data received
-   OpenQueueEntry_t*  ackToSend;          // pointer to the ack to send
-   OpenQueueEntry_t*  ackReceived;        // pointer to the ack received
-   uint16_t           lastCapturedTime;   // last captured time
-   uint16_t           syncCapturedTime;   // captured time used to sync
+   uint8_t            state;                // state of the FSM
+   OpenQueueEntry_t*  dataToSend;           // pointer to the data to send
+   OpenQueueEntry_t*  dataReceived;         // pointer to the data received
+   OpenQueueEntry_t*  ackToSend;            // pointer to the ack to send
+   OpenQueueEntry_t*  ackReceived;          // pointer to the ack received
+   uint16_t           lastCapturedTime;     // last captured time
+   uint16_t           syncCapturedTime;     // captured time used to sync
    uint8_t            syncCounter;        // counts how many times we synchronized
    int16_t            maxCorrection;      // stores the maximum correction since we last reported
    int16_t            minCorrection;      // sotres the minimum correction since we last reported
@@ -71,9 +71,9 @@ void     activity_ri8(uint16_t capturedTime);
 void     activity_rie6();
 void     activity_ri9(uint16_t capturedTime);
 // frame validity check
-bool     isValidAdv (ieee802154_header_iht* ieee802514_header);
-bool     isValidData(ieee802154_header_iht* ieee802514_header);
-bool     isValidAck (ieee802154_header_iht* ieee802514_header);
+bool     isValidAdv(ieee802154_header_iht* ieee802514_header);
+bool     isValidRxFrame(ieee802154_header_iht* ieee802514_header);
+bool     isValidAck(ieee802154_header_iht* ieee802514_header);
 // ASN handling
 void     asnWrite(OpenQueueEntry_t* advFrame);
 uint16_t asnRead (OpenQueueEntry_t* advFrame);
@@ -106,20 +106,20 @@ void mac_init() {
    DEBUG_PIN_FSM_INIT();
    
    // initialize variables
-   ieee154e_vars.asn                       = 0;
-   ieee154e_vars.deSyncTimeout               = 0;
+   ieee154e_vars.asn                        = 0;
+   ieee154e_vars.deSyncTimeout              = 0;
    if (idmanager_getIsDAGroot()==TRUE) {
       changeIsSync(TRUE);
    } else {
       changeIsSync(FALSE);
    }
-   ieee154e_vars.state                     = S_SLEEP;
-   ieee154e_vars.dataToSend                = NULL;
-   ieee154e_vars.dataReceived              = NULL;
-   ieee154e_vars.ackToSend                 = NULL;
-   ieee154e_vars.ackReceived               = NULL;
-   ieee154e_vars.lastCapturedTime          = 0;
-   ieee154e_vars.syncCapturedTime          = 0;
+   ieee154e_vars.state                      = S_SLEEP;
+   ieee154e_vars.dataToSend                 = NULL;
+   ieee154e_vars.dataReceived               = NULL;
+   ieee154e_vars.ackToSend                  = NULL;
+   ieee154e_vars.ackReceived                = NULL;
+   ieee154e_vars.lastCapturedTime           = 0;
+   ieee154e_vars.syncCapturedTime           = 0;
    ieee154e_vars.syncCounter;              = 0;
    ieee154e_vars.maxCorrection;            = 0xFFFF;
    ieee154e_vars.minCorrection;            = 0x7FFF;
@@ -442,8 +442,11 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       // turn off the radio
       radio_rfOff();
       
-      // record the ASN
+      // record the ASN from the ADV payload
       ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
+      
+      // toss the ADV payload
+      packetfunctions_tossHeader(ieee154e_vars.dataReceived,sizeof(asn_t));
       
       // synchronize (for the first time) to the sender's ADV
       synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
@@ -451,8 +454,8 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       // declare synchronized
       changeIsSync(TRUE);
       
-      // free the received data buffer so corresponding RAM memory can be recycled
-      openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
+      // send the packet up the stack so RES can update statistics
+      notif_receive(ieee154e_vars.dataReceived);
       
       // clear local variable
       ieee154e_vars.dataReceived = NULL;
@@ -461,7 +464,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       endSlot();
       
    } else {
-      // free the received data buffer so corresponding RAM memory can be recycled
+      // free the (invalid) received data buffer so RAM memory can be recycled
       openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
       
       // clear local variable
@@ -967,10 +970,8 @@ inline void activity_ri5(uint16_t capturedTime) {
    // toss the IEEE802.15.4 header
    packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
    
-   // if I just received a valid ADV, handle and stop
+   // if I just received a valid ADV, record the ASN and toss the payload
    if (isValidAdv(&ieee802514_header)==TRUE) {
-      
-      // synchronize
       if (idmanager_getIsDAGroot()==FALSE) {
          if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
             // log the error
@@ -981,28 +982,17 @@ inline void activity_ri5(uint16_t capturedTime) {
             // update the ASN to try to recover
             ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
          };
-         
-         // re-synchronize to the sender's ADV
-         synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
       }
-      
-      // free the received data so corresponding RAM memory can be recycled
-      openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
-      
-      // clear local variable
-      ieee154e_vars.dataReceived = NULL;
-      
-      // abort
-      endSlot();
-      return;
+      // toss the ADV payload
+      packetfunctions_tossHeader(ieee154e_vars.dataReceived,sizeof(asn_t));
    }
    
    // record the captured time
    ieee154e_vars.lastCapturedTime = capturedTime;
    
-   // if I just received an invalid data frame, stop
-   if (isValidData(&ieee802514_header)==FALSE) {
-      // free the received data so corresponding RAM memory can be recycled
+   // if I just received an invalid frame, stop
+   if (isValidRxFrame(&ieee802514_header)==FALSE) {
+      // free the (invalid) received data so RAM memory can be recycled
       openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
       
       // clear local variable
@@ -1012,6 +1002,9 @@ inline void activity_ri5(uint16_t capturedTime) {
       endSlot();
       return;
    }
+   
+   // synchronize to the received packet
+   synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
    
    // check if ack requested
    if (ieee802514_header.ackRequested==1) {
@@ -1169,9 +1162,6 @@ inline void activity_ri9(uint16_t capturedTime) {
    // clear local variable
    ieee154e_vars.ackToSend = NULL;
    
-   // re-synchronize to the sender's DATA
-   synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
-   
    // inform upper layer of reception
    notif_receive(ieee154e_vars.dataReceived);
    
@@ -1195,21 +1185,34 @@ inline bool isValidAdv(ieee802154_header_iht* ieee802514_header) {
    return ieee802514_header->valid==TRUE                                                              && \
           ieee802514_header->frameType==IEEE154_TYPE_BEACON                                           && \
           packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))        && \
-          ieee154e_vars.dataReceived->length==sizeof(IEEE802154E_ADV_ht)+2;
+          ieee154e_vars.dataReceived->length==sizeof(IEEE802154E_ADV_ht);
 }
 
 /**
-\brief Decides whether the packet I just received is valid data
+\brief Decides whether the packet I just received is valid received frame.
+
+A valid Rx frame satisfies the following constraints:
+- its IEEE802.15.4 header is well formatted
+- its a DATA of BEACON frame (i.e. not ACK and not COMMAND)
+- its sent on the same PANid as mine
+- its for me (unicast or broadcast)
+- 
 
 \param [in] ieee802514_header IEEE802.15.4 header of the packet I just received
 
-\returns TRUE if packet is valid data, FALSE otherwise
+\returns TRUE if packet is valid received frame, FALSE otherwise
 */
-inline bool isValidData(ieee802154_header_iht* ieee802514_header) {
-   return ieee802514_header->valid==TRUE                                                              && \
-          ieee802514_header->frameType==IEEE154_TYPE_DATA                                             && \
-          packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))        && \
-          idmanager_isMyAddress(&ieee802514_header->dest);
+inline bool isValidRxFrame(ieee802154_header_iht* ieee802514_header) {
+   return ieee802514_header->valid==TRUE                                                           && \
+          (
+             ieee802514_header->frameType==IEEE154_TYPE_DATA                   ||
+             ieee802514_header->frameType==IEEE154_TYPE_BEACON
+          )                                                                                        && \
+          packetfunctions_sameAddress(&ieee802514_header->panid,idmanager_getMyID(ADDR_PANID))     && \
+          (
+             idmanager_isMyAddress(&ieee802514_header->dest)                   ||
+             packetfunctions_isBroadcastMulticast(&ieee802514_header->dest)
+          );
 }
 
 /**
