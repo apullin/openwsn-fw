@@ -430,8 +430,9 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
    
    // store header details in packet buffer
-   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
    ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
+   ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
+   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
    
    // toss the IEEE802.15.4 header
    packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
@@ -833,8 +834,9 @@ inline void activity_ti9(uint16_t capturedTime) {
    ieee802154_retrieveHeader(ieee154e_vars.ackReceived,&ieee802514_header);
    
    // store header details in packet buffer
+   ieee154e_vars.ackReceived->l2_frameType  = ieee802514_header.frameType;
+   ieee154e_vars.ackReceived->l2_dsn        = ieee802514_header.dsn;
    memcpy(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
-   ieee154e_vars.ackReceived->l2_frameType = ieee802514_header.frameType;
    
    // toss the IEEE802.15.4 header
    packetfunctions_tossHeader(ieee154e_vars.ackReceived,ieee802514_header.headerLength);
@@ -976,8 +978,9 @@ inline void activity_ri5(uint16_t capturedTime) {
    ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
    
    // store header details in packet buffer
-   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
    ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
+   ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
+   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
    
    // toss the IEEE802.15.4 header
    packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
@@ -1073,10 +1076,9 @@ inline void activity_ri6() {
    ieee802154_prependHeader(ieee154e_vars.ackToSend,
                             ieee154e_vars.ackToSend->l2_frameType,
                             IEEE154_SEC_NO_SECURITY,
-                            0x00,
+                            ieee154e_vars.dataReceived->l2_dsn,
                             &(ieee154e_vars.dataReceived->l2_nextORpreviousHop)
                             );
-   // TODO: change the dsn
    
    // space for 2-byte CRC
    packetfunctions_reserveFooterSize(ieee154e_vars.ackToSend,2);
