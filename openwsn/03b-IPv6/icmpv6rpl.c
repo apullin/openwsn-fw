@@ -48,7 +48,7 @@ void icmpv6rpl_init() {
    icmpv6rpl_vars.all_routers_multicast.addr_128b[13] = 0x00;
    icmpv6rpl_vars.all_routers_multicast.addr_128b[14] = 0x00;
    icmpv6rpl_vars.all_routers_multicast.addr_128b[15] = 0x02;
-   timer_startPeriodic(TIMER_RPL,icmpv6rpl_vars.periodDIO);
+   //timer_startPeriodic(TIMER_RPL,icmpv6rpl_vars.periodDIO); poipoi disabling RPL
 }
 
 void icmpv6rpl_trigger() {
