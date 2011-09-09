@@ -127,7 +127,8 @@ enum {
    STATUS_SCHEDULE                     = 5,
    STATUS_QUEUE                        = 6,
    STATUS_NEIGHBORS                    = 7,
-   STATUS_MAX                          = 8,
+   STATUS_SYNCINFS                     = 8,//synchronization infima
+   STATUS_MAX                          = 9,
 };
 
 //component identifiers

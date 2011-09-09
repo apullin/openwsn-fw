@@ -198,6 +198,10 @@ void openserial_startOutput() {
          if (debugPrint_id()==TRUE) {
             break;
          }
+      case STATUS_SYNCINFS:
+         if (debugPrint_syncInfs()==TRUE) {
+            break;
+         }
       case STATUS_DAGRANK:
          if (debugPrint_myDAGrank()==TRUE) {
             break;
