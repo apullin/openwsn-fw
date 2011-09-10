@@ -133,6 +133,7 @@ void mac_init() {
    ieee154e_vars.syncCapturedTime           = 0;
    
    resetStats();
+   ieee154e_stats.numDeSync                 = 0;
    
    // initialize (and start) IEEE802.15.4e timer
    ieee154etimer_init();
@@ -328,8 +329,6 @@ bool debugPrint_isSync() {
 bool debugPrint_macStats() {
    // send current stats over serial
    openserial_printStatus(STATUS_MACSTATS,(uint8_t*)&ieee154e_stats,sizeof(ieee154e_stats_t));
-   //reset stats
-   resetStats();
    return TRUE;
 }
 
@@ -1323,6 +1322,7 @@ void changeIsSync(bool newIsSync) {
    ieee154e_vars.isSync = newIsSync;
    if (ieee154e_vars.isSync==TRUE) {
       LED_SYNC_ON();
+      resetStats();
    } else {
       LED_SYNC_OFF();
    }
@@ -1358,12 +1358,11 @@ void notif_receive(OpenQueueEntry_t* packetReceived) {
 
 //======= stats
 
-void resetStats() {
+inline void resetStats() {
    ieee154e_stats.syncCounter     =    0;
    ieee154e_stats.minCorrection   =  127;
    ieee154e_stats.maxCorrection   = -127;
-   // do not reset the numDeSync since we want to have that number increase
-   // thoughout the lifetime of the mote.
+   // do not reset the number of de-synchronizations
 }
 
 void updateStats(int16_t timeCorrection) {
