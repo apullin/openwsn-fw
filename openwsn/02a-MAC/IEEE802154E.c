@@ -35,7 +35,7 @@ typedef struct {
    uint8_t            syncCounter;          // how many times we synchronized
    int16_t            minCorrection;        // minimum time correction
    int16_t            maxCorrection;        // maximum time correction
-   int8_t             numDeSync;            // number of times a desync happened
+   uint8_t            numDeSync;            // number of times a desync happened
 } ieee154e_stats_t;
 
 ieee154e_stats_t ieee154e_stats;
@@ -325,9 +325,9 @@ bool debugPrint_isSync() {
    return TRUE;
 }
 
-bool debugPrint_statsMac() {
+bool debugPrint_macStats() {
    // send current stats over serial
-   openserial_printStatus(STATUS_STATSMAC,(uint8_t*)&ieee154e_stats,sizeof(ieee154e_stats_t));
+   openserial_printStatus(STATUS_MACSTATS,(uint8_t*)&ieee154e_stats,sizeof(ieee154e_stats_t));
    //reset stats
    resetStats();
    return TRUE;

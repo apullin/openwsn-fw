@@ -198,10 +198,6 @@ void openserial_startOutput() {
          if (debugPrint_id()==TRUE) {
             break;
          }
-      case STATUS_STATSMAC:
-         if (debugPrint_statsMac()==TRUE) {
-            break;
-         }
       case STATUS_DAGRANK:
          if (debugPrint_myDAGrank()==TRUE) {
             break;
@@ -212,6 +208,10 @@ void openserial_startOutput() {
          }
       case STATUS_ASN:
          if(debugPrint_asn()==TRUE) {
+            break;
+         }
+      case STATUS_MACSTATS:
+         if (debugPrint_macStats()==TRUE) {
             break;
          }
       case STATUS_SCHEDULE:
