@@ -255,8 +255,10 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
    writeToBuffer->l1_crc  = (temp_reg_value & 0x80)>>7;  // msb is whether packet passed CRC
    
    // read the RSSI
+   // according to section 8.4.3 of the AT86RF231, the RSSI is calculate as:
+   // -91 + ED [dBm]
    temp_reg_value = spi_read_register(RG_PHY_ED_LEVEL);
-   writeToBuffer->l1_rssi = temp_reg_value;
+   writeToBuffer->l1_rssi = -91 + temp_reg_value;
    
    // copy packet from rx buffer in radio over SPI
    spi_read_buffer(writeToBuffer,2); // first read only 2 bytes to receive the length
