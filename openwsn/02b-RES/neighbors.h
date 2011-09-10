@@ -12,10 +12,8 @@
 
 #define MAXNUMNEIGHBORS            10
 #define MAXPREFERENCE               2
-//-70dBm in 8-bit 2's compl. (-70 -> -25 -> 26 -> 0001 1010 -> 1110 0101-> 229)
-#define BADNEIGHBORMAXPOWER       229
-//-80dBm in 8-bit 2's compl. (-80 -> -35 -> 36 -> 219)
-#define GOODNEIGHBORMINPOWER      219
+#define BADNEIGHBORMAXRSSI        -70 //dBm
+#define GOODNEIGHBORMINRSSI       -80 //dBm
 #define SWITCHSTABILITYTHRESHOLD    3
 
 //=========================== typedef =========================================
@@ -27,7 +25,7 @@ typedef struct {
    uint8_t          switchStabilityCounter;
    open_addr_t      addr_64b;
    dagrank_t        DAGrank;
-   uint8_t          linkQuality;
+   int8_t           rssi;
    uint8_t          numRx;
    uint8_t          numTx;
    uint8_t          numTxACK;
@@ -47,7 +45,7 @@ void          neighbors_init();
 void          neighbors_receiveDIO(OpenQueueEntry_t* msg);
 void          neighbors_updateMyDAGrankAndNeighborPreference();
 void          neighbors_indicateRx(open_addr_t* l2_src,
-                                   uint16_t     rssi,
+                                   int8_t       rssi,
                                    asn_t        asnTimestamp);
 void          neighbors_indicateTx(open_addr_t* dest,
                                    uint8_t      numTxAttempts,

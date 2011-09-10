@@ -66,16 +66,16 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
 }
 
 void neighbors_indicateRx(open_addr_t* l2_src,
-                          uint16_t     rssi,
+                          int8_t       rssi,
                           asn_t        asnTimestamp) {
    uint8_t i=0;
    while (i<MAXNUMNEIGHBORS) {
       if (isThisRowMatching(l2_src,i)) {
          neighbors_vars.neighbors[i].numRx++;
-         neighbors_vars.neighbors[i].linkQuality=rssi;
+         neighbors_vars.neighbors[i].rssi=rssi;
          neighbors_vars.neighbors[i].timestamp=asnTimestamp;
          if (neighbors_vars.neighbors[i].stableNeighbor==FALSE) {
-            if (neighbors_vars.neighbors[i].linkQuality>BADNEIGHBORMAXPOWER || neighbors_vars.neighbors[i].linkQuality<129) {
+            if (neighbors_vars.neighbors[i].rssi>BADNEIGHBORMAXRSSI) {
                neighbors_vars.neighbors[i].switchStabilityCounter++;
                if (neighbors_vars.neighbors[i].switchStabilityCounter>=SWITCHSTABILITYTHRESHOLD) {
                   neighbors_vars.neighbors[i].switchStabilityCounter=0;
@@ -85,7 +85,7 @@ void neighbors_indicateRx(open_addr_t* l2_src,
                neighbors_vars.neighbors[i].switchStabilityCounter=0;
             }
          } else if (neighbors_vars.neighbors[i].stableNeighbor==TRUE) {
-            if (neighbors_vars.neighbors[i].linkQuality<GOODNEIGHBORMINPOWER && neighbors_vars.neighbors[i].linkQuality>128) {
+            if (neighbors_vars.neighbors[i].rssi<GOODNEIGHBORMINRSSI) {
                neighbors_vars.neighbors[i].switchStabilityCounter++;
                if (neighbors_vars.neighbors[i].switchStabilityCounter>=SWITCHSTABILITYTHRESHOLD) {
                   neighbors_vars.neighbors[i].switchStabilityCounter=0;
@@ -261,7 +261,7 @@ void registerNewNeighbor(open_addr_t* address) {
             neighbors_vars.neighbors[i].switchStabilityCounter = 0;
             memcpy(&neighbors_vars.neighbors[i].addr_64b,  address, sizeof(open_addr_t));
             neighbors_vars.neighbors[i].DAGrank                = 255;
-            neighbors_vars.neighbors[i].linkQuality            = 0;
+            neighbors_vars.neighbors[i].rssi                   = 0;
             neighbors_vars.neighbors[i].numRx                  = 1;
             neighbors_vars.neighbors[i].numTx                  = 0;
             neighbors_vars.neighbors[i].numTxACK               = 0;
@@ -308,7 +308,7 @@ void removeNeighbor(uint8_t neighborIndex) {
    neighbors_vars.neighbors[neighborIndex].addr_64b.type             = ADDR_NONE;
    //neighbors_vars.neighbors[neighborIndex].addr_128b.type            = ADDR_NONE;//removed to save RAM
    neighbors_vars.neighbors[neighborIndex].DAGrank                   = 255;
-   neighbors_vars.neighbors[neighborIndex].linkQuality               = 0;
+   neighbors_vars.neighbors[neighborIndex].rssi                      = 0;
    neighbors_vars.neighbors[neighborIndex].numRx                     = 0;
    neighbors_vars.neighbors[neighborIndex].numTx                     = 0;
    neighbors_vars.neighbors[neighborIndex].numTxACK                  = 0;

@@ -284,8 +284,8 @@ typedef struct {
    uint8_t*      l2_payload;                     // pointer to the start of the payload of l2 (used for MAC to fill in ASN in ADV)
    //l1 (drivers)
    uint8_t       l1_txPower;                     // power for packet to Tx at
-   uint8_t       l1_rssi;                        // RSSI of received packet
-   uint8_t       l1_lqi;                         // RSSI of received packet
+   int8_t        l1_rssi;                        // RSSI of received packet
+   uint8_t       l1_lqi;                         // LQI of received packet
    bool          l1_crc;                         // did received packet pass CRC check?
    //the packet
    uint8_t       packet[1+1+125+2+1];            // 1B spi address, 1B length, 125B data, 2B CRC, 1B LQI
