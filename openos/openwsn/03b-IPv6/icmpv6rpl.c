@@ -48,7 +48,8 @@ void icmpv6rpl_init() {
    icmpv6rpl_vars.all_routers_multicast.addr_128b[13] = 0x00;
    icmpv6rpl_vars.all_routers_multicast.addr_128b[14] = 0x00;
    icmpv6rpl_vars.all_routers_multicast.addr_128b[15] = 0x02;
-   //timer_startPeriodic(TIMER_RPL,icmpv6rpl_vars.periodDIO); poipoi disabling RPL
+   //poipoi: disabling RPL
+   //timer_startPeriodic(TIMER_RPL,icmpv6rpl_vars.periodDIO);
 }
 
 void icmpv6rpl_trigger() {
@@ -102,7 +103,8 @@ void timer_rpl_fired() {
 void sendDIO() {
    OpenQueueEntry_t* msg;
    if (icmpv6rpl_vars.busySending==TRUE) {
-      //poipoi no erroropenserial_printError(COMPONENT_ICMPv6RPL,ERR_BUSY_SENDING,0,0);
+      //poipoi: no busy sending error
+      //openserial_printError(COMPONENT_ICMPv6RPL,ERR_BUSY_SENDING,0,0);
    } else {
       icmpv6rpl_vars.busySending = TRUE;
       msg = openqueue_getFreePacketBuffer();

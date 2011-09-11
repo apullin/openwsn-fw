@@ -68,7 +68,7 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg) {
    }
    if (prependIPv6Header(msg,
             IPHC_TF_ELIDED,
-            0,//poipoi should value_flowlabel be copied?
+            0, // value_flowlabel is not copied
             IPHC_NH_INLINE,
             msg->l4_protocol,
             IPHC_HLIM_INLINE,

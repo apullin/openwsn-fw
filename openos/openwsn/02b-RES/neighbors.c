@@ -46,7 +46,7 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
          if (isThisRowMatching(&(msg->l2_nextORpreviousHop),i)) {
             //memcpy(&(neighbors[i].addr_128b),&(msg->l3_destinationORsource),sizeof(open_addr_t));//removed to save RAM
             neighbors_vars.neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
-            //poipoi forces single hop
+            //poipoi: single hop
             if (neighbors_vars.neighbors[i].DAGrank==0x00) {
                neighbors_vars.neighbors[i].parentPreference=MAXPREFERENCE;
                if (neighbors_vars.neighbors[i].numTxACK==0) {
@@ -62,7 +62,8 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
    } else {
       registerNewNeighbor(&(msg->l2_nextORpreviousHop));
    }
-   //neighbors_updateMyDAGrankAndNeighborPreference(); poipoi forces single hop
+   //poipoi: single hop
+   //neighbors_updateMyDAGrankAndNeighborPreference(); 
 }
 
 void neighbors_indicateRx(open_addr_t* l2_src,
@@ -99,7 +100,7 @@ void neighbors_indicateRx(open_addr_t* l2_src,
       }
       i++;   
    }
-   // you only reach this line if none of the rows correspond to this address
+   // this is a new neighbor: register
    registerNewNeighbor(l2_src);
 }
 
@@ -208,19 +209,13 @@ void neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type
    for (i=0; i<MAXNUMNEIGHBORS; i++) {
       if (neighbors_vars.neighbors[i].used==TRUE && neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
          switch(addr_type) {
-            /*case ADDR_16B:
-              memcpy(addressToWrite,&(neighbors[i].addr_16b),sizeof(open_addr_t));
-              break;*///removed to save RAM
             case ADDR_64B:
-               memcpy(addressToWrite,&(neighbors_vars.neighbors[i].addr_64b),sizeof(open_addr_t));//poipoi I only really use this one
+               memcpy(addressToWrite,&(neighbors_vars.neighbors[i].addr_64b),sizeof(open_addr_t));
                break;
-               /*case ADDR_128B:
-                 memcpy(addressToWrite,&(neighbors[i].addr_128b),sizeof(open_addr_t));
-                 break;*///removed to save RAM
             default:
                openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
-                     (errorparameter_t)addr_type,
-                     (errorparameter_t)1);
+                                     (errorparameter_t)addr_type,
+                                     (errorparameter_t)1);
                break;
          }
          return;

@@ -47,7 +47,7 @@ void idmanager_init() {
    idmanager_vars.my64bID.addr_64b[7]  = *(&eui64+7);
    packetfunctions_mac64bToMac16b(&idmanager_vars.my64bID,&idmanager_vars.my16bID);
    
-   // poipoi forcing DEBUG_MOTEID_MASTER to be the DAGroot
+   //poipoi: DEBUG_MOTEID_MASTER is DAGroot
    if (idmanager_vars.my16bID.addr_16b[1]==DEBUG_MOTEID_MASTER) {
       idmanager_vars.isDAGroot         = TRUE;
    }

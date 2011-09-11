@@ -12,8 +12,8 @@
 
 #define MAXNUMNEIGHBORS            10
 #define MAXPREFERENCE               2
-#define BADNEIGHBORMAXRSSI        -70 //dBm
-#define GOODNEIGHBORMINRSSI       -80 //dBm
+#define BADNEIGHBORMAXRSSI        -80 //dBm
+#define GOODNEIGHBORMINRSSI       -90 //dBm
 #define SWITCHSTABILITYTHRESHOLD    3
 
 //=========================== typedef =========================================

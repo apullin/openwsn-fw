@@ -105,7 +105,7 @@ void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
    }
    */
    } else {
-      //poipoi
+      //poipoi: force forwarding to MASTER/SLAVE
       addressToWrite64b->type = ADDR_64B;
       addressToWrite64b->addr_64b[0] = 0x14;
       addressToWrite64b->addr_64b[1] = 0x15;

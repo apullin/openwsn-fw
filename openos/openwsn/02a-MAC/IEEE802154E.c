@@ -455,7 +455,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
       // declare synchronized
       changeIsSync(TRUE);
       
-      // send the packet up the stack so RES can update statistics
+      // send received ADV up the stack so RES can update statistics (synchronizing)
       notif_receive(ieee154e_vars.dataReceived);
       
       // clear local variable
@@ -1026,7 +1026,7 @@ inline void activity_ri5(uint16_t capturedTime) {
       // arm rt5
       ieee154etimer_schedule(DURATION_rt5);
    } else {
-      // indicate reception to upper layer
+      // indicate reception to upper layer (no ACK asked)
       notif_receive(ieee154e_vars.dataReceived);
       // reset local variable
       ieee154e_vars.dataReceived = NULL;
@@ -1177,7 +1177,7 @@ inline void activity_ri9(uint16_t capturedTime) {
    // clear local variable
    ieee154e_vars.ackToSend = NULL;
    
-   // inform upper layer of reception
+   // inform upper layer of reception (after ACK sent)
    notif_receive(ieee154e_vars.dataReceived);
    
    // clear local variable
@@ -1401,7 +1401,8 @@ different channel offsets in the same slot.
 */
 inline uint8_t calculateFrequency(asn_t asn, uint8_t channelOffset) {
    //return 11+(asn+channelOffset)%16;
-   return 26;//poipoi
+   //poipoi: no channel hopping
+   return 26;
 }
 
 /**
