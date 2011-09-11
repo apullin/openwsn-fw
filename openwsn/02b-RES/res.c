@@ -137,7 +137,9 @@ void task_resNotifReceive() {
          break;
       case IEEE154_TYPE_ACK:
       default:
+         // free the packet's RAM memory
          openqueue_freePacketBuffer(msg);
+         // log the error
          openserial_printError(COMPONENT_RES,
                                ERR_MSG_UNKNOWN_TYPE,
                                msg->l2_frameType,
@@ -157,11 +159,13 @@ has fired. This timer is set to fire every second, on average.
 The body of this function executes one of the MAC management task.
 */
 void timer_res_fired() {
-   res_vars.MacMgtTaskCounter = (res_vars.MacMgtTaskCounter+1)%10;
+   //poipoi: send ADV every 3s
+   res_vars.MacMgtTaskCounter = (res_vars.MacMgtTaskCounter+1)%3;
    if (res_vars.MacMgtTaskCounter==0) {
       sendAdv();
    } else {
-      sendKa();
+      //poipoi: disable KA
+      //sendKa();
    }
 }
 

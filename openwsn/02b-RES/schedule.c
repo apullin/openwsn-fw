@@ -103,7 +103,8 @@ void schedule_init() {
    if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
       schedule_vars.schedule[5].type                       = CELLTYPE_TX;
    } else {
-      schedule_vars.schedule[5].type                       = CELLTYPE_OFF;//poipoi
+      //poipoi: cell OFF
+      schedule_vars.schedule[5].type                       = CELLTYPE_OFF;
    }
    schedule_vars.schedule[5].neighbor.type                 = ADDR_64B;
    schedule_vars.schedule[5].neighbor.addr_64b[0]          = 0xff;
