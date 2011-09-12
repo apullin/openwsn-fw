@@ -264,8 +264,8 @@ timer_res_fired() function, but is declared as a separate function for better
 readability of the code.
 */
 inline void sendKa() {
-   OpenQueueEntry_t* ka;
-   open_addr_t* kaNeighAddr;
+   OpenQueueEntry_t* kaPkt;
+   open_addr_t*      kaNeighAddr;
    
    // only send a packet if I received a sendDone for the previous.
    // the packet might be stuck in the queue for a long time for
@@ -274,8 +274,8 @@ inline void sendKa() {
       kaNeighAddr = neighbors_KaNeighbor();
       if (kaNeighAddr!=NULL) {
          // get a free packet buffer
-         ka = openqueue_getFreePacketBuffer();
-         if (ka==NULL) {
+         kaPkt = openqueue_getFreePacketBuffer();
+         if (kaPkt==NULL) {
             openserial_printError(COMPONENT_RES,
                                   ERR_NO_FREE_PACKET_BUFFER,
                                   0,
@@ -284,15 +284,15 @@ inline void sendKa() {
          }
          
          // declare ownership over that packet
-         ka->creator = COMPONENT_RES;
-         ka->owner   = COMPONENT_RES;
+         kaPkt->creator = COMPONENT_RES;
+         kaPkt->owner   = COMPONENT_RES;
          
          // some l2 information about this packet
-         ka->l2_frameType = IEEE154_TYPE_DATA;
-         memcpy(&(ka->l2_nextORpreviousHop),kaNeighAddr,sizeof(open_addr_t));
+         kaPkt->l2_frameType = IEEE154_TYPE_DATA;
+         memcpy(&(kaPkt->l2_nextORpreviousHop),kaNeighAddr,sizeof(open_addr_t));
          
          // put in queue for MAC to handle
-         res_send_internal(ka);
+         res_send_internal(kaPkt);
          res_vars.busySending = TRUE;
       }
    }
