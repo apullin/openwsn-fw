@@ -10,6 +10,7 @@
 #include "packetfunctions.h"
 #include "scheduler.h"
 #include "leds.h"
+#include "neighbors.h"
 
 //=========================== variables =======================================
 
@@ -1353,8 +1354,8 @@ void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
    // record the current states of the TAR and TACCR0 registers
    currentTar           =  TAR;
    currentTaccr0        =  TACCR0;
-   // only resynchronize if I'm not a DAGroot
-   if (idmanager_getIsDAGroot()==FALSE) {
+   // only resynchronize if I'm not a DAGroot and this is my preferred parent
+   if (idmanager_getIsDAGroot()==FALSE && neighbors_isPreferredParent(advFrom)) {
       timeCorrection    =  (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
       newTaccr0         =  TsSlotDuration;
       // detect whether I'm too close to the edge of the slot, in that case,
@@ -1380,8 +1381,8 @@ void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
    uint16_t currentTaccr0;
    // record the current states of the TAR and TACCR0 registers
    currentTaccr0        =  TACCR0;
-   // only resynchronize if I'm not a DAGroot
-   if (idmanager_getIsDAGroot()==FALSE) {
+   // only resynchronize if I'm not a DAGroot and this is my preferred parent
+   if (idmanager_getIsDAGroot()==FALSE && neighbors_isPreferredParent(advFrom)) {
       newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
       TACCR0            =  newTaccr0;
       ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;

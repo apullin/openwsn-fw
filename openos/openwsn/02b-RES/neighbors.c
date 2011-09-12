@@ -176,7 +176,7 @@ open_addr_t* neighbors_KaNeighbor() {
 }
 
 bool neighbors_isStableNeighbor(open_addr_t* address) {
-   uint8_t i=0;
+   uint8_t i;
    open_addr_t temp_addr_64b;
    open_addr_t temp_prefix;
    switch (address->type) {
@@ -191,6 +191,17 @@ bool neighbors_isStableNeighbor(open_addr_t* address) {
    }
    for (i=0;i<MAXNUMNEIGHBORS;i++) {
       if (isThisRowMatching(&temp_addr_64b,i) && neighbors_vars.neighbors[i].stableNeighbor==TRUE) {
+         return TRUE;
+      }
+   }
+   return FALSE;
+}
+
+__monitor bool neighbors_isPreferredParent(open_addr_t* address) {
+   return TRUE; //poipoipoipoi
+   uint8_t i;
+   for (i=0;i<MAXNUMNEIGHBORS;i++) {
+      if (isThisRowMatching(address,i) && neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
          return TRUE;
       }
    }
