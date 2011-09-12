@@ -198,8 +198,6 @@ bool neighbors_isStableNeighbor(open_addr_t* address) {
 }
 
 __monitor bool neighbors_isPreferredParent(open_addr_t* address) {
-   return TRUE; // poipoipoi
-   /*
    uint8_t i;
    for (i=0;i<MAXNUMNEIGHBORS;i++) {
       if (isThisRowMatching(address,i) && neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
@@ -207,7 +205,6 @@ __monitor bool neighbors_isPreferredParent(open_addr_t* address) {
       }
    }
    return FALSE;
-   */
 }
 
 dagrank_t neighbors_getMyDAGrank() {
