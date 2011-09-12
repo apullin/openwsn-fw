@@ -87,8 +87,8 @@ bool     isValidAck(ieee802154_header_iht*     ieee802514_header,
 void     asnWrite(OpenQueueEntry_t* advFrame);
 uint16_t asnRead (OpenQueueEntry_t* advFrame);
 // synchronization
-void     synchronizePacket(uint16_t timeReceived, open_addr_t* advFrom);
-void     synchronizeAck(int16_t timeCorrection, open_addr_t* advFrom);
+void     synchronizePacket(uint16_t timeReceived);
+void     synchronizeAck(int16_t timeCorrection);
 void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, error_t error);
@@ -469,7 +469,7 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
          packetfunctions_tossHeader(ieee154e_vars.dataReceived,sizeof(asn_t));
          
          // synchronize (for the first time) to the sender's ADV
-         synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+         synchronizePacket(ieee154e_vars.syncCapturedTime);
          
          // declare synchronized
          changeIsSync(TRUE);
@@ -889,9 +889,12 @@ inline void activity_ti9(uint16_t capturedTime) {
       // if frame is a valid ACK, handle
       if (isValidAck(&ieee802514_header,ieee154e_vars.dataToSend)==TRUE) {
          
-         // resynchronize
-         timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
-         synchronizeAck(timeCorrection,&(ieee154e_vars.ackReceived->l2_nextORpreviousHop));
+         // resynchronize if I'm not a DAGroot and ACK from preferred parent
+         if (idmanager_getIsDAGroot()==FALSE &&
+             neighbors_isPreferredParent(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop)) ) {
+            timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
+            synchronizeAck(timeCorrection);
+         }
          
          // inform upper layer
          notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
@@ -1082,8 +1085,10 @@ inline void activity_ri5(uint16_t capturedTime) {
          // arm rt5
          ieee154etimer_schedule(DURATION_rt5);
       } else {
-         // synchronize to the received packet
-         synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+         // synchronize to the received packet iif I'm not a DAGroot and this is my preferred parent
+         if (idmanager_getIsDAGroot()==FALSE && neighbors_isPreferredParent(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop))) {
+            synchronizePacket(ieee154e_vars.syncCapturedTime);
+         }
          // indicate reception to upper layer (no ACK asked)
          notif_receive(ieee154e_vars.dataReceived);
          // reset local variable
@@ -1250,7 +1255,9 @@ inline void activity_ri9(uint16_t capturedTime) {
    ieee154e_vars.ackToSend = NULL;
    
    // synchronize to the received packet
-   synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+   if (idmanager_getIsDAGroot()==FALSE && neighbors_isPreferredParent(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop))) {
+      synchronizePacket(ieee154e_vars.syncCapturedTime);
+   }
    
    // inform upper layer of reception (after ACK sent)
    notif_receive(ieee154e_vars.dataReceived);
@@ -1348,7 +1355,7 @@ inline uint16_t asnRead(OpenQueueEntry_t* advFrame) {
 
 //======= synchronization
 
-void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
+void synchronizePacket(uint16_t timeReceived) {
    int16_t  timeCorrection;
    uint16_t newTaccr0;
    uint16_t currentTar;
@@ -1356,41 +1363,36 @@ void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
    // record the current states of the TAR and TACCR0 registers
    currentTar           =  TAR;
    currentTaccr0        =  TACCR0;
-   // only resynchronize if I'm not a DAGroot and this is my preferred parent
-   if (idmanager_getIsDAGroot()==FALSE && neighbors_isPreferredParent(advFrom)) {
-      timeCorrection    =  (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
-      newTaccr0         =  TsSlotDuration;
-      // detect whether I'm too close to the edge of the slot, in that case,
-      // skip a slot and increase the temporary slot length to be 2 slots long
-      if (currentTar<timeReceived ||
-          currentTaccr0-currentTar<RESYNCHRONIZATIONGUARD) {
-         DEBUG_PIN_SLOT_TOGGLE();
-         TACTL         &= ~TAIFG;
-         newTaccr0     +=  TsSlotDuration;
-         ieee154e_vars.asn++;
-         DEBUG_PIN_SLOT_TOGGLE();
-      }
-      newTaccr0         =  (uint16_t)((int16_t)newTaccr0+timeCorrection);
-      TACCR0            =  newTaccr0;
-      ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
-      // update statistics
-      updateStats(timeCorrection);
+   // calculate new value for TACCR0
+   timeCorrection    =  (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
+   newTaccr0         =  TsSlotDuration;
+   // detect whether I'm too close to the edge of the slot, in that case,
+   // skip a slot and increase the temporary slot length to be 2 slots long
+   if (currentTar<timeReceived ||
+       currentTaccr0-currentTar<RESYNCHRONIZATIONGUARD) {
+      DEBUG_PIN_SLOT_TOGGLE();
+      TACTL         &= ~TAIFG;
+      newTaccr0     +=  TsSlotDuration;
+      ieee154e_vars.asn++;
+      DEBUG_PIN_SLOT_TOGGLE();
    }
+   newTaccr0         =  (uint16_t)((int16_t)newTaccr0+timeCorrection);
+   TACCR0            =  newTaccr0;
+   ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
+   // update statistics
+   updateStats(timeCorrection);
 }
 
-void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
+void synchronizeAck(int16_t timeCorrection) {
    uint16_t newTaccr0;
    uint16_t currentTaccr0;
-   // record the current states of the TAR and TACCR0 registers
+   // resynchronize
    currentTaccr0        =  TACCR0;
-   // only resynchronize if I'm not a DAGroot and this is my preferred parent
-   if (idmanager_getIsDAGroot()==FALSE && neighbors_isPreferredParent(advFrom)) {
-      newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
-      TACCR0            =  newTaccr0;
-      ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
-      // update statistics
-      updateStats(timeCorrection);
-   }
+   newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
+   TACCR0            =  newTaccr0;
+   ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
+   // update statistics
+   updateStats(timeCorrection);
 }
 
 void changeIsSync(bool newIsSync) {
