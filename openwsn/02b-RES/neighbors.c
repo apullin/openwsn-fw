@@ -18,10 +18,13 @@ neighbors_vars_t neighbors_vars;
 
 //=========================== prototypes ======================================
 
-void registerNewNeighbor(open_addr_t* neighborID);
+void registerNewNeighbor(open_addr_t* neighborID,
+                         int8_t       rssi,
+                         asn_t        asnTimestamp);
 bool isNeighbor(open_addr_t* neighbor);
 void removeNeighbor(uint8_t neighborIndex);
-bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber);
+bool isThisRowMatching(open_addr_t* address,
+                       uint8_t rowNumber);
 
 //=========================== public ==========================================
 
@@ -59,8 +62,6 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
             break;
          }
       }
-   } else {
-      registerNewNeighbor(&(msg->l2_nextORpreviousHop));
    }
    //poipoi: single hop
    //neighbors_updateMyDAGrankAndNeighborPreference(); 
@@ -101,7 +102,7 @@ void neighbors_indicateRx(open_addr_t* l2_src,
       i++;   
    }
    // this is a new neighbor: register
-   registerNewNeighbor(l2_src);
+   registerNewNeighbor(l2_src, rssi, asnTimestamp);
 }
 
 void neighbors_indicateTx(open_addr_t* dest,
@@ -234,7 +235,9 @@ bool debugPrint_neighbors() {
 
 //=========================== private =========================================
 
-void registerNewNeighbor(open_addr_t* address) {
+void registerNewNeighbor(open_addr_t* address,
+                         int8_t       rssi,
+                         asn_t        asnTimestamp) {
    uint8_t  i,j;
    bool     iHaveAPreferedParent;
    // filter errors
@@ -256,11 +259,11 @@ void registerNewNeighbor(open_addr_t* address) {
             neighbors_vars.neighbors[i].switchStabilityCounter = 0;
             memcpy(&neighbors_vars.neighbors[i].addr_64b,  address, sizeof(open_addr_t));
             neighbors_vars.neighbors[i].DAGrank                = 255;
-            neighbors_vars.neighbors[i].rssi                   = 0;
+            neighbors_vars.neighbors[i].rssi                   = rssi;
             neighbors_vars.neighbors[i].numRx                  = 1;
             neighbors_vars.neighbors[i].numTx                  = 0;
             neighbors_vars.neighbors[i].numTxACK               = 0;
-            neighbors_vars.neighbors[i].timestamp              = 0;
+            neighbors_vars.neighbors[i].timestamp              = asnTimestamp;
             // do I already have a preferred parent ?
             iHaveAPreferedParent = FALSE;
             for (j=0;j<MAXNUMNEIGHBORS;j++) {
