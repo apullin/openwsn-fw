@@ -140,17 +140,39 @@ conditions:
 \return A pointer to te neighbor's address, or NULL if no KA is needed.
 */
 open_addr_t* neighbors_KaNeighbor() {
-   uint8_t  i;
-   uint16_t timeSinceHeard;
-   for (i=0;i<MAXNUMNEIGHBORS;i++) {
-      if (neighbors_vars.neighbors[i].used==1 && neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
-         timeSinceHeard = ieee154e_getAsn()-neighbors_vars.neighbors[i].timestamp;
-         if (timeSinceHeard>KATIMEOUT) {
-            return &(neighbors_vars.neighbors[i].addr_64b);
+   uint8_t      i;
+   uint16_t     timeSinceHeard;
+   open_addr_t* addrPreferred;
+   open_addr_t* addrOther;
+   // initialize
+   addrPreferred = NULL;
+   addrOther     = NULL;
+   // scan through the neighbor table, and populate addrPreferred and addrOther
+   if (idmanager_getIsDAGroot()==FALSE) {
+      for (i=0;i<MAXNUMNEIGHBORS;i++) {
+         if (neighbors_vars.neighbors[i].used==1) {
+            timeSinceHeard = ieee154e_getAsn()-neighbors_vars.neighbors[i].timestamp;
+            if (timeSinceHeard>KATIMEOUT) {
+               // this neighbor needs to be KA'ed
+               if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
+                  // its a preferred parent
+                  addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
+               } else {
+                  // its not a preferred parent
+                  addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
+               }
+            }
          }
       }
    }
-   return NULL;
+   // return the addr of the most urgent KA to send
+   if        (addrPreferred!=NULL) {
+      return addrPreferred;
+   } else if (addrOther!=NULL) {
+      return addrOther;
+   } else {
+      return NULL;
+   }
 }
 
 bool neighbors_isStableNeighbor(open_addr_t* address) {
