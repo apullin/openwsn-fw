@@ -473,6 +473,12 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
          // declare synchronized
          changeIsSync(TRUE);
          
+         // log the "error"
+         openserial_printError(COMPONENT_IEEE802154E,
+                               ERR_SYNCHRONIZED,
+                               ieee154e_vars.asn,
+                               0);
+         
          // send received ADV up the stack so RES can update statistics (synchronizing)
          notif_receive(ieee154e_vars.dataReceived);
          
