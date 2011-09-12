@@ -159,13 +159,11 @@ has fired. This timer is set to fire every second, on average.
 The body of this function executes one of the MAC management task.
 */
 void timer_res_fired() {
-   //poipoi: send ADV every 3s
-   res_vars.MacMgtTaskCounter = (res_vars.MacMgtTaskCounter+1)%3;
+   res_vars.MacMgtTaskCounter = (res_vars.MacMgtTaskCounter+1)%10;
    if (res_vars.MacMgtTaskCounter==0) {
       sendAdv();
    } else {
-      //poipoi: disable KA
-      //sendKa();
+      sendKa();
    }
 }
 
