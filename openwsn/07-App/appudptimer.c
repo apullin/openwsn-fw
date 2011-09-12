@@ -58,7 +58,7 @@ void timer_appudptimer_fired() {
       pkt->l3_destinationORsource.addr_128b[13]  = 0x2c;
       pkt->l3_destinationORsource.addr_128b[14]  = 0x00;
       if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-         pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_SLAVE;
+         pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_2;
       } else {
          pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_MASTER;
       }

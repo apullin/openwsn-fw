@@ -17,106 +17,158 @@ schedule_vars_t schedule_vars;
 //=========================== public ==========================================
 
 void schedule_init() {
-   uint8_t slotCounter;
+   uint8_t i;
    // for debug print
    schedule_vars.debugPrintRow                             = 0;
    //all slots OFF
-   for (slotCounter=0;slotCounter<SCHEDULELENGTH;slotCounter++){
-      schedule_vars.schedule[slotCounter].type             = CELLTYPE_OFF;
-      schedule_vars.schedule[slotCounter].channelOffset    = 0;
-      schedule_vars.schedule[slotCounter].neighbor.type    = ADDR_NONE;
-      schedule_vars.schedule[slotCounter].numUsed          = 0;
-      schedule_vars.schedule[slotCounter].numTxACK         = 0;
-      schedule_vars.schedule[slotCounter].timestamp        = 0;
+   for (i=0;i<SCHEDULELENGTH;i++){
+      schedule_vars.schedule[i].type                       = CELLTYPE_OFF;
+      schedule_vars.schedule[i].channelOffset              = 0;
+      schedule_vars.schedule[i].neighbor.type              = ADDR_NONE;
+      schedule_vars.schedule[i].neighbor.addr_64b[0]       = 0x14;
+      schedule_vars.schedule[i].neighbor.addr_64b[1]       = 0x15;
+      schedule_vars.schedule[i].neighbor.addr_64b[2]       = 0x92;
+      schedule_vars.schedule[i].neighbor.addr_64b[3]       = 0x09;
+      schedule_vars.schedule[i].neighbor.addr_64b[4]       = 0x02;
+      schedule_vars.schedule[i].neighbor.addr_64b[5]       = 0x2c;
+      schedule_vars.schedule[i].neighbor.addr_64b[6]       = 0x00;
+      schedule_vars.schedule[i].numUsed                    = 0;
+      schedule_vars.schedule[i].numTxACK                   = 0;
+      schedule_vars.schedule[i].timestamp                  = 0;
    }
+   
    //slot 0 is advertisement slot
+   i = 0;
    schedule_vars.schedule[0].type                          = CELLTYPE_ADV;
-   //slot 1 TX@MASTER, RX@SLAVE
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.schedule[1].type                       = CELLTYPE_TX;
-   } else {
-      schedule_vars.schedule[1].type                       = CELLTYPE_RX;
+   
+   //slot 1: MASTER -> _2
+   i = 1;
+   switch (idmanager_getMyID(ADDR_16B)->addr_16b[1]) {
+      case DEBUG_MOTEID_MASTER:
+         // TX to _2
+         schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
+         break;
+      case DEBUG_MOTEID_2:
+         // RX from MASTER
+         schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
+         break;
+      case DEBUG_MOTEID_3:
+         // OFF
+         break;
    }
-   schedule_vars.schedule[1].neighbor.type                 = ADDR_64B;
-   schedule_vars.schedule[1].neighbor.addr_64b[0]          = 0x14;
-   schedule_vars.schedule[1].neighbor.addr_64b[1]          = 0x15;
-   schedule_vars.schedule[1].neighbor.addr_64b[2]          = 0x92;
-   schedule_vars.schedule[1].neighbor.addr_64b[3]          = 0x09;
-   schedule_vars.schedule[1].neighbor.addr_64b[4]          = 0x02;
-   schedule_vars.schedule[1].neighbor.addr_64b[5]          = 0x2c;
-   schedule_vars.schedule[1].neighbor.addr_64b[6]          = 0x00;
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.schedule[1].neighbor.addr_64b[7]       = DEBUG_MOTEID_SLAVE;
-   } else {
-      schedule_vars.schedule[1].neighbor.addr_64b[7]       = DEBUG_MOTEID_MASTER;
+   //slot 2: _2 -> MASTER
+   i = 2;
+   switch (idmanager_getMyID(ADDR_16B)->addr_16b[1]) {
+      case DEBUG_MOTEID_MASTER:
+         // RX from _2
+         schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
+         break;
+      case DEBUG_MOTEID_2:
+         // TX to MASTER
+         schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
+         break;
+      case DEBUG_MOTEID_3:
+         // OFF
+         break;
    }
-   //slot 2 RX@MASTER, TX@SLAVE
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.schedule[2].type                       = CELLTYPE_RX;
-   } else {
-      schedule_vars.schedule[2].type                       = CELLTYPE_TX;
+   
+   //slot 3: MASTER -> _3
+   i = 3;
+   switch (idmanager_getMyID(ADDR_16B)->addr_16b[1]) {
+      case DEBUG_MOTEID_MASTER:
+         // TX to _3
+         schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
+         break;
+      case DEBUG_MOTEID_2:
+         // OFF
+         break;
+      case DEBUG_MOTEID_3:
+         // RX from MASTER
+         schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
+         break;
    }
-   schedule_vars.schedule[2].neighbor.type                 = ADDR_64B;
-   schedule_vars.schedule[2].neighbor.addr_64b[0]          = 0x14;
-   schedule_vars.schedule[2].neighbor.addr_64b[1]          = 0x15;
-   schedule_vars.schedule[2].neighbor.addr_64b[2]          = 0x92;
-   schedule_vars.schedule[2].neighbor.addr_64b[3]          = 0x09;
-   schedule_vars.schedule[2].neighbor.addr_64b[4]          = 0x02;
-   schedule_vars.schedule[2].neighbor.addr_64b[5]          = 0x2c;
-   schedule_vars.schedule[2].neighbor.addr_64b[6]          = 0x00;
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.schedule[2].neighbor.addr_64b[7]       = DEBUG_MOTEID_SLAVE;
-   } else {
-      schedule_vars.schedule[2].neighbor.addr_64b[7]       = DEBUG_MOTEID_MASTER;
+   //slot 4: _3 -> MASTER
+   i = 4;
+   switch (idmanager_getMyID(ADDR_16B)->addr_16b[1]) {
+      case DEBUG_MOTEID_MASTER:
+         // RX from _3
+         schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
+         break;
+      case DEBUG_MOTEID_2:
+         // OFF
+         break;
+      case DEBUG_MOTEID_3:
+         // TX to MASTER
+         schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
+         break;
    }
-   //slot 3 TX@MASTER, OFF@SLAVE
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.schedule[3].type                       = CELLTYPE_TX;
-      schedule_vars.schedule[3].neighbor.type              = ADDR_64B;
-      schedule_vars.schedule[3].neighbor.addr_64b[0]       = 0x14;
-      schedule_vars.schedule[3].neighbor.addr_64b[1]       = 0x15;
-      schedule_vars.schedule[3].neighbor.addr_64b[2]       = 0x92;
-      schedule_vars.schedule[3].neighbor.addr_64b[3]       = 0x09;
-      schedule_vars.schedule[3].neighbor.addr_64b[4]       = 0x02;
-      schedule_vars.schedule[3].neighbor.addr_64b[5]       = 0x2c;
-      schedule_vars.schedule[3].neighbor.addr_64b[6]       = 0x00;
-      schedule_vars.schedule[3].neighbor.addr_64b[7]       = DEBUG_MOTEID_SLAVE;
-   } else {
-      schedule_vars.schedule[3].type                       = CELLTYPE_OFF;
+   
+   //slot 5: _2 -> _3
+   i = 5;
+   switch (idmanager_getMyID(ADDR_16B)->addr_16b[1]) {
+      case DEBUG_MOTEID_MASTER:
+         // OFF
+         break;
+      case DEBUG_MOTEID_2:
+         // TX to _3
+         schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
+         break;
+      case DEBUG_MOTEID_3:
+         // RX from _2
+         schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
+         break;
    }
-   //slot 4 RX@MASTER, OFF@SLAVE
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.schedule[4].type                       = CELLTYPE_RX;
-      schedule_vars.schedule[4].neighbor.type              = ADDR_64B;
-      schedule_vars.schedule[4].neighbor.addr_64b[0]       = 0x14;
-      schedule_vars.schedule[4].neighbor.addr_64b[1]       = 0x15;
-      schedule_vars.schedule[4].neighbor.addr_64b[2]       = 0x92;
-      schedule_vars.schedule[4].neighbor.addr_64b[3]       = 0x09;
-      schedule_vars.schedule[4].neighbor.addr_64b[4]       = 0x02;
-      schedule_vars.schedule[4].neighbor.addr_64b[5]       = 0x2c;
-      schedule_vars.schedule[4].neighbor.addr_64b[6]       = 0x00;
-      schedule_vars.schedule[4].neighbor.addr_64b[7]       = DEBUG_MOTEID_SLAVE;
-   } else {
-      schedule_vars.schedule[4].type                       = CELLTYPE_OFF;
+   //slot 6: _3 -> _2
+   i = 6;
+   switch (idmanager_getMyID(ADDR_16B)->addr_16b[1]) {
+      case DEBUG_MOTEID_MASTER:
+         // OFF
+         break;
+      case DEBUG_MOTEID_2:
+         // RX from _3
+         schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
+         break;
+      case DEBUG_MOTEID_3:
+         // TX to _2
+         schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].channelOffset           = 0;
+         schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
+         schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
+         break;
    }
-   //slot 5 is transmit slot to neighbor 0xffffffffffffffff
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-      schedule_vars.schedule[5].type                       = CELLTYPE_TX;
-   } else {
-      //poipoi: cell OFF
-      schedule_vars.schedule[5].type                       = CELLTYPE_OFF;
-   }
-   schedule_vars.schedule[5].neighbor.type                 = ADDR_64B;
-   schedule_vars.schedule[5].neighbor.addr_64b[0]          = 0xff;
-   schedule_vars.schedule[5].neighbor.addr_64b[1]          = 0xff;
-   schedule_vars.schedule[5].neighbor.addr_64b[2]          = 0xff;
-   schedule_vars.schedule[5].neighbor.addr_64b[3]          = 0xff;
-   schedule_vars.schedule[5].neighbor.addr_64b[4]          = 0xff;
-   schedule_vars.schedule[5].neighbor.addr_64b[5]          = 0xff;
-   schedule_vars.schedule[5].neighbor.addr_64b[6]          = 0xff;
-   schedule_vars.schedule[5].neighbor.addr_64b[7]          = 0xff;
-   //slot 6 is serialRx
-   schedule_vars.schedule[6].type                          = CELLTYPE_SERIALRX;
 }
 
 bool debugPrint_schedule() {

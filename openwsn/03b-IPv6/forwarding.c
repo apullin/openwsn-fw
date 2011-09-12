@@ -115,7 +115,7 @@ void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
       addressToWrite64b->addr_64b[5] = 0x2c;
       addressToWrite64b->addr_64b[6] = 0x00;
       if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-         addressToWrite64b->addr_64b[7]    = DEBUG_MOTEID_SLAVE;
+         addressToWrite64b->addr_64b[7]    = DEBUG_MOTEID_2;
       } else {
          addressToWrite64b->addr_64b[7]    = DEBUG_MOTEID_MASTER;
       }

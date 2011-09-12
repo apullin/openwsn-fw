@@ -492,7 +492,7 @@ inline void activity_ti1ORri1() {
    }
    
    // desynchronize if needed
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
+   if (idmanager_getIsDAGroot()==FALSE) {
       ieee154e_vars.deSyncTimeout--;
       if (ieee154e_vars.deSyncTimeout==0) {
          // declare myself desynchronized
@@ -1282,7 +1282,7 @@ void synchronizePacket(uint16_t timeReceived,open_addr_t* advFrom) {
    currentTar           =  TAR;
    currentTaccr0        =  TACCR0;
    // only resynchronize if I'm not a DAGroot
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
+   if (idmanager_getIsDAGroot()==FALSE) {
       timeCorrection    =  (int16_t)((int16_t)timeReceived-(int16_t)TsTxOffset);
       newTaccr0         =  TsSlotDuration;
       // detect whether I'm too close to the edge of the slot, in that case,
@@ -1309,7 +1309,7 @@ void synchronizeAck(int16_t timeCorrection,open_addr_t* advFrom) {
    // record the current states of the TAR and TACCR0 registers
    currentTaccr0        =  TACCR0;
    // only resynchronize if I'm not a DAGroot
-   if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_SLAVE) {
+   if (idmanager_getIsDAGroot()==FALSE) {
       newTaccr0         =  (uint16_t)((int16_t)currentTaccr0-timeCorrection);
       TACCR0            =  newTaccr0;
       ieee154e_vars.deSyncTimeout = DESYNCTIMEOUT;
