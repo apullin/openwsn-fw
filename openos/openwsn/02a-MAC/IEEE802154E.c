@@ -1077,14 +1077,13 @@ inline void activity_ri5(uint16_t capturedTime) {
          break;
       }
       
-      // synchronize to the received packet
-      synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
-      
       // check if ack requested
       if (ieee802514_header.ackRequested==1) {
          // arm rt5
          ieee154etimer_schedule(DURATION_rt5);
       } else {
+         // synchronize to the received packet
+         synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
          // indicate reception to upper layer (no ACK asked)
          notif_receive(ieee154e_vars.dataReceived);
          // reset local variable
@@ -1249,6 +1248,9 @@ inline void activity_ri9(uint16_t capturedTime) {
    
    // clear local variable
    ieee154e_vars.ackToSend = NULL;
+   
+   // synchronize to the received packet
+   synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
    
    // inform upper layer of reception (after ACK sent)
    notif_receive(ieee154e_vars.dataReceived);
