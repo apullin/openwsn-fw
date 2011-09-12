@@ -423,54 +423,75 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    ieee154e_vars.dataReceived->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.dataReceived->owner   = COMPONENT_IEEE802154E;
    
-   // retrieve the received frame from the radio's Rx buffer
+   // retrieve the received data frame from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
    
-   // parse the IEEE802.15.4 header
-   ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
+   /*
+   The do-while loop that follows is a little parsing trick.
+   Because it contains a while(0) condition, it gets executed only once.
+   The behavior is:
+   - if a break occurs inside the do{} body, the error code below the loop
+     gets executed. This indicates something is wrong with the packet being 
+     parsed.
+   - if a return occurs inside the do{} body, the error code below the loop
+     does not get executed. This indicates the received packet is correct.
+   */
+   do { // this "loop" is only executed once
+      
+      // break if invalid CRC
+      if (ieee154e_vars.dataReceived->l1_crc==FALSE) {
+         // break from the do-while loop and execute abort code below
+         break;
+      }
+      
+      // parse the IEEE802.15.4 header
+      ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
+      
+      // store header details in packet buffer
+      ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
+      ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
+      memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+      
+      // toss the IEEE802.15.4 header
+      packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
+      
+      // if I just received a valid ADV, handle
+      if (isValidAdv(&ieee802514_header)==TRUE) {
+         
+         // turn off the radio
+         radio_rfOff();
+         
+         // record the ASN from the ADV payload
+         ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
+         
+         // toss the ADV payload
+         packetfunctions_tossHeader(ieee154e_vars.dataReceived,sizeof(asn_t));
+         
+         // synchronize (for the first time) to the sender's ADV
+         synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+         
+         // declare synchronized
+         changeIsSync(TRUE);
+         
+         // send received ADV up the stack so RES can update statistics (synchronizing)
+         notif_receive(ieee154e_vars.dataReceived);
+         
+         // clear local variable
+         ieee154e_vars.dataReceived = NULL;
+         
+         // official end of synchronization
+         endSlot();
+         
+         // everything went well, return here not to execute the error code below
+         return;
+      }
+   } while (0);
    
-   // store header details in packet buffer
-   ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
-   ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
-   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+   // free the (invalid) received data buffer so RAM memory can be recycled
+   openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
    
-   // toss the IEEE802.15.4 header
-   packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
-   
-   // if I just received a valid ADV, handle
-   if (isValidAdv(&ieee802514_header)==TRUE) {
-      
-      // turn off the radio
-      radio_rfOff();
-      
-      // record the ASN from the ADV payload
-      ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
-      
-      // toss the ADV payload
-      packetfunctions_tossHeader(ieee154e_vars.dataReceived,sizeof(asn_t));
-      
-      // synchronize (for the first time) to the sender's ADV
-      synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
-      
-      // declare synchronized
-      changeIsSync(TRUE);
-      
-      // send received ADV up the stack so RES can update statistics (synchronizing)
-      notif_receive(ieee154e_vars.dataReceived);
-      
-      // clear local variable
-      ieee154e_vars.dataReceived = NULL;
-      
-      // official end of synchronization
-      endSlot();
-      
-   } else {
-      // free the (invalid) received data buffer so RAM memory can be recycled
-      openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
-      
-      // clear local variable
-      ieee154e_vars.dataReceived = NULL;
-   }
+   // clear local variable
+   ieee154e_vars.dataReceived = NULL;
 }
 
 //======= TX
@@ -827,32 +848,52 @@ inline void activity_ti9(uint16_t capturedTime) {
    ieee154e_vars.ackReceived->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.ackReceived->owner   = COMPONENT_IEEE802154E;
    
-   // retrieve the received frame from the radio's Rx buffer
+   // retrieve the received ack frame from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.ackReceived);
    
-   // parse the IEEE802.15.4 header
-   ieee802154_retrieveHeader(ieee154e_vars.ackReceived,&ieee802514_header);
-   
-   // store header details in packet buffer
-   ieee154e_vars.ackReceived->l2_frameType  = ieee802514_header.frameType;
-   ieee154e_vars.ackReceived->l2_dsn        = ieee802514_header.dsn;
-   memcpy(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
-   
-   // toss the IEEE802.15.4 header
-   packetfunctions_tossHeader(ieee154e_vars.ackReceived,ieee802514_header.headerLength);
-   
-   // if frame is a valid ACK, handle
-   if (isValidAck(&ieee802514_header,ieee154e_vars.dataToSend)==TRUE) {
+   /*
+   The do-while loop that follows is a little parsing trick.
+   Because it contains a while(0) condition, it gets executed only once.
+   Below the do-while loop is some code to cleans up the ack variable.
+   Anywhere in the do-while loop, a break statement can be called to jump to
+   the clean up code early. If the loop ends without a break, the received
+   packet was correct. If it got aborted early (through a break), the packet
+   was faulty.
+   */
+   do { // this "loop" is only executed once
       
-      // resynchronize
-      timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
-      synchronizeAck(timeCorrection,&(ieee154e_vars.ackReceived->l2_nextORpreviousHop));
+      // break if invalid CRC
+      if (ieee154e_vars.ackReceived->l1_crc==FALSE) {
+         // break from the do-while loop and execute the clean-up code below
+         break;
+      }
       
-      // inform upper layer
-      notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
-      ieee154e_vars.dataToSend = NULL;
-   }
-
+      // parse the IEEE802.15.4 header
+      ieee802154_retrieveHeader(ieee154e_vars.ackReceived,&ieee802514_header);
+      
+      // store header details in packet buffer
+      ieee154e_vars.ackReceived->l2_frameType  = ieee802514_header.frameType;
+      ieee154e_vars.ackReceived->l2_dsn        = ieee802514_header.dsn;
+      memcpy(&(ieee154e_vars.ackReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+      
+      // toss the IEEE802.15.4 header
+      packetfunctions_tossHeader(ieee154e_vars.ackReceived,ieee802514_header.headerLength);
+      
+      // if frame is a valid ACK, handle
+      if (isValidAck(&ieee802514_header,ieee154e_vars.dataToSend)==TRUE) {
+         
+         // resynchronize
+         timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
+         synchronizeAck(timeCorrection,&(ieee154e_vars.ackReceived->l2_nextORpreviousHop));
+         
+         // inform upper layer
+         notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
+         ieee154e_vars.dataToSend = NULL;
+      }
+      
+      // in any case, execute the clean-up code below
+   } while (0);
+   
    // free the received ack so corresponding RAM memory can be recycled
    openqueue_freePacketBuffer(ieee154e_vars.ackReceived);
    
@@ -971,68 +1012,93 @@ inline void activity_ri5(uint16_t capturedTime) {
    ieee154e_vars.dataReceived->creator = COMPONENT_IEEE802154E;
    ieee154e_vars.dataReceived->owner   = COMPONENT_IEEE802154E;
    
-   // retrieve the received frame from the radio's Rx buffer
+   // retrieve the received data frame from the radio's Rx buffer
    radio_getReceivedFrame(ieee154e_vars.dataReceived);
-   
-   // parse the IEEE802.15.4 header
-   ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
-   
-   // store header details in packet buffer
-   ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
-   ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
-   memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
-   
-   // toss the IEEE802.15.4 header
-   packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
-   
-   // if I just received a valid ADV, record the ASN and toss the payload
-   if (isValidAdv(&ieee802514_header)==TRUE) {
-      if (idmanager_getIsDAGroot()==FALSE) {
-         if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
-            // log the error
-            openserial_printError(COMPONENT_IEEE802154E,
-                                  ERR_ASN_MISALIGNEMENT,
-                                  0,
-                                  0);
-            // update the ASN to try to recover
-            ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
-         };
-      }
-      // toss the ADV payload
-      packetfunctions_tossHeader(ieee154e_vars.dataReceived,sizeof(asn_t));
-   }
-   
-   // record the captured time
-   ieee154e_vars.lastCapturedTime = capturedTime;
-   
-   // if I just received an invalid frame, stop
-   if (isValidRxFrame(&ieee802514_header)==FALSE) {
-      // free the (invalid) received data so RAM memory can be recycled
-      openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
+
+   /*
+   The do-while loop that follows is a little parsing trick.
+   Because it contains a while(0) condition, it gets executed only once.
+   The behavior is:
+   - if a break occurs inside the do{} body, the error code below the loop
+     gets executed. This indicates something is wrong with the packet being 
+     parsed.
+   - if a return occurs inside the do{} body, the error code below the loop
+     does not get executed. This indicates the received packet is correct.
+   */
+   do { // this "loop" is only executed once
       
-      // clear local variable
-      ieee154e_vars.dataReceived = NULL;
-   
-      // abort
-      endSlot();
+      // if CRC doesn't check, stop
+      if (ieee154e_vars.dataReceived->l1_crc==FALSE) {
+         // jump to the error code below this do-while loop
+         break;
+      }
+      
+      // parse the IEEE802.15.4 header
+      ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
+      
+      // store header details in packet buffer
+      ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
+      ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
+      memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
+      
+      // toss the IEEE802.15.4 header
+      packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
+      
+      // if I just received a valid ADV, record the ASN and toss the payload
+      if (isValidAdv(&ieee802514_header)==TRUE) {
+         if (idmanager_getIsDAGroot()==FALSE) {
+            if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
+               // log the error
+               openserial_printError(COMPONENT_IEEE802154E,
+                                     ERR_ASN_MISALIGNEMENT,
+                                     0,
+                                     0);
+               // update the ASN to try to recover
+               ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
+            };
+         }
+         // toss the ADV payload
+         packetfunctions_tossHeader(ieee154e_vars.dataReceived,sizeof(asn_t));
+      }
+      
+      // record the captured time
+      ieee154e_vars.lastCapturedTime = capturedTime;
+      
+      // if I just received an invalid frame, stop
+      if (isValidRxFrame(&ieee802514_header)==FALSE) {
+         // jump to the error code below this do-while loop
+         break;
+      }
+      
+      // synchronize to the received packet
+      synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+      
+      // check if ack requested
+      if (ieee802514_header.ackRequested==1) {
+         // arm rt5
+         ieee154etimer_schedule(DURATION_rt5);
+      } else {
+         // indicate reception to upper layer (no ACK asked)
+         notif_receive(ieee154e_vars.dataReceived);
+         // reset local variable
+         ieee154e_vars.dataReceived = NULL;
+         // abort
+         endSlot();
+      }
+      
+      // everything went well, return here not to execute the error code below
       return;
-   }
+      
+   } while(0);
    
-   // synchronize to the received packet
-   synchronizePacket(ieee154e_vars.syncCapturedTime,&(ieee154e_vars.dataReceived->l2_nextORpreviousHop));
+   // free the (invalid) received data so RAM memory can be recycled
+   openqueue_freePacketBuffer(ieee154e_vars.dataReceived);
    
-   // check if ack requested
-   if (ieee802514_header.ackRequested==1) {
-      // arm rt5
-      ieee154etimer_schedule(DURATION_rt5);
-   } else {
-      // indicate reception to upper layer (no ACK asked)
-      notif_receive(ieee154e_vars.dataReceived);
-      // reset local variable
-      ieee154e_vars.dataReceived = NULL;
-      // abort
-      endSlot();
-   }
+   // clear local variable
+   ieee154e_vars.dataReceived = NULL;
+   
+   // abort
+   endSlot();
 }
 
 inline void activity_ri6() {
