@@ -16,9 +16,10 @@
 //=========================== define ==========================================
 
 // temporary
-// this is a temporary define which is used to test synchronization between two motes
+// this is a temporary define which is used to test synchronization between three motes
 #define DEBUG_MOTEID_MASTER 0xb6
-#define DEBUG_MOTEID_SLAVE  0x99
+#define DEBUG_MOTEID_2      0x99
+#define DEBUG_MOTEID_3      0x8b
 
 // debug pins
 #define DEBUG_PIN_FRAME_INIT()    P4DIR |=  0x20 // P4.5
