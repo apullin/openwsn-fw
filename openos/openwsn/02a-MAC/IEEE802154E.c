@@ -1409,9 +1409,9 @@ void changeIsSync(bool newIsSync) {
 
 void notif_sendDone(OpenQueueEntry_t* packetSent, error_t error) {
    // record the outcome of the trasmission attempt
-   packetSent->l2_sendDoneError    = error;
+   packetSent->l2_sendDoneError   = error;
    // record the current ASN
-   packetSent->l2_TxRxAsnTimestamp = ieee154e_vars.asn;
+   packetSent->l2_asn             = ieee154e_vars.asn;
    // associate this packet with the virtual component
    // COMPONENT_IEEE802154E_TO_RES so RES can knows it's for it
    packetSent->owner              = COMPONENT_IEEE802154E_TO_RES;
@@ -1423,7 +1423,7 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, error_t error) {
 
 void notif_receive(OpenQueueEntry_t* packetReceived) {
    // record the current ASN
-   packetReceived->l2_TxRxAsnTimestamp = ieee154e_vars.asn;
+   packetReceived->l2_asn         = ieee154e_vars.asn;
    // associate this packet with the virtual component
    // COMPONENT_IEEE802154E_TO_RES so RES can knows it's for it
    packetReceived->owner          = COMPONENT_IEEE802154E_TO_RES;

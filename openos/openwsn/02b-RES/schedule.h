@@ -30,9 +30,10 @@ typedef struct {
    uint8_t         type;
    uint8_t         channelOffset;
    open_addr_t     neighbor;
-   uint8_t         numUsed;
+   uint8_t         numRx;
+   uint8_t         numTx;
    uint8_t         numTxACK;
-   timervalue_t    timestamp;
+   uint32_t        asn;
 } scheduleRow_t;
 
 typedef struct {
@@ -49,7 +50,10 @@ typedef struct {
 __monitor cellType_t      schedule_getType(asn_t asn_param);
 __monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param);
 __monitor void            schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite);
-
+          void            schedule_indicateRx(asn_t    asnTimestamp);
+          void            schedule_indicateTx(asn_t    asnTimestamp,
+                                              uint8_t  numTxAttempts,
+                                              bool     was_finally_acked);
 /**
 \}
 \}
