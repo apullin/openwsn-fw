@@ -29,12 +29,12 @@ typedef struct {
    uint8_t          numRx;
    uint8_t          numTx;
    uint8_t          numTxACK;
-   timervalue_t     timestamp;
-} neighborEntry_t;
+   uint32_t         asn;
+} neighborRow_t;
 
 typedef struct {
    slotOffset_t    row;
-   neighborEntry_t neighborEntry;
+   neighborRow_t   neighborEntry;
 } debugNeighborEntry_t;
 
 //=========================== variables =======================================

@@ -32,9 +32,10 @@ void schedule_init() {
       schedule_vars.schedule[i].neighbor.addr_64b[4]       = 0x02;
       schedule_vars.schedule[i].neighbor.addr_64b[5]       = 0x2c;
       schedule_vars.schedule[i].neighbor.addr_64b[6]       = 0x00;
-      schedule_vars.schedule[i].numUsed                    = 0;
+      schedule_vars.schedule[i].numRx                      = 0;
+      schedule_vars.schedule[i].numTx                      = 0;
       schedule_vars.schedule[i].numTxACK                   = 0;
-      schedule_vars.schedule[i].timestamp                  = 0;
+      schedule_vars.schedule[i].asn                        = 0;
    }
    
    //slot 0 is advertisement slot
@@ -200,19 +201,28 @@ __monitor void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
    memcpy(addrToWrite,&schedule_vars.schedule[slotOffset].neighbor,sizeof(open_addr_t));
 }
 
-__monitor void schedule_indicateUse(asn_t asn, bool ack){
+void schedule_indicateRx(asn_t asnTimestamp) {
+   uint16_t slotOffset;
+   slotOffset = asnTimestamp%SCHEDULELENGTH;
+   schedule_vars.schedule[slotOffset].numRx++;
+   schedule_vars.schedule[slotOffset].asn=asnTimestamp;
+}
+
+void schedule_indicateTx(asn_t   asnTimestamp,
+                         uint8_t numTxAttempts,
+                         bool    was_finally_acked) {
    uint16_t slotOffset;
    
-   slotOffset = asn%SCHEDULELENGTH;
-   if (schedule_vars.schedule[slotOffset].numUsed==0xFF) {
-      schedule_vars.schedule[slotOffset].numUsed/=2;
+   slotOffset = asnTimestamp%SCHEDULELENGTH;
+   if (schedule_vars.schedule[slotOffset].numTx==0xFF) {
+      schedule_vars.schedule[slotOffset].numTx/=2;
       schedule_vars.schedule[slotOffset].numTxACK/=2;
    }
-   schedule_vars.schedule[slotOffset].numUsed++;
-   if (ack==TRUE) {
+   schedule_vars.schedule[slotOffset].numTx+=numTxAttempts;
+   if (was_finally_acked==TRUE) {
       schedule_vars.schedule[slotOffset].numTxACK++;
    }
-   schedule_vars.schedule[slotOffset].timestamp=asn;
+   schedule_vars.schedule[slotOffset].asn=asnTimestamp;
 }
 
 //=========================== private =========================================

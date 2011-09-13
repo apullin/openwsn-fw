@@ -70,36 +70,4 @@ inline uint16_t ieee154etimer_getCapturedTime() {
    return TAR;
 }
 
-/*
-void ieee154etimer_clearCaptureOverflow() {
-   volatile uint16_t dummy;
-   dummy    =  TACCR2;
-   TACCTL2 &= ~COV;
-   TACCTL2 &= ~CCIFG;
-}
-
-void ieee154etimer_enableCaptureInterrupt() {
-   TACCTL2 |=  CCIE;
-}
-
-void ieee154etimer_getCapturedTime(timestamp_t* timestampToWrite) {
-   uint8_t overflown;
-   overflown = (TACCTL2 & 0x02) >> 1;
- 
-   // determine whether this timestampe is valid
-   if (overflown==1) {
-      timestampToWrite->valid   = 0;
-   } else {
-      timestampToWrite->valid   = 1;
-   }
-   
-   // the actual timestamp
-   timestampToWrite->timestamp = TACCR2;
-}
-
-void ieee154etimer_disableCaptureInterrupt() {
-   TACCTL2 &= ~CCIE;
-}
-*/
-
 //=========================== private =========================================

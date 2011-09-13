@@ -9,7 +9,7 @@
 //=========================== variables =======================================
 
 typedef struct {
-   neighborEntry_t  neighbors[MAXNUMNEIGHBORS];
+   neighborRow_t    neighbors[MAXNUMNEIGHBORS];
    dagrank_t        myDAGrank;
    uint8_t          debugRow;
 } neighbors_vars_t;
@@ -75,7 +75,7 @@ void neighbors_indicateRx(open_addr_t* l2_src,
       if (isThisRowMatching(l2_src,i)) {
          neighbors_vars.neighbors[i].numRx++;
          neighbors_vars.neighbors[i].rssi=rssi;
-         neighbors_vars.neighbors[i].timestamp=asnTimestamp;
+         neighbors_vars.neighbors[i].asn=asnTimestamp;
          if (neighbors_vars.neighbors[i].stableNeighbor==FALSE) {
             if (neighbors_vars.neighbors[i].rssi>BADNEIGHBORMAXRSSI) {
                neighbors_vars.neighbors[i].switchStabilityCounter++;
@@ -120,7 +120,7 @@ void neighbors_indicateTx(open_addr_t* dest,
             neighbors_vars.neighbors[i].numTx += numTxAttempts;
             if (was_finally_acked==TRUE) {
                neighbors_vars.neighbors[i].numTxACK++;
-               neighbors_vars.neighbors[i].timestamp=asnTimestamp;
+               neighbors_vars.neighbors[i].asn=asnTimestamp;
             }
             return;
          }
@@ -151,7 +151,7 @@ open_addr_t* neighbors_KaNeighbor() {
    if (idmanager_getIsDAGroot()==FALSE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
          if (neighbors_vars.neighbors[i].used==1) {
-            timeSinceHeard = ieee154e_getAsn()-neighbors_vars.neighbors[i].timestamp;
+            timeSinceHeard = ieee154e_getAsn()-neighbors_vars.neighbors[i].asn;
             if (timeSinceHeard>KATIMEOUT) {
                // this neighbor needs to be KA'ed
                if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
@@ -279,7 +279,7 @@ void registerNewNeighbor(open_addr_t* address,
             (errorparameter_t)2);
       return;
    }
-   // add this neighbot
+   // add this neighbor
    if (isNeighbor(address)==FALSE) {
       i=0;
       while(i<MAXNUMNEIGHBORS) {
@@ -295,7 +295,7 @@ void registerNewNeighbor(open_addr_t* address,
             neighbors_vars.neighbors[i].numRx                  = 1;
             neighbors_vars.neighbors[i].numTx                  = 0;
             neighbors_vars.neighbors[i].numTxACK               = 0;
-            neighbors_vars.neighbors[i].timestamp              = asnTimestamp;
+            neighbors_vars.neighbors[i].asn                    = asnTimestamp;
             // do I already have a preferred parent ?
             iHaveAPreferedParent = FALSE;
             for (j=0;j<MAXNUMNEIGHBORS;j++) {
@@ -342,7 +342,7 @@ void removeNeighbor(uint8_t neighborIndex) {
    neighbors_vars.neighbors[neighborIndex].numRx                     = 0;
    neighbors_vars.neighbors[neighborIndex].numTx                     = 0;
    neighbors_vars.neighbors[neighborIndex].numTxACK                  = 0;
-   neighbors_vars.neighbors[neighborIndex].timestamp                 = 0;
+   neighbors_vars.neighbors[neighborIndex].asn                       = 0;
 }
 
 bool isThisRowMatching(open_addr_t* address, uint8_t rowNumber) {
