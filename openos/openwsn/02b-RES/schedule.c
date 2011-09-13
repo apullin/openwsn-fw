@@ -257,6 +257,22 @@ __monitor void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
    memcpy(addrToWrite,&schedule_vars.schedule[slotOffset].neighbor,sizeof(open_addr_t));
 }
 
+__monitor bool schedule_getOkToSend(asn_t asn_param) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
+   if (
+       schedule_vars.schedule[slotOffset].shared==FALSE ||
+       (
+           schedule_vars.schedule[slotOffset].shared==TRUE &&
+           schedule_vars.schedule[slotOffset].backoff==0
+       )
+      ) {
+      return TRUE;
+   } else {
+      return FALSE;
+   }
+}
+
 void schedule_indicateRx(asn_t asnTimestamp) {
    uint16_t slotOffset;
    slotOffset = asnTimestamp%SCHEDULELENGTH;
