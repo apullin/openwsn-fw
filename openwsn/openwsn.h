@@ -76,6 +76,7 @@ enum {
    ADDR_128B                           = 3,
    ADDR_PANID                          = 4,
    ADDR_PREFIX                         = 5,
+   ADDR_ANYCAST                        = 6,
 };
 
 enum {
