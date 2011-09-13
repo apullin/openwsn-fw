@@ -23,6 +23,8 @@ void schedule_init() {
    //all slots OFF
    for (i=0;i<SCHEDULELENGTH;i++){
       schedule_vars.schedule[i].type                       = CELLTYPE_OFF;
+      schedule_vars.schedule[i].shared                     = FALSE;
+      schedule_vars.schedule[i].backoff                    = 0;
       schedule_vars.schedule[i].channelOffset              = 0;
       schedule_vars.schedule[i].neighbor.type              = ADDR_NONE;
       schedule_vars.schedule[i].neighbor.addr_64b[0]       = 0x14;
@@ -41,6 +43,9 @@ void schedule_init() {
    //slot 0 is advertisement slot
    i = 0;
    schedule_vars.schedule[0].type                          = CELLTYPE_ADV;
+   schedule_vars.schedule[i].shared                        = FALSE;
+   schedule_vars.schedule[i].backoff                       = 0;
+   schedule_vars.schedule[i].channelOffset                 = 0;
    
    //slot 1: MASTER -> _2
    i = 1;
@@ -48,6 +53,8 @@ void schedule_init() {
       case DEBUG_MOTEID_MASTER:
          // TX to _2
          schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
@@ -55,6 +62,8 @@ void schedule_init() {
       case DEBUG_MOTEID_2:
          // RX from MASTER
          schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
@@ -69,6 +78,8 @@ void schedule_init() {
       case DEBUG_MOTEID_MASTER:
          // RX from _2
          schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
@@ -76,6 +87,8 @@ void schedule_init() {
       case DEBUG_MOTEID_2:
          // TX to MASTER
          schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
@@ -91,6 +104,8 @@ void schedule_init() {
       case DEBUG_MOTEID_MASTER:
          // TX to _3
          schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
@@ -101,6 +116,8 @@ void schedule_init() {
       case DEBUG_MOTEID_3:
          // RX from MASTER
          schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
@@ -112,6 +129,8 @@ void schedule_init() {
       case DEBUG_MOTEID_MASTER:
          // RX from _3
          schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
@@ -122,6 +141,8 @@ void schedule_init() {
       case DEBUG_MOTEID_3:
          // TX to MASTER
          schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_MASTER;
@@ -137,6 +158,8 @@ void schedule_init() {
       case DEBUG_MOTEID_2:
          // TX to _3
          schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
@@ -144,6 +167,8 @@ void schedule_init() {
       case DEBUG_MOTEID_3:
          // RX from _2
          schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
@@ -158,6 +183,8 @@ void schedule_init() {
       case DEBUG_MOTEID_2:
          // RX from _3
          schedule_vars.schedule[i].type                    = CELLTYPE_RX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_3;
@@ -165,6 +192,8 @@ void schedule_init() {
       case DEBUG_MOTEID_3:
          // TX to _2
          schedule_vars.schedule[i].type                    = CELLTYPE_TX;
+         schedule_vars.schedule[i].shared                  = FALSE;
+         schedule_vars.schedule[i].backoff                 = 0;
          schedule_vars.schedule[i].channelOffset           = 0;
          schedule_vars.schedule[i].neighbor.type           = ADDR_64B;
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
@@ -174,6 +203,8 @@ void schedule_init() {
    //slot 7: DATA to broadcast (for RPL DIOs)
    i = 7;
    schedule_vars.schedule[i].type                          = CELLTYPE_TXRX;
+   schedule_vars.schedule[i].shared                        = FALSE;
+   schedule_vars.schedule[i].backoff                       = 0;
    schedule_vars.schedule[i].channelOffset                 = 0;
    schedule_vars.schedule[i].neighbor.type                 = ADDR_64B;
    schedule_vars.schedule[i].neighbor.addr_64b[0]          = 0xff;

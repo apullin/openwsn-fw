@@ -93,7 +93,7 @@ void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
    uint8_t i;
    open_addr_t temp_prefix64btoWrite;
    if (packetfunctions_isBroadcastMulticast(destination128b)) {
-      // IP destination is broadcast, send to 0xffffffff
+      // IP destination is broadcast, send to 0xffffffffffffffff
       addressToWrite64b->type = ADDR_64B;
       for (i=0;i<8;i++) {
          addressToWrite64b->addr_64b[i] = 0xff;
