@@ -47,6 +47,15 @@ void schedule_init() {
    schedule_vars.schedule[i].backoff                       = 0;
    schedule_vars.schedule[i].channelOffset                 = 0;
    
+   //slot 1 is shared TXRX anycast
+   i = 1;
+   schedule_vars.schedule[i].type                          = CELLTYPE_TXRX;
+   schedule_vars.schedule[i].shared                        = TRUE;
+   schedule_vars.schedule[i].backoff                       = 0;
+   schedule_vars.schedule[i].channelOffset                 = 0;
+   schedule_vars.schedule[i].neighbor.type                 = ADDR_ANYCAST;
+   
+   /*
    //slot 1: MASTER -> _2
    i = 1;
    switch (idmanager_getMyID(ADDR_16B)->addr_16b[1]) {
@@ -215,6 +224,7 @@ void schedule_init() {
    schedule_vars.schedule[i].neighbor.addr_64b[5]          = 0xff;
    schedule_vars.schedule[i].neighbor.addr_64b[6]          = 0xff;
    schedule_vars.schedule[i].neighbor.addr_64b[7]          = 0xff;
+   */
 }
 
 bool debugPrint_schedule() {
