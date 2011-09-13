@@ -148,19 +148,17 @@ open_addr_t* neighbors_KaNeighbor() {
    addrPreferred = NULL;
    addrOther     = NULL;
    // scan through the neighbor table, and populate addrPreferred and addrOther
-   if (idmanager_getIsDAGroot()==FALSE) {
-      for (i=0;i<MAXNUMNEIGHBORS;i++) {
-         if (neighbors_vars.neighbors[i].used==1) {
-            timeSinceHeard = ieee154e_getAsn()-neighbors_vars.neighbors[i].asn;
-            if (timeSinceHeard>KATIMEOUT) {
-               // this neighbor needs to be KA'ed
-               if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
-                  // its a preferred parent
-                  addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
-               } else {
-                  // its not a preferred parent
-                  addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
-               }
+   for (i=0;i<MAXNUMNEIGHBORS;i++) {
+      if (neighbors_vars.neighbors[i].used==1) {
+         timeSinceHeard = ieee154e_getAsn()-neighbors_vars.neighbors[i].asn;
+         if (timeSinceHeard>KATIMEOUT) {
+            // this neighbor needs to be KA'ed
+            if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
+               // its a preferred parent
+               addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
+            } else {
+               // its not a preferred parent
+               addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
             }
          }
       }
