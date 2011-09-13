@@ -47,7 +47,6 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
    if (isNeighbor(&(msg->l2_nextORpreviousHop))==TRUE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
          if (isThisRowMatching(&(msg->l2_nextORpreviousHop),i)) {
-            //memcpy(&(neighbors[i].addr_128b),&(msg->l3_destinationORsource),sizeof(open_addr_t));//removed to save RAM
             neighbors_vars.neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
             //poipoi: single hop
             if (neighbors_vars.neighbors[i].DAGrank==0x00) {
