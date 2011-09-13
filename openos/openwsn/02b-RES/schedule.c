@@ -2,6 +2,7 @@
 #include "schedule.h"
 #include "openserial.h"
 #include "idmanager.h"
+#include "random.h"
 
 //=========================== variables =======================================
 
@@ -26,7 +27,7 @@ void schedule_init() {
    for (i=0;i<SCHEDULELENGTH;i++){
       schedule_vars.schedule[i].type                       = CELLTYPE_OFF;
       schedule_vars.schedule[i].shared                     = FALSE;
-      schedule_vars.schedule[i].backoffExponent            = MINBE;
+      schedule_vars.schedule[i].backoffExponent            = MINBE-1;
       schedule_vars.schedule[i].backoff                    = 0;
       schedule_vars.schedule[i].channelOffset              = 0;
       schedule_vars.schedule[i].neighbor.type              = ADDR_NONE;
@@ -293,6 +294,7 @@ __monitor void schedule_indicateTx(asn_t   asnTimestamp,
                                    bool    succesfullTx) {
    uint16_t slotOffset;
    
+   // update the slot's statistics
    slotOffset = asnTimestamp%SCHEDULELENGTH;
    if (schedule_vars.schedule[slotOffset].numTx==0xFF) {
       schedule_vars.schedule[slotOffset].numTx/=2;
@@ -303,6 +305,22 @@ __monitor void schedule_indicateTx(asn_t   asnTimestamp,
       schedule_vars.schedule[slotOffset].numTxACK++;
    }
    schedule_vars.schedule[slotOffset].asn=asnTimestamp;
+   
+   // update this slot's backoff parameters
+   if (succesfullTx==TRUE) {
+      // reset backoffExponent
+      schedule_vars.schedule[slotOffset].backoffExponent   = MINBE-1;
+      // reset backoff
+      schedule_vars.schedule[slotOffset].backoff           = 0;
+   } else {
+      // increase the backoffExponent
+      if (schedule_vars.schedule[slotOffset].backoffExponent<MAXBE) {
+         schedule_vars.schedule[slotOffset].backoffExponent++;
+      }
+      // set the backoff to a random value in [0..2^BE]
+      schedule_vars.schedule[slotOffset].backoff =
+         random_get16b()%(1<<schedule_vars.schedule[slotOffset].backoffExponent);
+   }
 }
 
 //=========================== private =========================================
