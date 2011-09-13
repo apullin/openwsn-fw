@@ -583,6 +583,7 @@ inline void activity_ti1ORri1() {
             ieee154etimer_schedule(DURATION_tt1);
          }
          break;
+      case CELLTYPE_TXRX:
       case CELLTYPE_TX:
          schedule_getNeighbor(ieee154e_vars.asn,&neighbor);
          ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
@@ -595,11 +596,14 @@ inline void activity_ti1ORri1() {
             ieee154e_vars.dataToSend->l2_numTxAttempts++;
             // arm tt1
             ieee154etimer_schedule(DURATION_tt1);
-         } else {
+         } else if (cellType==CELLTYPE_TX){
             // abort
             endSlot();
          }
-         break;
+         if (cellType==CELLTYPE_TX || 
+             (cellType==CELLTYPE_TXRX && ieee154e_vars.dataToSend!=NULL)) {
+            break;
+         }
       case CELLTYPE_RX:
          // I need to listen for packet
          // change state

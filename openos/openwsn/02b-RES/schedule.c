@@ -170,6 +170,20 @@ void schedule_init() {
          schedule_vars.schedule[i].neighbor.addr_64b[7]    = DEBUG_MOTEID_2;
          break;
    }
+   
+   //slot 7: DATA to broadcast (for RPL DIOs)
+   i = 7;
+   schedule_vars.schedule[i].type                          = CELLTYPE_TXRX;
+   schedule_vars.schedule[i].channelOffset                 = 0;
+   schedule_vars.schedule[i].neighbor.type                 = ADDR_64B;
+   schedule_vars.schedule[i].neighbor.addr_64b[0]          = 0xff;
+   schedule_vars.schedule[i].neighbor.addr_64b[1]          = 0xff;
+   schedule_vars.schedule[i].neighbor.addr_64b[2]          = 0xff;
+   schedule_vars.schedule[i].neighbor.addr_64b[3]          = 0xff;
+   schedule_vars.schedule[i].neighbor.addr_64b[4]          = 0xff;
+   schedule_vars.schedule[i].neighbor.addr_64b[5]          = 0xff;
+   schedule_vars.schedule[i].neighbor.addr_64b[6]          = 0xff;
+   schedule_vars.schedule[i].neighbor.addr_64b[7]          = 0xff;
 }
 
 bool debugPrint_schedule() {

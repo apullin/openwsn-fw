@@ -18,7 +18,8 @@ enum {
    CELLTYPE_ADV         = 1,
    CELLTYPE_TX          = 2,
    CELLTYPE_RX          = 3,
-   CELLTYPE_SERIALRX    = 4
+   CELLTYPE_TXRX        = 4,
+   CELLTYPE_SERIALRX    = 5
 };
 
 //=========================== typedef =========================================
