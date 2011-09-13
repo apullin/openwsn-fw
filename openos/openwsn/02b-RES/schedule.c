@@ -16,6 +16,8 @@ schedule_vars_t schedule_vars;
 
 //=========================== public ==========================================
 
+//=== admin
+
 void schedule_init() {
    uint8_t i;
    // for debug print
@@ -239,44 +241,7 @@ bool debugPrint_schedule() {
    return TRUE;
 }
 
-__monitor cellType_t schedule_getType(asn_t asn_param) {
-   uint16_t slotOffset;
-   slotOffset = asn_param%SCHEDULELENGTH;
-   return schedule_vars.schedule[slotOffset].type;
-}
-
-__monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
-   uint16_t slotOffset;
-   slotOffset = asn_param%SCHEDULELENGTH;
-   return schedule_vars.schedule[slotOffset].channelOffset;
-}
-
-__monitor void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
-   uint16_t slotOffset;
-   slotOffset = asn_param%SCHEDULELENGTH;
-   memcpy(addrToWrite,&schedule_vars.schedule[slotOffset].neighbor,sizeof(open_addr_t));
-}
-
-__monitor bool schedule_getOkToSend(asn_t asn_param) {
-   uint16_t slotOffset;
-   slotOffset = asn_param%SCHEDULELENGTH;
-   // decrement backoff of that slot
-   if (schedule_vars.schedule[slotOffset].backoff>0) {
-      schedule_vars.schedule[slotOffset].backoff--;
-   }
-   // check whether backoff has hit 0
-   if (
-       schedule_vars.schedule[slotOffset].shared==FALSE ||
-       (
-           schedule_vars.schedule[slotOffset].shared==TRUE &&
-           schedule_vars.schedule[slotOffset].backoff==0
-       )
-      ) {
-      return TRUE;
-   } else {
-      return FALSE;
-   }
-}
+//=== from RES
 
 void schedule_indicateRx(asn_t asnTimestamp) {
    uint16_t slotOffset;
@@ -300,6 +265,47 @@ void schedule_indicateTx(asn_t   asnTimestamp,
       schedule_vars.schedule[slotOffset].numTxACK++;
    }
    schedule_vars.schedule[slotOffset].asn=asnTimestamp;
+}
+
+//=== from IEEE802154E
+
+__monitor cellType_t schedule_getType(asn_t asn_param) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
+   return schedule_vars.schedule[slotOffset].type;
+}
+
+__monitor bool schedule_getOkToSend(asn_t asn_param) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
+   // decrement backoff of that slot
+   if (schedule_vars.schedule[slotOffset].backoff>0) {
+      schedule_vars.schedule[slotOffset].backoff--;
+   }
+   // check whether backoff has hit 0
+   if (
+       schedule_vars.schedule[slotOffset].shared==FALSE ||
+       (
+           schedule_vars.schedule[slotOffset].shared==TRUE &&
+           schedule_vars.schedule[slotOffset].backoff==0
+       )
+      ) {
+      return TRUE;
+   } else {
+      return FALSE;
+   }
+}
+
+__monitor void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
+   memcpy(addrToWrite,&schedule_vars.schedule[slotOffset].neighbor,sizeof(open_addr_t));
+}
+
+__monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
+   uint16_t slotOffset;
+   slotOffset = asn_param%SCHEDULELENGTH;
+   return schedule_vars.schedule[slotOffset].channelOffset;
 }
 
 //=========================== private =========================================
