@@ -11,7 +11,10 @@
 #include "openwsn.h"
 
 //=========================== define ==========================================
-#define SCHEDULELENGTH  9
+
+#define SCHEDULELENGTH  9    // the length, in slot, of the schedule
+#define MINBE           4    // min backoff exponent, used in shared TX slots
+#define MAXBE           7    // max backoff exponent, used in shared TX slots
 
 enum {
    CELLTYPE_OFF         = 0,
@@ -30,6 +33,7 @@ typedef uint8_t    channelOffset_t;
 typedef struct {
    uint8_t         type;
    bool            shared;
+   uint8_t         backoffExponent;
    uint8_t         backoff;
    uint8_t         channelOffset;
    open_addr_t     neighbor;

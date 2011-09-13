@@ -24,6 +24,7 @@ void schedule_init() {
    for (i=0;i<SCHEDULELENGTH;i++){
       schedule_vars.schedule[i].type                       = CELLTYPE_OFF;
       schedule_vars.schedule[i].shared                     = FALSE;
+      schedule_vars.schedule[i].backoffExponent            = MINBE;
       schedule_vars.schedule[i].backoff                    = 0;
       schedule_vars.schedule[i].channelOffset              = 0;
       schedule_vars.schedule[i].neighbor.type              = ADDR_NONE;
