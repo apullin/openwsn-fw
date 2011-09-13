@@ -108,10 +108,28 @@ __monitor OpenQueueEntry_t* openqueue_resGetReceivedPacket() {
 
 __monitor OpenQueueEntry_t* openqueue_macGetDataPacket(open_addr_t* toNeighbor) {
    uint8_t i;
-   for (i=0;i<QUEUELENGTH;i++) {
-      if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
-         packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop)) {
-         return &openqueue_vars.queue[i];
+   if (toNeighbor->type==ADDR_64B) {
+      // a neighbor is specified, look for a packet unicast to that neigbhbor
+      for (i=0;i<QUEUELENGTH;i++) {
+         if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
+            packetfunctions_sameAddress(toNeighbor,&openqueue_vars.queue[i].l2_nextORpreviousHop)) {
+            return &openqueue_vars.queue[i];
+         }
+      }
+   } else if (toNeighbor->type==ADDR_ANYCAST) {
+      // anycast case: look for a packet which is either not created by RES
+      // or an KA (created by RES, but not broadcast)
+      for (i=0;i<QUEUELENGTH;i++) {
+         if (openqueue_vars.queue[i].owner==COMPONENT_RES_TO_IEEE802154E &&
+             ( openqueue_vars.queue[i].creator!=COMPONENT_RES ||
+                (
+                   openqueue_vars.queue[i].creator==COMPONENT_RES &&
+                   packetfunctions_isBroadcastMulticast(&(openqueue_vars.queue[i].l2_nextORpreviousHop))==FALSE
+                )
+             )
+            ) {
+            return &openqueue_vars.queue[i];
+         }
       }
    }
    return NULL;
