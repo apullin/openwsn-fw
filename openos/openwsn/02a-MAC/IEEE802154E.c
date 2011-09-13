@@ -740,7 +740,9 @@ inline void activity_ti5(uint16_t capturedTime) {
       // arm tt5
       ieee154etimer_schedule(DURATION_tt5);
    } else {
-      // indicate that the packet was sent successfully
+      // indicate succesful Tx to schedule to keep statistics
+      schedule_indicateTx(ieee154e_vars.asn,TRUE);
+      // indicate to upper later the packet was sent successfully
       notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
@@ -794,7 +796,10 @@ inline void activity_ti7() {
 }
 
 inline void activity_tie5() {
-   // transmit failed, decrement transmits left counter
+   // indicate transmit failed to schedule to keep stats
+   schedule_indicateTx(ieee154e_vars.asn,FALSE);
+   
+   // decrement transmits left counter
    ieee154e_vars.dataToSend->l2_retriesLeft--;
 
    if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
@@ -904,6 +909,9 @@ inline void activity_ti9(uint16_t capturedTime) {
             timeCorrection = (int16_t)(ieee154e_vars.ackReceived->payload[1]<<8 | ieee154e_vars.ackReceived->payload[0]);
             synchronizeAck(timeCorrection);
          }
+         
+         // inform schedule of successful transmission
+         schedule_indicateTx(ieee154e_vars.asn,TRUE);
          
          // inform upper layer
          notif_sendDone(ieee154e_vars.dataToSend,E_SUCCESS);
@@ -1433,6 +1441,8 @@ void notif_sendDone(OpenQueueEntry_t* packetSent, error_t error) {
 void notif_receive(OpenQueueEntry_t* packetReceived) {
    // record the current ASN
    packetReceived->l2_asn         = ieee154e_vars.asn;
+   // indicate reception to the schedule, to keep statistics
+   schedule_indicateRx(packetReceived->l2_asn);
    // associate this packet with the virtual component
    // COMPONENT_IEEE802154E_TO_RES so RES can knows it's for it
    packetReceived->owner          = COMPONENT_IEEE802154E_TO_RES;
@@ -1565,8 +1575,14 @@ void endSlot() {
    // clean up dataToSend
    if (ieee154e_vars.dataToSend!=NULL) {
       // if everything went well, dataToSend was set to NULL in ti9
-      // transmit failed, decrement transmits left counter
+      // getting here means transmit failed
+      
+      // indicate Tx fail to schedule to update stats
+      schedule_indicateTx(ieee154e_vars.asn,FALSE);
+      
+      //decrement transmits left counter
       ieee154e_vars.dataToSend->l2_retriesLeft--;
+      
       if (ieee154e_vars.dataToSend->l2_retriesLeft==0) {
          // indicate tx fail if no more retries left
          notif_sendDone(ieee154e_vars.dataToSend,E_FAIL);
@@ -1574,6 +1590,7 @@ void endSlot() {
          // return packet to the virtual COMPONENT_RES_TO_IEEE802154E component
          ieee154e_vars.dataToSend->owner = COMPONENT_RES_TO_IEEE802154E;
       }
+      
       // reset local variable
       ieee154e_vars.dataToSend = NULL;
    }
