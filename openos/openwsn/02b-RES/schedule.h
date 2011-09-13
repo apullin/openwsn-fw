@@ -29,6 +29,8 @@ typedef uint8_t    channelOffset_t;
 
 typedef struct {
    uint8_t         type;
+   bool            shared;
+   uint8_t         backoff;
    uint8_t         channelOffset;
    open_addr_t     neighbor;
    uint8_t         numRx;
