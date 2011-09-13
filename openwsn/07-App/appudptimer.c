@@ -21,7 +21,10 @@ appudptimer_vars_t appudptimer_vars;
 
 void appudptimer_init() {
    appudptimer_vars.busySending = FALSE;
-   //timer_startPeriodic(TIMER_UDPTIMER,32768);
+   // all motes which are not the DAGroot publish data periodically
+   if (idmanager_getIsDAGroot()==FALSE) {
+      timer_startPeriodic(TIMER_UDPTIMER,0xffff);// every 2 seconds
+   }
 }
 
 void timer_appudptimer_fired() {
@@ -42,27 +45,23 @@ void timer_appudptimer_fired() {
       pkt->l4_sourcePortORicmpv6Type             = WKP_UDP_TIMER;
       pkt->l4_destination_port                   = WKP_UDP_TIMER;
       pkt->l3_destinationORsource.type           = ADDR_128B;
-      pkt->l3_destinationORsource.addr_128b[ 0]  = 0xde;
-      pkt->l3_destinationORsource.addr_128b[ 1]  = 0xad;
-      pkt->l3_destinationORsource.addr_128b[ 2]  = 0xbe;
-      pkt->l3_destinationORsource.addr_128b[ 3]  = 0xef;
-      pkt->l3_destinationORsource.addr_128b[ 4]  = 0xfa;
-      pkt->l3_destinationORsource.addr_128b[ 5]  = 0xce;
-      pkt->l3_destinationORsource.addr_128b[ 6]  = 0xca;
-      pkt->l3_destinationORsource.addr_128b[ 7]  = 0xfe;
-      pkt->l3_destinationORsource.addr_128b[ 8]  = 0x14;
-      pkt->l3_destinationORsource.addr_128b[ 9]  = 0x15;
-      pkt->l3_destinationORsource.addr_128b[10]  = 0x92;
-      pkt->l3_destinationORsource.addr_128b[11]  = 0x09;
-      pkt->l3_destinationORsource.addr_128b[12]  = 0x02;
-      pkt->l3_destinationORsource.addr_128b[13]  = 0x2c;
+      pkt->l3_destinationORsource.addr_128b[ 0]  = 0xbb;
+      pkt->l3_destinationORsource.addr_128b[ 1]  = 0xbb;
+      pkt->l3_destinationORsource.addr_128b[ 2]  = 0xbb;
+      pkt->l3_destinationORsource.addr_128b[ 3]  = 0xbb;
+      pkt->l3_destinationORsource.addr_128b[ 4]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[ 5]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[ 6]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[ 7]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[ 8]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[ 9]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[10]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[11]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[12]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[13]  = 0x00;
       pkt->l3_destinationORsource.addr_128b[14]  = 0x00;
-      if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-         pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_2;
-      } else {
-         pkt->l3_destinationORsource.addr_128b[15]  = DEBUG_MOTEID_MASTER;
-      }
-      packetfunctions_reserveHeaderSize(pkt,76);// this yield a full-length packet
+      pkt->l3_destinationORsource.addr_128b[15]  = 0x02;
+      packetfunctions_reserveHeaderSize(pkt,6);
       ((uint8_t*)pkt->payload)[0]                = 'p';
       ((uint8_t*)pkt->payload)[1]                = 'o';
       ((uint8_t*)pkt->payload)[2]                = 'i';
@@ -72,8 +71,10 @@ void timer_appudptimer_fired() {
       //send packet
       if ((udp_send(pkt))==E_FAIL) {
          openqueue_freePacketBuffer(pkt);
+         appudptimer_vars.busySending            = FALSE;
+      } else {
+         appudptimer_vars.busySending            = TRUE;
       }
-      appudptimer_vars.busySending               = TRUE;
    }
 }
 
@@ -87,6 +88,9 @@ void appudptimer_sendDone(OpenQueueEntry_t* msg, error_t error) {
 }
 
 void appudptimer_receive(OpenQueueEntry_t* msg) {
+   openserial_printError(COMPONENT_APPUDPTIMER,ERR_UNSPECIFIED,
+                         0,
+                         0);
    openqueue_freePacketBuffer(msg);
 }
 
