@@ -260,6 +260,11 @@ __monitor void schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite) {
 __monitor bool schedule_getOkToSend(asn_t asn_param) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
+   // decrement backoff of that slot
+   if (schedule_vars.schedule[slotOffset].backoff>0) {
+      schedule_vars.schedule[slotOffset].backoff--;
+   }
+   // check whether backoff has hit 0
    if (
        schedule_vars.schedule[slotOffset].shared==FALSE ||
        (
