@@ -57,6 +57,7 @@ typedef struct {
 __monitor cellType_t      schedule_getType(asn_t asn_param);
 __monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param);
 __monitor void            schedule_getNeighbor(asn_t asn_param, open_addr_t* addrToWrite);
+__monitor bool            schedule_getOkToSend(asn_t asn_param);
           void            schedule_indicateRx(asn_t    asnTimestamp);
           void            schedule_indicateTx(asn_t    asnTimestamp,
                                               uint8_t  numTxAttempts,
