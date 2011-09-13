@@ -45,7 +45,9 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg) {
    // error checking
    if (idmanager_getIsBridge()==TRUE &&
        packetfunctions_isAllRoutersMulticast(&(msg->l3_destinationORsource))==FALSE) {
-      openserial_printError(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,0,0);
+      openserial_printError(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return E_FAIL;
    }
    packetfunctions_ip128bToMac64b(&(msg->l3_destinationORsource),&temp_dest_prefix,&temp_dest_mac64b);
@@ -93,8 +95,8 @@ error_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
    // error checking
    if (idmanager_getIsBridge()==FALSE) {
       openserial_printError(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,
-                            1,
-                            0);
+                            (errorparameter_t)1,
+                            (errorparameter_t)0);
       return E_FAIL;
    }
    return res_send(msg);

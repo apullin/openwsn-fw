@@ -32,8 +32,8 @@ void ieee802154_prependHeader(OpenQueueEntry_t* msg,
             break;
          default:
             openserial_printError(COMPONENT_IEEE802154,ERR_WRONG_ADDR_TYPE,
-                  (errorparameter_t)nextHop->type,
-                  (errorparameter_t)1);
+                                  (errorparameter_t)nextHop->type,
+                                  (errorparameter_t)1);
       }
    }
    //destpan
@@ -104,8 +104,8 @@ void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
          break;
       default:
          openserial_printError(COMPONENT_IEEE802154,ERR_IEEE154_UNSUPPORTED,
-               (errorparameter_t)1,
-               (errorparameter_t)(temp_8b >> IEEE154_FCF_DEST_ADDR_MODE ) & 0x03);
+                               (errorparameter_t)1,
+                               (errorparameter_t)(temp_8b >> IEEE154_FCF_DEST_ADDR_MODE ) & 0x03);
          break;
    }
    switch ( (temp_8b >> IEEE154_FCF_SRC_ADDR_MODE ) & 0x03 ) {
@@ -120,8 +120,8 @@ void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
          break;
       default:
          openserial_printError(COMPONENT_IEEE802154,ERR_IEEE154_UNSUPPORTED,
-               (errorparameter_t)2,
-               (errorparameter_t)(temp_8b >> IEEE154_FCF_SRC_ADDR_MODE ) & 0x03);
+                               (errorparameter_t)2,
+                               (errorparameter_t)(temp_8b >> IEEE154_FCF_SRC_ADDR_MODE ) & 0x03);
          break;
    }
    ieee802514_header->headerLength += 1;

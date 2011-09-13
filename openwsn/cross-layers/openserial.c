@@ -94,7 +94,9 @@ error_t openserial_printStatus(uint8_t statusElement,uint8_t* buffer, uint16_t l
    __enable_interrupt();
    return E_SUCCESS;
 }
-error_t openserial_printError(uint8_t calling_component, uint8_t error_code, errorparameter_t arg1, errorparameter_t arg2) {
+error_t openserial_printError(uint8_t calling_component, uint8_t error_code,
+                              errorparameter_t arg1,
+                              errorparameter_t arg2) {
    LED_ERROR_TOGGLE();
    __disable_interrupt();
    openserial_vars.somethingInOutputBuffer=TRUE;
@@ -150,8 +152,8 @@ uint8_t openserial_getInputBuffer(uint8_t* bufferToWrite, uint8_t maxNumBytes) {
    __enable_interrupt();
    if (maxNumBytes<temp_openserial_input_buffer_fill_level) {
       openserial_printError(COMPONENT_OPENSERIAL,ERR_GETDATA_ASKS_TOO_FEW_BYTES,
-            (errorparameter_t)maxNumBytes,
-            (errorparameter_t)temp_openserial_input_buffer_fill_level);
+                            (errorparameter_t)maxNumBytes,
+                            (errorparameter_t)temp_openserial_input_buffer_fill_level);
       numBytesWritten = 0;
    } else {
       numBytesWritten = temp_openserial_input_buffer_fill_level;
@@ -166,8 +168,8 @@ uint8_t openserial_getInputBuffer(uint8_t* bufferToWrite, uint8_t maxNumBytes) {
 void openserial_startInput() {
    if (openserial_vars.input_buffer_fill_level>0) {
       openserial_printError(COMPONENT_OPENSERIAL,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)openserial_vars.input_buffer_fill_level,
-            (errorparameter_t)0);
+                            (errorparameter_t)openserial_vars.input_buffer_fill_level,
+                            (errorparameter_t)0);
       openserial_vars.input_buffer_fill_level = 0;
    }
    openserial_vars.input_command[4] = SERIAL_INPUT_BUFFER_SIZE;
@@ -290,8 +292,8 @@ void openserial_stop() {
             break;
          default:
             openserial_printError(COMPONENT_OPENSERIAL,ERR_UNSUPPORTED_COMMAND,
-                  (errorparameter_t)temp_openserial_received_command,
-                  (errorparameter_t)0);
+                                  (errorparameter_t)temp_openserial_received_command,
+                                  (errorparameter_t)0);
             __disable_interrupt();
             openserial_vars.input_buffer_fill_level = 0;
             __enable_interrupt();
@@ -371,8 +373,8 @@ void isr_openserial_rx() {
          openserial_vars.input_buffer[openserial_vars.input_buffer_fill_level++]=UCA1RXBUF;
          if (openserial_vars.input_buffer_fill_level+1>SERIAL_INPUT_BUFFER_SIZE){
             openserial_printError(COMPONENT_OPENSERIAL,ERR_INPUT_BUFFER_OVERFLOW,
-                  (errorparameter_t)0,
-                  (errorparameter_t)0);
+                                  (errorparameter_t)0,
+                                  (errorparameter_t)0);
             openserial_vars.input_buffer_fill_level=0;
             openserial_stop();
          }

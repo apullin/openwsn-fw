@@ -231,10 +231,9 @@ void isr_ieee154e_timer() {
          break;
       default:
          // log the error
-         openserial_printError(COMPONENT_IEEE802154E,
-                               ERR_WRONG_STATE_IN_TIMERFIRES,
-                               ieee154e_vars.state,
-                               ieee154e_vars.asn%SCHEDULELENGTH);
+         openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_STATE_IN_TIMERFIRES,
+                               (errorparameter_t)ieee154e_vars.state,
+                               (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
          // abort
          endSlot();
          break;
@@ -265,10 +264,9 @@ void ieee154e_startOfFrame(uint16_t capturedTime) {
             break;
          default:
             // log the error
-            openserial_printError(COMPONENT_IEEE802154E,
-                                  ERR_WRONG_STATE_IN_NEWSLOT,
-                                  ieee154e_vars.state,
-                                  ieee154e_vars.asn%SCHEDULELENGTH);
+            openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_STATE_IN_NEWSLOT,
+                                  (errorparameter_t)ieee154e_vars.state,
+                                  (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
             // abort
             endSlot();
             break;
@@ -300,10 +298,9 @@ void ieee154e_endOfFrame(uint16_t capturedTime) {
             break;
          default:
             // log the error
-            openserial_printError(COMPONENT_IEEE802154E,
-                                  ERR_WRONG_STATE_IN_ENDOFFRAME,
-                                  ieee154e_vars.state,
-                                  ieee154e_vars.asn%SCHEDULELENGTH);
+            openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_STATE_IN_ENDOFFRAME,
+                                  (errorparameter_t)ieee154e_vars.state,
+                                  (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
             // abort
             endSlot();
             break;
@@ -396,10 +393,9 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    // check state
    if (ieee154e_vars.state!=S_SYNCRX) {
       // log the error
-      openserial_printError(COMPONENT_IEEE802154E,
-                            ERR_WRONG_STATE_IN_ENDFRAME_SYNC,
-                            ieee154e_vars.state,
-                            0);
+      openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_STATE_IN_ENDFRAME_SYNC,
+                            (errorparameter_t)ieee154e_vars.state,
+                            (errorparameter_t)0);
       // abort
       endSlot();
    }
@@ -411,10 +407,9 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
    ieee154e_vars.dataReceived = openqueue_getFreePacketBuffer();
    if (ieee154e_vars.dataReceived==NULL) {
       // log the error
-      openserial_printError(COMPONENT_IEEE802154E,
-                            ERR_NO_FREE_PACKET_BUFFER,
-                            0,
-                            0);
+      openserial_printError(COMPONENT_IEEE802154E,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       // abort
       endSlot();
       return;
@@ -475,10 +470,9 @@ inline void activity_synchronize_endOfFrame(uint16_t capturedTime) {
          changeIsSync(TRUE);
          
          // log the "error"
-         openserial_printError(COMPONENT_IEEE802154E,
-                               ERR_SYNCHRONIZED,
-                               ieee154e_vars.asn,
-                               0);
+         openserial_printError(COMPONENT_IEEE802154E,ERR_SYNCHRONIZED,
+                               (errorparameter_t)ieee154e_vars.asn,
+                               (errorparameter_t)0);
          
          // send received ADV up the stack so RES can update statistics (synchronizing)
          notif_receive(ieee154e_vars.dataReceived);
@@ -527,10 +521,9 @@ inline void activity_ti1ORri1() {
          changeIsSync(FALSE);
          
          // log the error
-         openserial_printError(COMPONENT_IEEE802154E,
-                               ERR_DESYNCHRONIZED,
-                               ieee154e_vars.asn,
-                               0);
+         openserial_printError(COMPONENT_IEEE802154E,ERR_DESYNCHRONIZED,
+                               (errorparameter_t)ieee154e_vars.asn,
+                               (errorparameter_t)0);
             
          // update the statistics
          ieee154e_stats.numDeSync++;
@@ -544,10 +537,9 @@ inline void activity_ti1ORri1() {
    // if the previous slot took too long, we will not be in the right state
    if (ieee154e_vars.state!=S_SLEEP) {
       // log the error
-      openserial_printError(COMPONENT_IEEE802154E,
-                            ERR_WRONG_STATE_IN_STARTSLOT,
-                            ieee154e_vars.state,
-                            ieee154e_vars.asn%SCHEDULELENGTH);
+      openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_STATE_IN_STARTSLOT,
+                            (errorparameter_t)ieee154e_vars.state,
+                            (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
       // abort
       endSlot();
       return;
@@ -620,10 +612,9 @@ inline void activity_ti1ORri1() {
          break;
       default:
          // log the error
-         openserial_printError(COMPONENT_IEEE802154E,
-                               ERR_WRONG_CELLTYPE,
-                               cellType,
-                               ieee154e_vars.asn%SCHEDULELENGTH);
+         openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_CELLTYPE,
+                               (errorparameter_t)cellType,
+                               (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
          // abort
          endSlot();
          break;
@@ -657,10 +648,9 @@ inline void activity_ti2() {
 
 inline void activity_tie1() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_MAXTXDATAPREPARE_OVERFLOW,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_MAXTXDATAPREPARE_OVERFLOW,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
 
    // abort
    endSlot();
@@ -679,10 +669,9 @@ inline void activity_ti3() {
 
 inline void activity_tie2() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_WDRADIO_OVERFLOW,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_WDRADIO_OVERFLOW,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
 
    // abort
    endSlot();
@@ -704,10 +693,9 @@ inline void activity_ti4(uint16_t capturedTime) {
 
 inline void activity_tie3() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_WDDATADURATION_OVERFLOWS,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_WDDATADURATION_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
 
    // abort
    endSlot();
@@ -774,10 +762,9 @@ inline void activity_ti6() {
 
 inline void activity_tie4() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_MAXRXACKPREPARE_OVERFLOWS,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_MAXRXACKPREPARE_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
 
    // abort
    endSlot();
@@ -855,10 +842,9 @@ inline void activity_ti9(uint16_t capturedTime) {
    ieee154e_vars.ackReceived = openqueue_getFreePacketBuffer();
    if (ieee154e_vars.ackReceived==NULL) {
       // log the error
-      openserial_printError(COMPONENT_IEEE802154E,
-                            ERR_NO_FREE_PACKET_BUFFER,
-                            0,
-                            0);
+      openserial_printError(COMPONENT_IEEE802154E,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       // abort
       endSlot();
       return;
@@ -956,10 +942,9 @@ inline void activity_ri2() {
 
 inline void activity_rie1() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_MAXRXDATAPREPARE_OVERFLOWS,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_MAXRXDATAPREPARE_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
 
    // abort
    endSlot();
@@ -1000,10 +985,9 @@ inline void activity_ri4(uint16_t capturedTime) {
 
 inline void activity_rie3() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_WDDATADURATION_OVERFLOWS,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_WDDATADURATION_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
    
    // abort
    endSlot();
@@ -1025,10 +1009,9 @@ inline void activity_ri5(uint16_t capturedTime) {
    ieee154e_vars.dataReceived = openqueue_getFreePacketBuffer();
    if (ieee154e_vars.dataReceived==NULL) {
       // log the error
-      openserial_printError(COMPONENT_IEEE802154E,
-                            ERR_NO_FREE_PACKET_BUFFER,
-                            0,
-                            0);
+      openserial_printError(COMPONENT_IEEE802154E,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       // abort
       endSlot();
       return;
@@ -1075,10 +1058,9 @@ inline void activity_ri5(uint16_t capturedTime) {
          if (idmanager_getIsDAGroot()==FALSE) {
             if (ieee154e_vars.asn != asnRead(ieee154e_vars.dataReceived)) {
                // log the error
-               openserial_printError(COMPONENT_IEEE802154E,
-                                     ERR_ASN_MISALIGNEMENT,
-                                     0,
-                                     0);
+               openserial_printError(COMPONENT_IEEE802154E,ERR_ASN_MISALIGNEMENT,
+                                     (errorparameter_t) 0,
+                                     (errorparameter_t)0);
                // update the ASN to try to recover
                ieee154e_vars.asn = asnRead(ieee154e_vars.dataReceived);
             };
@@ -1139,10 +1121,9 @@ inline void activity_ri6() {
    ieee154e_vars.ackToSend = openqueue_getFreePacketBuffer();
    if (ieee154e_vars.ackToSend==NULL) {
       // log the error
-      openserial_printError(COMPONENT_IEEE802154E,
-                            ERR_NO_FREE_PACKET_BUFFER,
-                            0,
-                            0);
+      openserial_printError(COMPONENT_IEEE802154E,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       // indicate we received a packet anyway (we don't want to loose any)
       notif_receive(ieee154e_vars.dataReceived);
       // free local variable
@@ -1198,10 +1179,9 @@ inline void activity_ri6() {
 
 inline void activity_rie4() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_MAXTXACKPREPARE_OVERFLOWS,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_MAXTXACKPREPARE_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
    
    // abort
    endSlot();
@@ -1220,10 +1200,9 @@ inline void activity_ri7() {
 
 inline void activity_rie5() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_WDRADIOTX_OVERFLOWS,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_WDRADIOTX_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
    
    // abort
    endSlot();
@@ -1245,10 +1224,9 @@ inline void activity_ri8(uint16_t capturedTime) {
 
 inline void activity_rie6() {
    // log the error
-   openserial_printError(COMPONENT_IEEE802154E,
-                         ERR_WDACKDURATION_OVERFLOWS,
-                         ieee154e_vars.state,
-                         ieee154e_vars.asn%SCHEDULELENGTH);
+   openserial_printError(COMPONENT_IEEE802154E,ERR_WDACKDURATION_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.asn%SCHEDULELENGTH);
    
    // abort
    endSlot();

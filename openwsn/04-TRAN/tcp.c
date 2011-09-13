@@ -43,7 +43,9 @@ error_t tcp_connect(open_addr_t* dest, uint16_t param_tcp_hisPort, uint16_t para
    //[command] establishment
    OpenQueueEntry_t* tempPkt;
    if (tcp_vars.state!=TCP_STATE_CLOSED) {
-      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)0);
+      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,
+                            (errorparameter_t)tcp_vars.state,
+                            (errorparameter_t)0);
       return E_FAIL;
    }
    tcp_vars.myPort  = param_tcp_myPort;
@@ -52,7 +54,9 @@ error_t tcp_connect(open_addr_t* dest, uint16_t param_tcp_hisPort, uint16_t para
    //I receive command 'connect', I send SYNC
    tempPkt = openqueue_getFreePacketBuffer();
    if (tempPkt==NULL) {
-      openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+      openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return E_FAIL;
    }
    tempPkt->creator                = COMPONENT_TCP;
@@ -72,11 +76,15 @@ error_t tcp_connect(open_addr_t* dest, uint16_t param_tcp_hisPort, uint16_t para
 error_t tcp_send(OpenQueueEntry_t* msg) {             //[command] data
    msg->owner = COMPONENT_TCP;
    if (tcp_vars.state!=TCP_STATE_ESTABLISHED) {
-      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)2);
+      openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,
+                            (errorparameter_t)tcp_vars.state,
+                            (errorparameter_t)2);
       return E_FAIL;
    }
    if (tcp_vars.dataToSend!=NULL) {
-      openserial_printError(COMPONENT_TCP,ERR_BUSY_SENDING,(errorparameter_t)0,(errorparameter_t)0);
+      openserial_printError(COMPONENT_TCP,ERR_BUSY_SENDING,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return E_FAIL;
    }
    //I receive command 'send', I send data
@@ -129,7 +137,9 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
                apptcpprint_connectDone(E_SUCCESS);
                break;
             default:
-               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,2);
+               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,
+                                     (errorparameter_t)tcp_vars.myPort,
+                                     (errorparameter_t)2);
                break;
          }
          break;
@@ -155,7 +165,9 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
                apptcpprint_receive(tcp_vars.dataReceived);
                break;
             default:
-               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,0);
+               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,
+                                     (errorparameter_t)tcp_vars.myPort,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                tcp_vars.dataReceived = NULL;
                break;
@@ -185,7 +197,9 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
          //I send FIN+ACK
          tempPkt = openqueue_getFreePacketBuffer();
          if (tempPkt==NULL) {
-            openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+            openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                  (errorparameter_t)0,
+                                  (errorparameter_t)0);
             openqueue_freePacketBuffer(msg);
             return;
          }
@@ -208,7 +222,9 @@ void tcp_sendDone(OpenQueueEntry_t* msg, error_t error) {
          break;
 
       default:
-         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)3);
+         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,
+                               (errorparameter_t)tcp_vars.state,
+                               (errorparameter_t)3);
          break;
    }
 }
@@ -254,7 +270,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                shouldIlisten = apptcpprint_shouldIlisten();
                break;
             default:
-               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,msg->l4_sourcePortORicmpv6Type,3);
+               openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,
+                                     (errorparameter_t)msg->l4_sourcePortORicmpv6Type,
+                                     (errorparameter_t)3);
                shouldIlisten = FALSE;
                break;
          }
@@ -266,7 +284,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                   memcpy(&tcp_vars.hisIPv6Address,&(msg->l3_destinationORsource),sizeof(open_addr_t));
                   tempPkt       = openqueue_getFreePacketBuffer();
                   if (tempPkt==NULL) {
-                     openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+                     openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                           (errorparameter_t)0,
+                                           (errorparameter_t)0);
                      openqueue_freePacketBuffer(msg);
                      return;
                   }
@@ -284,7 +304,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                   forwarding_send(tempPkt);
                } else {
                   reset();
-                  openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)0);
+                  openserial_printError(COMPONENT_TCP,ERR_RESET,
+                                        (errorparameter_t)tcp_vars.state,
+                                        (errorparameter_t)0);
                }
          openqueue_freePacketBuffer(msg);
          break;
@@ -295,7 +317,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -315,7 +339,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt       = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -333,7 +359,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             forwarding_send(tempPkt);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)1);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,
+                                  (errorparameter_t)tcp_vars.state,
+                                  (errorparameter_t)1);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -344,7 +372,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_ESTABLISHED);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)2);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,
+                                  (errorparameter_t)tcp_vars.state,
+                                  (errorparameter_t)2);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -355,7 +385,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht)+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -375,7 +407,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht);
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -394,7 +428,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_ALMOST_DATA_RECEIVED);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)3);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,
+                                  (errorparameter_t)tcp_vars.state,
+                                  (errorparameter_t)3);
             openqueue_freePacketBuffer(msg);
          }
          break;
@@ -416,7 +452,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                   apptcpprint_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                default:
-                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,0);
+                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,
+                                        (errorparameter_t)tcp_vars.myPort,
+                                        (errorparameter_t)0);
                   break;
             }
             tcp_vars.dataToSend = NULL;
@@ -437,14 +475,18 @@ void tcp_receive(OpenQueueEntry_t* msg) {
                   apptcpprint_sendDone(tcp_vars.dataToSend,E_SUCCESS);
                   break;
                default:
-                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,tcp_vars.myPort,0);
+                  openserial_printError(COMPONENT_TCP,ERR_UNSUPPORTED_PORT_NUMBER,
+                                        (errorparameter_t)tcp_vars.myPort,
+                                        (errorparameter_t)0);
                   break;
             }
             tcp_vars.dataToSend = NULL;
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+msg->length-sizeof(tcp_ht)+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -461,7 +503,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_ALMOST_CLOSE_WAIT);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)4);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,
+                                  (errorparameter_t)tcp_vars.state,
+                                  (errorparameter_t)4);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -472,7 +516,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -492,7 +538,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -512,7 +560,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_change_state(TCP_STATE_FIN_WAIT_2);
          } else {
             reset();
-            openserial_printError(COMPONENT_TCP,ERR_RESET,(errorparameter_t)tcp_vars.state,(errorparameter_t)5);
+            openserial_printError(COMPONENT_TCP,ERR_RESET,
+                                  (errorparameter_t)tcp_vars.state,
+                                  (errorparameter_t)5);
          }
          openqueue_freePacketBuffer(msg);
          break;
@@ -523,7 +573,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
             tcp_vars.hisNextSeqNum = (packetfunctions_ntohl((uint8_t*)&(((tcp_ht*)msg->payload)->sequence_number)))+1;
             tempPkt = openqueue_getFreePacketBuffer();
             if (tempPkt==NULL) {
-               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+               openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                                     (errorparameter_t)0,
+                                     (errorparameter_t)0);
                openqueue_freePacketBuffer(msg);
                return;
             }
@@ -561,7 +613,9 @@ void tcp_receive(OpenQueueEntry_t* msg) {
          break;
 
       default:
-         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)4);
+         openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,
+                               (errorparameter_t)tcp_vars.state,
+                               (errorparameter_t)4);
          break;
    }
 }
@@ -573,14 +627,15 @@ error_t tcp_close() {    //[command] teardown
          tcp_vars.state==TCP_STATE_ALMOST_LAST_ACK   ||
          tcp_vars.state==TCP_STATE_LAST_ACK          ||
          tcp_vars.state==TCP_STATE_CLOSED) {
-      //openserial_printError(COMPONENT_TCP,ERR_WRONG_TCP_STATE,(errorparameter_t)tcp_vars.state,(errorparameter_t)1);
       //not an error, can happen when distant node has already started tearing down
       return E_SUCCESS;
    }
    //I receive command 'close', I send FIN+ACK
    tempPkt = openqueue_getFreePacketBuffer();
    if (tempPkt==NULL) {
-      openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,0,0);
+      openserial_printError(COMPONENT_TCP,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return E_FAIL;
    }
    tempPkt->creator       = COMPONENT_TCP;

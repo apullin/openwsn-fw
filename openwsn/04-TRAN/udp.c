@@ -70,7 +70,9 @@ void udp_sendDone(OpenQueueEntry_t* msg, error_t error) {
          appudpsensor_sendDone(msg,error);
          break;
       default:
-         openserial_printError(COMPONENT_UDP,ERR_UNSUPPORTED_PORT_NUMBER,msg->l4_sourcePortORicmpv6Type,0);
+         openserial_printError(COMPONENT_UDP,ERR_UNSUPPORTED_PORT_NUMBER,
+                               (errorparameter_t)msg->l4_sourcePortORicmpv6Type,
+                               (errorparameter_t)0);
          openqueue_freePacketBuffer(msg);         
    }
 }
@@ -111,7 +113,9 @@ void udp_receive(OpenQueueEntry_t* msg) {
          appudpsensor_receive(msg);
          break;
       default:
-         openserial_printError(COMPONENT_UDP,ERR_UNSUPPORTED_PORT_NUMBER,msg->l4_destination_port,1);
+         openserial_printError(COMPONENT_UDP,ERR_UNSUPPORTED_PORT_NUMBER,
+                               (errorparameter_t)msg->l4_destination_port,
+                               (errorparameter_t)1);
          openqueue_freePacketBuffer(msg);         
    }
 }

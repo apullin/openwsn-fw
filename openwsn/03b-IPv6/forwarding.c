@@ -43,7 +43,9 @@ void forwarding_sendDone(OpenQueueEntry_t* msg, error_t error) {
          icmpv6_sendDone(msg,error);
          break;
       default:
-         openserial_printError(COMPONENT_FORWARDING,ERR_WRONG_TRAN_PROTOCOL,msg->l4_protocol,0);
+         openserial_printError(COMPONENT_FORWARDING,ERR_WRONG_TRAN_PROTOCOL,
+                               (errorparameter_t)msg->l4_protocol,
+                               (errorparameter_t)0);
       }
    }
 }
@@ -64,7 +66,9 @@ void forwarding_receive(OpenQueueEntry_t* msg, ipv6_header_iht ipv6_header) {
          icmpv6_receive(msg);
          break;
       default:
-         openserial_printError(COMPONENT_FORWARDING,ERR_WRONG_TRAN_PROTOCOL,msg->l4_protocol,0);
+         openserial_printError(COMPONENT_FORWARDING,ERR_WRONG_TRAN_PROTOCOL,
+                               (errorparameter_t)msg->l4_protocol,
+                               (errorparameter_t)0);
       }
    } else { //relay
       memcpy(&(msg->l3_destinationORsource),&ipv6_header.dest,sizeof(open_addr_t));//because initially contains source
@@ -83,7 +87,9 @@ void forwarding_receive(OpenQueueEntry_t* msg, ipv6_header_iht ipv6_header) {
 error_t fowarding_send_internal(OpenQueueEntry_t *msg) {
    getNextHop(&(msg->l3_destinationORsource),&(msg->l2_nextORpreviousHop));
    if (msg->l2_nextORpreviousHop.type==ADDR_NONE) {
-      openserial_printError(COMPONENT_FORWARDING,ERR_NO_NEXTHOP,0,0);
+      openserial_printError(COMPONENT_FORWARDING,ERR_NO_NEXTHOP,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return E_FAIL;
    }
    return iphc_sendFromForwarding(msg);

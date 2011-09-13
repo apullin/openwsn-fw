@@ -31,8 +31,8 @@ void appudpchannel_trigger() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&(input_buffer[0]),sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_APPUDPCHANNEL,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    appudpchannel_vars.new_channel = input_buffer[16];
@@ -43,7 +43,9 @@ void appudpchannel_trigger() {
    //prepare packet
    pkt = openqueue_getFreePacketBuffer();
    if (pkt==NULL) {
-      openserial_printError(COMPONENT_APPUDPCHANNEL,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+      openserial_printError(COMPONENT_APPUDPCHANNEL,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return;
    }
    pkt->creator                     = COMPONENT_APPUDPCHANNEL;

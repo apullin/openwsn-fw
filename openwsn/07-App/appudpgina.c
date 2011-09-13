@@ -57,7 +57,9 @@ void appudpgina_receive(OpenQueueEntry_t* msg) {
 void appudpgina_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPGINA;
    if (msg->creator!=COMPONENT_APPUDPGINA) {
-      openserial_printError(COMPONENT_APPUDPGINA,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_APPUDPGINA,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
    if (appudpgina_vars.mesurements_left>0) {
@@ -77,7 +79,9 @@ void appudpgina_send() {
    OpenQueueEntry_t* packetToSend;
    packetToSend = openqueue_getFreePacketBuffer();
    if (packetToSend==NULL) {
-      openserial_printError(COMPONENT_APPUDPGINA,ERR_NO_FREE_PACKET_BUFFER,0,0);
+      openserial_printError(COMPONENT_APPUDPGINA,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       appudpgina_reset();
       return;
    }

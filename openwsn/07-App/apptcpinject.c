@@ -34,8 +34,8 @@ void apptcpinject_trigger() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&(input_buffer[0]),sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_APPTCPINJECT,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    apptcpinject_vars.hisAddress.type = ADDR_128B;
@@ -49,7 +49,9 @@ void apptcpinject_connectDone(error_t error) {
    if (error==E_SUCCESS) {
       apptcpinject_vars.pkt = openqueue_getFreePacketBuffer();
       if (apptcpinject_vars.pkt==NULL) {
-         openserial_printError(COMPONENT_APPTCPINJECT,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+         openserial_printError(COMPONENT_APPTCPINJECT,ERR_NO_FREE_PACKET_BUFFER,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          return;
       }
       apptcpinject_vars.pkt->creator                      = COMPONENT_APPTCPINJECT;
@@ -75,7 +77,9 @@ void apptcpinject_connectDone(error_t error) {
 void apptcpinject_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPTCPINJECT;
    if (msg->creator!=COMPONENT_APPTCPINJECT) {
-      openserial_printError(COMPONENT_APPTCPINJECT,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_APPTCPINJECT,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    tcp_close();
    openqueue_freePacketBuffer(msg);

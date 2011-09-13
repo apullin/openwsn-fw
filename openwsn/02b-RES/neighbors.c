@@ -182,8 +182,8 @@ bool neighbors_isStableNeighbor(open_addr_t* address) {
          break;
       default:
          openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
-               (errorparameter_t)address->type,
-               (errorparameter_t)0);
+                               (errorparameter_t)address->type,
+                               (errorparameter_t)0);
          return FALSE;
    }
    for (i=0;i<MAXNUMNEIGHBORS;i++) {
@@ -272,8 +272,8 @@ void registerNewNeighbor(open_addr_t* address,
    // filter errors
    if (address->type!=ADDR_64B) {
       openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
-            (errorparameter_t)address->type,
-            (errorparameter_t)2);
+                            (errorparameter_t)address->type,
+                            (errorparameter_t)2);
       return;
    }
    // add this neighbor
@@ -309,7 +309,9 @@ void registerNewNeighbor(open_addr_t* address,
          i++;
       }
       if (i==MAXNUMNEIGHBORS) {
-         openserial_printError(COMPONENT_NEIGHBORS,ERR_NEIGHBORS_FULL,MAXNUMNEIGHBORS,0);
+         openserial_printError(COMPONENT_NEIGHBORS,ERR_NEIGHBORS_FULL,
+                               (errorparameter_t)MAXNUMNEIGHBORS,
+                               (errorparameter_t)0);
          return;
       }
    }
