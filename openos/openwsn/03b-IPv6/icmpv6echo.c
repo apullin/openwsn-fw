@@ -31,21 +31,25 @@ void icmpv6echo_trigger() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&(input_buffer[0]),sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_ICMPv6ECHO,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    icmpv6echo_vars.hisAddress.type  = ADDR_128B;
    memcpy(&(icmpv6echo_vars.hisAddress.addr_128b[0]),&(input_buffer[0]),16);
    //send
    if (icmpv6echo_vars.busySending==TRUE) {
-      openserial_printError(COMPONENT_ICMPv6ECHO,ERR_BUSY_SENDING,0,0);
+      openserial_printError(COMPONENT_ICMPv6ECHO,ERR_BUSY_SENDING,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    } else {
       icmpv6echo_vars.busySending = TRUE;
       OpenQueueEntry_t* msg;
       msg = openqueue_getFreePacketBuffer();
       if (msg==NULL) {
-         openserial_printError(COMPONENT_ICMPv6ECHO,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+         openserial_printError(COMPONENT_ICMPv6ECHO,ERR_NO_FREE_PACKET_BUFFER,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          return;
       }
       //admin
@@ -77,7 +81,9 @@ void icmpv6echo_trigger() {
 void icmpv6echo_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_ICMPv6ECHO;
    if (msg->creator!=COMPONENT_ICMPv6ECHO) {//that was a packet I had not created
-      openserial_printError(COMPONENT_ICMPv6ECHO,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_ICMPv6ECHO,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
    icmpv6echo_vars.busySending = FALSE;
@@ -87,7 +93,9 @@ void icmpv6echo_receive(OpenQueueEntry_t* msg) {
    msg->owner = COMPONENT_ICMPv6ECHO;
    switch(msg->l4_sourcePortORicmpv6Type) {
       case IANA_ICMPv6_ECHO_REQUEST:
-         openserial_printError(COMPONENT_ICMPv6ECHO,ERR_RCVD_ECHO_REQUEST,(errorparameter_t)0,(errorparameter_t)0);
+         openserial_printError(COMPONENT_ICMPv6ECHO,ERR_RCVD_ECHO_REQUEST,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          //reply with same OpenQueueEntry_t
          msg->creator                         = COMPONENT_ICMPv6ECHO;
          msg->l4_sourcePortORicmpv6Type       = IANA_ICMPv6_ECHO_REPLY;
@@ -100,13 +108,15 @@ void icmpv6echo_receive(OpenQueueEntry_t* msg) {
          }
          break;
       case IANA_ICMPv6_ECHO_REPLY:
-         openserial_printError(COMPONENT_ICMPv6ECHO,ERR_RCVD_ECHO_REPLY,(errorparameter_t)0,(errorparameter_t)0);
+         openserial_printError(COMPONENT_ICMPv6ECHO,ERR_RCVD_ECHO_REPLY,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          openqueue_freePacketBuffer(msg);
          break;
       default:
          openserial_printError(COMPONENT_ICMPv6ECHO,ERR_UNSUPPORTED_ICMPV6_TYPE,
-               (errorparameter_t)msg->l4_sourcePortORicmpv6Type,
-               (errorparameter_t)0);
+                               (errorparameter_t)msg->l4_sourcePortORicmpv6Type,
+                               (errorparameter_t)0);
          openqueue_freePacketBuffer(msg);
          break;
    }

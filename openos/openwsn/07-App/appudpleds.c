@@ -44,7 +44,9 @@ void appudpleds_receive(OpenQueueEntry_t* msg) {
 void appudpleds_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPLEDS;
    if (msg->creator!=COMPONENT_APPUDPLEDS) {
-      openserial_printError(COMPONENT_APPUDPLEDS,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_APPUDPLEDS,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
 }

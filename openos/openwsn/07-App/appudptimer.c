@@ -36,7 +36,9 @@ void timer_appudptimer_fired() {
       //prepare packet
       pkt = openqueue_getFreePacketBuffer();
       if (pkt==NULL) {
-         openserial_printError(COMPONENT_APPUDPTIMER,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+         openserial_printError(COMPONENT_APPUDPTIMER,ERR_NO_FREE_PACKET_BUFFER,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          return;
       }
       pkt->creator                               = COMPONENT_APPUDPTIMER;
@@ -81,7 +83,9 @@ void timer_appudptimer_fired() {
 void appudptimer_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPTIMER;
    if (msg->creator!=COMPONENT_APPUDPTIMER) {
-      openserial_printError(COMPONENT_APPUDPTIMER,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_APPUDPTIMER,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
    appudptimer_vars.busySending = FALSE;
@@ -89,8 +93,8 @@ void appudptimer_sendDone(OpenQueueEntry_t* msg, error_t error) {
 
 void appudptimer_receive(OpenQueueEntry_t* msg) {
    openserial_printError(COMPONENT_APPUDPTIMER,ERR_UNSPECIFIED,
-                         0,
-                         0);
+                         (errorparameter_t)0,
+                         (errorparameter_t)0);
    openqueue_freePacketBuffer(msg);
 }
 

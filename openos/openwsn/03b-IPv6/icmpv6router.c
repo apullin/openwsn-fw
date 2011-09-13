@@ -32,21 +32,25 @@ void icmpv6router_trigger() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&(input_buffer[0]),sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_ICMPv6ECHO,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    icmpv6router_vars.hisAddress.type  = ADDR_128B;
    memcpy(&(icmpv6router_vars.hisAddress.addr_128b[0]),&(input_buffer[0]),16);
    //send
    if (icmpv6router_vars.busySending==TRUE) {
-      openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_BUSY_SENDING,0,0);
+      openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_BUSY_SENDING,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    } else {
       icmpv6router_vars.busySending = TRUE;
       OpenQueueEntry_t* msg;
       msg = openqueue_getFreePacketBuffer();
       if (msg==NULL) {
-         openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+         openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_NO_FREE_PACKET_BUFFER,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          return;
       }
       //admin
@@ -91,7 +95,9 @@ void icmpv6router_trigger() {
 void icmpv6router_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_ICMPv6ROUTER;
    if (msg->creator!=COMPONENT_ICMPv6ROUTER) {//that was a packet I had not created
-      openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_ICMPv6ROUTER,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
    icmpv6router_vars.busySending = FALSE;

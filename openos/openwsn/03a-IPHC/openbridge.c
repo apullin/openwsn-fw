@@ -25,8 +25,8 @@ void openbridge_trigger() {
       pkt = openqueue_getFreePacketBuffer();
       if (pkt==NULL) {
          openserial_printError(COMPONENT_OPENBRIDGE,ERR_NO_FREE_PACKET_BUFFER,
-               (errorparameter_t)0,
-               (errorparameter_t)0);
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          return;
       }
       //admin

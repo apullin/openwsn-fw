@@ -58,8 +58,8 @@ void icmpv6rpl_trigger() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&(input_buffer[0]),sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_ICMPv6ECHO,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    //send
@@ -69,7 +69,9 @@ void icmpv6rpl_trigger() {
 void icmpv6rpl_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_ICMPv6RPL;
    if (msg->creator!=COMPONENT_ICMPv6RPL) {//that was a packet I had not created
-      openserial_printError(COMPONENT_ICMPv6RPL,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_ICMPv6RPL,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
    icmpv6rpl_vars.busySending = FALSE;
@@ -105,7 +107,9 @@ void sendDIO() {
       icmpv6rpl_vars.busySending = TRUE;
       msg = openqueue_getFreePacketBuffer();
       if (msg==NULL) {
-         openserial_printError(COMPONENT_ICMPv6RPL,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+         openserial_printError(COMPONENT_ICMPv6RPL,ERR_NO_FREE_PACKET_BUFFER,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          return;
       }
       //admin

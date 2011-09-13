@@ -334,8 +334,8 @@ void isr_radio() {
          break;
       default:
          openserial_printError(COMPONENT_PACKETFUNCTIONS,ERR_WRONG_IRQ_STATUS,
-            (errorparameter_t)irq_status,
-            (errorparameter_t)0);
+                               (errorparameter_t)irq_status,
+                               (errorparameter_t)0);
          break;
    }
 }

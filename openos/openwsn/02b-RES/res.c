@@ -64,10 +64,9 @@ void task_resNotifSendDone() {
    msg = openqueue_resGetSentPacket();
    if (msg==NULL) {
       // log the error
-      openserial_printError(COMPONENT_RES,
-                            ERR_NO_SENT_PACKET,
-                            0,
-                            0);
+      openserial_printError(COMPONENT_RES,ERR_NO_SENT_PACKET,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       // abort
       return;
    }
@@ -107,10 +106,9 @@ void task_resNotifReceive() {
    msg = openqueue_resGetReceivedPacket();
    if (msg==NULL) {
       // log the error
-      openserial_printError(COMPONENT_RES,
-                            ERR_NO_RECEIVED_PACKET,
-                            0,
-                            0);
+      openserial_printError(COMPONENT_RES,ERR_NO_RECEIVED_PACKET,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       // abort
       return;
    }
@@ -141,10 +139,9 @@ void task_resNotifReceive() {
          // free the packet's RAM memory
          openqueue_freePacketBuffer(msg);
          // log the error
-         openserial_printError(COMPONENT_RES,
-                               ERR_MSG_UNKNOWN_TYPE,
-                               msg->l2_frameType,
-                               0);
+         openserial_printError(COMPONENT_RES,ERR_MSG_UNKNOWN_TYPE,
+                               (errorparameter_t)msg->l2_frameType,
+                               (errorparameter_t)0);
          break;
    }
 }
@@ -227,10 +224,9 @@ inline void sendAdv() {
       // get a free packet buffer
       adv = openqueue_getFreePacketBuffer();
       if (adv==NULL) {
-         openserial_printError(COMPONENT_RES,
-                               ERR_NO_FREE_PACKET_BUFFER,
-                               0,
-                               0);
+         openserial_printError(COMPONENT_RES,ERR_NO_FREE_PACKET_BUFFER,
+                               (errorparameter_t)0,
+                               (errorparameter_t)0);
          return;
       }
       
@@ -277,10 +273,9 @@ inline void sendKa() {
          // get a free packet buffer
          kaPkt = openqueue_getFreePacketBuffer();
          if (kaPkt==NULL) {
-            openserial_printError(COMPONENT_RES,
-                                  ERR_NO_FREE_PACKET_BUFFER,
-                                  0,
-                                  0);
+            openserial_printError(COMPONENT_RES,ERR_NO_FREE_PACKET_BUFFER,
+                                  (errorparameter_t)0,
+                                  (errorparameter_t)0);
             return;
          }
          

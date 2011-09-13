@@ -22,14 +22,16 @@ void appudpinject_trigger() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&(input_buffer[0]),sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_APPUDPINJECT,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    //prepare packet
    pkt = openqueue_getFreePacketBuffer();
    if (pkt==NULL) {
-      openserial_printError(COMPONENT_APPUDPINJECT,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+      openserial_printError(COMPONENT_APPUDPINJECT,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return;
    }
    pkt->creator                     = COMPONENT_APPUDPINJECT;
@@ -55,7 +57,9 @@ void appudpinject_trigger() {
 void appudpinject_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPINJECT;
    if (msg->creator!=COMPONENT_APPUDPINJECT) {
-      openserial_printError(COMPONENT_APPUDPINJECT,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_APPUDPINJECT,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
 }

@@ -28,7 +28,9 @@ enum {
 
 void    openserial_init();
 error_t openserial_printStatus(uint8_t statusElement, uint8_t* buffer, uint16_t length);
-error_t openserial_printError(uint8_t calling_component, uint8_t error_code, errorparameter_t arg1, errorparameter_t arg2);
+error_t openserial_printError(uint8_t calling_component, uint8_t error_code,
+                              errorparameter_t arg1,
+                              errorparameter_t arg2);
 error_t openserial_printData(uint8_t* buffer, uint8_t length);
 uint8_t openserial_getNumDataBytes();
 uint8_t openserial_getInputBuffer(uint8_t* bufferToWrite, uint8_t maxNumBytes);

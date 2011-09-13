@@ -22,14 +22,16 @@ void appudpsensor_trigger() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&(input_buffer[0]),sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_APPUDPSENSOR,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    //prepare packet
    pkt = openqueue_getFreePacketBuffer();
    if (pkt==NULL) {
-      openserial_printError(COMPONENT_APPUDPSENSOR,ERR_NO_FREE_PACKET_BUFFER,(errorparameter_t)0,(errorparameter_t)0);
+      openserial_printError(COMPONENT_APPUDPSENSOR,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
       return;
    }
    pkt->creator                     = COMPONENT_APPUDPSENSOR;
@@ -55,7 +57,9 @@ void appudpsensor_trigger() {
 void appudpsensor_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPUDPSENSOR;
    if (msg->creator!=COMPONENT_APPUDPSENSOR) {
-      openserial_printError(COMPONENT_APPUDPSENSOR,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_APPUDPSENSOR,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    openqueue_freePacketBuffer(msg);
 }

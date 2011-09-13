@@ -85,8 +85,8 @@ __monitor open_addr_t* idmanager_getMyID(uint8_t type) {
          //you don't ask for my full address, rather for prefix, then 64b
       default:
          openserial_printError(COMPONENT_IDMANAGER,ERR_WRONG_ADDR_TYPE,
-               (errorparameter_t)type,
-               (errorparameter_t)0);
+                               (errorparameter_t)type,
+                               (errorparameter_t)0);
          return NULL;
    }
 }
@@ -109,8 +109,8 @@ __monitor error_t idmanager_setMyID(open_addr_t* newID) {
          //don't set 128b, but rather prefix and 64b
       default:
          openserial_printError(COMPONENT_IDMANAGER,ERR_WRONG_ADDR_TYPE,
-               (errorparameter_t)newID->type,
-               (errorparameter_t)1);
+                               (errorparameter_t)newID->type,
+                               (errorparameter_t)1);
          return E_FAIL;
    }
    return E_SUCCESS;
@@ -135,8 +135,8 @@ __monitor bool idmanager_isMyAddress(open_addr_t* addr) {
          return packetfunctions_sameAddress(addr,&idmanager_vars.myPrefix);
       default:
          openserial_printError(COMPONENT_IDMANAGER,ERR_WRONG_ADDR_TYPE,
-               (errorparameter_t)addr->type,
-               (errorparameter_t)2);
+                               (errorparameter_t)addr->type,
+                               (errorparameter_t)2);
          return FALSE;
    }
 }
@@ -148,8 +148,8 @@ void idmanager_triggerAboutBridge() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&input_buffer[0],sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_IDMANAGER,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    //handle command
@@ -179,8 +179,8 @@ void idmanager_triggerAboutRoot() {
    number_bytes_from_input_buffer = openserial_getInputBuffer(&input_buffer,sizeof(input_buffer));
    if (number_bytes_from_input_buffer!=sizeof(input_buffer)) {
       openserial_printError(COMPONENT_IDMANAGER,ERR_INPUTBUFFER_LENGTH,
-            (errorparameter_t)number_bytes_from_input_buffer,
-            (errorparameter_t)0);
+                            (errorparameter_t)number_bytes_from_input_buffer,
+                            (errorparameter_t)0);
       return;
    };
    //handle command

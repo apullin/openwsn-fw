@@ -34,7 +34,9 @@ void apptcpecho_receive(OpenQueueEntry_t* msg) {
 void apptcpecho_sendDone(OpenQueueEntry_t* msg, error_t error) {
    msg->owner = COMPONENT_APPTCPECHO;
    if (msg->creator!=COMPONENT_APPTCPECHO) {
-      openserial_printError(COMPONENT_APPTCPECHO,ERR_UNEXPECTED_SENDDONE,0,0);
+      openserial_printError(COMPONENT_APPTCPECHO,ERR_UNEXPECTED_SENDDONE,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
    }
    //close TCP session, but keep listening
    tcp_close();
