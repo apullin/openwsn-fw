@@ -585,6 +585,7 @@ inline void activity_ti1ORri1() {
          break;
       case CELLTYPE_TXRX:
       case CELLTYPE_TX:
+         // TODO poipoipoi backoff
          schedule_getNeighbor(ieee154e_vars.asn,&neighbor);
          ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
          if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
