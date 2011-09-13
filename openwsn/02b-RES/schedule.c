@@ -241,32 +241,6 @@ bool debugPrint_schedule() {
    return TRUE;
 }
 
-//=== from RES
-
-void schedule_indicateRx(asn_t asnTimestamp) {
-   uint16_t slotOffset;
-   slotOffset = asnTimestamp%SCHEDULELENGTH;
-   schedule_vars.schedule[slotOffset].numRx++;
-   schedule_vars.schedule[slotOffset].asn=asnTimestamp;
-}
-
-void schedule_indicateTx(asn_t   asnTimestamp,
-                         uint8_t numTxAttempts,
-                         bool    was_finally_acked) {
-   uint16_t slotOffset;
-   
-   slotOffset = asnTimestamp%SCHEDULELENGTH;
-   if (schedule_vars.schedule[slotOffset].numTx==0xFF) {
-      schedule_vars.schedule[slotOffset].numTx/=2;
-      schedule_vars.schedule[slotOffset].numTxACK/=2;
-   }
-   schedule_vars.schedule[slotOffset].numTx+=numTxAttempts;
-   if (was_finally_acked==TRUE) {
-      schedule_vars.schedule[slotOffset].numTxACK++;
-   }
-   schedule_vars.schedule[slotOffset].asn=asnTimestamp;
-}
-
 //=== from IEEE802154E
 
 __monitor cellType_t schedule_getType(asn_t asn_param) {
@@ -306,6 +280,29 @@ __monitor channelOffset_t schedule_getChannelOffset(asn_t asn_param) {
    uint16_t slotOffset;
    slotOffset = asn_param%SCHEDULELENGTH;
    return schedule_vars.schedule[slotOffset].channelOffset;
+}
+
+__monitor void schedule_indicateRx(asn_t asnTimestamp) {
+   uint16_t slotOffset;
+   slotOffset = asnTimestamp%SCHEDULELENGTH;
+   schedule_vars.schedule[slotOffset].numRx++;
+   schedule_vars.schedule[slotOffset].asn=asnTimestamp;
+}
+
+__monitor void schedule_indicateTx(asn_t   asnTimestamp,
+                                   bool    succesfullTx) {
+   uint16_t slotOffset;
+   
+   slotOffset = asnTimestamp%SCHEDULELENGTH;
+   if (schedule_vars.schedule[slotOffset].numTx==0xFF) {
+      schedule_vars.schedule[slotOffset].numTx/=2;
+      schedule_vars.schedule[slotOffset].numTxACK/=2;
+   }
+   schedule_vars.schedule[slotOffset].numTx++;
+   if (succesfullTx==TRUE) {
+      schedule_vars.schedule[slotOffset].numTxACK++;
+   }
+   schedule_vars.schedule[slotOffset].asn=asnTimestamp;
 }
 
 //=========================== private =========================================

@@ -79,17 +79,11 @@ void task_resNotifSendDone() {
                            msg->l2_numTxAttempts,
                            TRUE,
                            msg->l2_asn);
-      schedule_indicateTx(msg->l2_asn,
-                          msg->l2_numTxAttempts,
-                          TRUE);
    } else {
       neighbors_indicateTx(&(msg->l2_nextORpreviousHop),
                            msg->l2_numTxAttempts,
                            FALSE,
                            msg->l2_asn);
-      schedule_indicateTx(msg->l2_asn,
-                          msg->l2_numTxAttempts,
-                          FALSE);
    }
    // send the packet to where it belongs
    if (msg->creator == COMPONENT_RES) {
@@ -128,7 +122,6 @@ void task_resNotifReceive() {
    neighbors_indicateRx(&(msg->l2_nextORpreviousHop),
                         msg->l1_rssi,
                         msg->l2_asn);
-   schedule_indicateRx(msg->l2_asn);
    
    // send the packet up the stack, if it qualifies
    switch (msg->l2_frameType) {
