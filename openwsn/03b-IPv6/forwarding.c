@@ -91,33 +91,18 @@ error_t fowarding_send_internal(OpenQueueEntry_t *msg) {
 
 void getNextHop(open_addr_t* destination128b, open_addr_t* addressToWrite64b) {
    uint8_t i;
-   //open_addr_t temp_prefix64btoWrite;
+   open_addr_t temp_prefix64btoWrite;
    if (packetfunctions_isBroadcastMulticast(destination128b)) {
+      // IP destination is broadcast, send to 0xffffffff
       addressToWrite64b->type = ADDR_64B;
       for (i=0;i<8;i++) {
          addressToWrite64b->addr_64b[i] = 0xff;
       }
-   /*
-    else if (neighbors_isStableNeighbor(destination128b)) {    //destination is 1-hop neighbor
+   } else if (neighbors_isStableNeighbor(destination128b)) {
+       // IP destination is 1-hop neighbor, send directly
       packetfunctions_ip128bToMac64b(destination128b,&temp_prefix64btoWrite,addressToWrite64b);
    } else {
-      neighbors_getPreferredParent(addressToWrite64b,ADDR_64B); //destination is remote
+      // destination is remote, send to preferred parent
+      neighbors_getPreferredParent(addressToWrite64b,ADDR_64B);
    }
-   */
-   } else {
-      //poipoi: force forwarding to MASTER/SLAVE
-      addressToWrite64b->type = ADDR_64B;
-      addressToWrite64b->addr_64b[0] = 0x14;
-      addressToWrite64b->addr_64b[1] = 0x15;
-      addressToWrite64b->addr_64b[2] = 0x92;
-      addressToWrite64b->addr_64b[3] = 0x09;
-      addressToWrite64b->addr_64b[4] = 0x02;
-      addressToWrite64b->addr_64b[5] = 0x2c;
-      addressToWrite64b->addr_64b[6] = 0x00;
-      if (idmanager_getMyID(ADDR_16B)->addr_16b[1]==DEBUG_MOTEID_MASTER) {
-         addressToWrite64b->addr_64b[7]    = DEBUG_MOTEID_2;
-      } else {
-         addressToWrite64b->addr_64b[7]    = DEBUG_MOTEID_MASTER;
-      }
-   };
 }
