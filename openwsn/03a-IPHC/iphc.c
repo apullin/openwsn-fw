@@ -42,6 +42,7 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg) {
    uint8_t sam;
    uint8_t dam;
    msg->owner = COMPONENT_IPHC;
+   // error checking
    if (idmanager_getIsBridge()==TRUE &&
        packetfunctions_isAllRoutersMulticast(&(msg->l3_destinationORsource))==FALSE) {
       openserial_printError(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,0,0);
@@ -89,8 +90,11 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg) {
 //send from bridge: 6LoWPAN header already added by OpenLBR, send as is
 error_t iphc_sendFromBridge(OpenQueueEntry_t *msg) {
    msg->owner = COMPONENT_IPHC;
+   // error checking
    if (idmanager_getIsBridge()==FALSE) {
-      openserial_printError(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,1,0);
+      openserial_printError(COMPONENT_IPHC,ERR_BRIDGE_MISMATCH,
+                            1,
+                            0);
       return E_FAIL;
    }
    return res_send(msg);
@@ -114,7 +118,7 @@ void iphc_receive(OpenQueueEntry_t* msg) {
       packetfunctions_tossHeader(msg,ipv6_header.header_length);
       forwarding_receive(msg,ipv6_header);       //up the internal stack
    } else {
-      openbridge_receive(msg);                   //out to the OpenLBR
+      openbridge_receive(msg);                   //out to the OpenVisualizer
    }
 }
 
