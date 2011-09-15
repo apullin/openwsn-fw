@@ -49,8 +49,8 @@ void timer_appudptimer_fired() {
       pkt->l3_destinationORsource.type           = ADDR_128B;
       pkt->l3_destinationORsource.addr_128b[ 0]  = 0xbb;
       pkt->l3_destinationORsource.addr_128b[ 1]  = 0xbb;
-      pkt->l3_destinationORsource.addr_128b[ 2]  = 0xbb;
-      pkt->l3_destinationORsource.addr_128b[ 3]  = 0xbb;
+      pkt->l3_destinationORsource.addr_128b[ 2]  = 0x00;
+      pkt->l3_destinationORsource.addr_128b[ 3]  = 0x00;
       pkt->l3_destinationORsource.addr_128b[ 4]  = 0x00;
       pkt->l3_destinationORsource.addr_128b[ 5]  = 0x00;
       pkt->l3_destinationORsource.addr_128b[ 6]  = 0x00;
