@@ -56,7 +56,8 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
                } else {
                   temp_linkCost=(uint8_t)((((float)neighbors_vars.neighbors[i].numTx)/((float)neighbors_vars.neighbors[i].numTxACK))*10.0);
                }
-               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
+               if (idmanager_getIsDAGroot()==FALSE)
+                 neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
             }
             break;
          }
@@ -377,7 +378,7 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
                temp_linkCost=(uint8_t)((((float)neighbors_vars.neighbors[i].numTx)/((float)neighbors_vars.neighbors[i].numTxACK))*10.0);
             }
             temp_myTentativeDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
-            if (temp_myTentativeDAGrank<neighbors_vars.myDAGrank && temp_myTentativeDAGrank<255) {
+            if (idmanager_getIsDAGroot()==FALSE && temp_myTentativeDAGrank<neighbors_vars.myDAGrank && temp_myTentativeDAGrank<255) {
                neighbors_vars.myDAGrank=temp_myTentativeDAGrank;
                temp_preferredParentExists=TRUE;
                temp_preferredParentRow=i;
