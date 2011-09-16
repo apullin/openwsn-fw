@@ -56,8 +56,9 @@ void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
                } else {
                   temp_linkCost=(uint8_t)((((float)neighbors_vars.neighbors[i].numTx)/((float)neighbors_vars.neighbors[i].numTxACK))*10.0);
                }
-               if (idmanager_getIsDAGroot()==FALSE)
+               if (idmanager_getIsDAGroot()==FALSE) {
                  neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
+               }
             }
             break;
          }
