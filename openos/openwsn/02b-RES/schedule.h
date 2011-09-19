@@ -17,12 +17,13 @@
 #define MAXBE           4    // max backoff exponent, used in shared TX slots
 
 enum {
-   CELLTYPE_OFF         = 0,
-   CELLTYPE_ADV         = 1,
-   CELLTYPE_TX          = 2,
-   CELLTYPE_RX          = 3,
-   CELLTYPE_TXRX        = 4,
-   CELLTYPE_SERIALRX    = 5
+   CELLTYPE_OFF              = 0,
+   CELLTYPE_ADV              = 1,
+   CELLTYPE_TX               = 2,
+   CELLTYPE_RX               = 3,
+   CELLTYPE_TXRX             = 4,
+   CELLTYPE_SERIALRX         = 5,
+   CELLTYPE_MORESERIALRX     = 6
 };
 
 //=========================== typedef =========================================

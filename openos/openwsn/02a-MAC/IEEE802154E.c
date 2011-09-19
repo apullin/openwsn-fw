@@ -614,6 +614,9 @@ inline void activity_ti1ORri1() {
          //start inputting serial data
          openserial_startInput();
          break;
+      case CELLTYPE_MORESERIALRX:
+         // do nothing (not even endSlot())
+         break;
       default:
          // log the error
          openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_CELLTYPE,

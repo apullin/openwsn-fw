@@ -39,7 +39,7 @@ typedef struct {
    uint32_t    valid_lifetime;
    uint32_t    preferred_lifetime;
    uint32_t    unused;
-   uint8_t     prefix[16];
+   uint8_t     prefix[16]; // prefix container always 16B
 } ICMPv6_64bprefix_option_ht;
 
 //=========================== variables =======================================
