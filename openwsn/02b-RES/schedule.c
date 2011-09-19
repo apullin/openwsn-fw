@@ -59,6 +59,10 @@ void schedule_init() {
    schedule_vars.schedule[i].channelOffset                 = 0;
    schedule_vars.schedule[i].neighbor.type                 = ADDR_ANYCAST;
    
+   //slot 2 is shared SERIALRX
+   i = 2;
+   schedule_vars.schedule[i].type                          = CELLTYPE_SERIALRX;
+   
    /*
    //slot 1: MASTER -> _2
    i = 1;
