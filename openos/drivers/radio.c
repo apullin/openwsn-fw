@@ -248,7 +248,7 @@ void radio_getReceivedFrame(OpenQueueEntry_t* writeToBuffer) {
    uint8_t temp_reg_value;
    
    // initialize the buffer
-   writeToBuffer->payload = &(writeToBuffer->packet[1]);
+   writeToBuffer->payload = &(writeToBuffer->packet[0]);
    
    // read whether CRC was is correct
    temp_reg_value = spi_read_register(RG_PHY_RSSI);
