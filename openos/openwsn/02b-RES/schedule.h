@@ -13,8 +13,8 @@
 //=========================== define ==========================================
 
 #define SCHEDULELENGTH  9    // the length, in slot, of the schedule
-#define MINBE           4    // min backoff exponent, used in shared TX slots
-#define MAXBE           7    // max backoff exponent, used in shared TX slots
+#define MINBE           2    // min backoff exponent, used in shared TX slots
+#define MAXBE           4    // max backoff exponent, used in shared TX slots
 
 enum {
    CELLTYPE_OFF         = 0,
