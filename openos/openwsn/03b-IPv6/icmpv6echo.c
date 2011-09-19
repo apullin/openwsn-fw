@@ -97,7 +97,7 @@ void icmpv6echo_receive(OpenQueueEntry_t* msg) {
          openserial_printError(COMPONENT_ICMPv6ECHO,ERR_RCVD_ECHO_REQUEST,
                                (errorparameter_t)0,
                                (errorparameter_t)0);
-         //get a new openqueuEntry_t
+         // get a new openqueuEntry_t for the echo reply
          reply = openqueue_getFreePacketBuffer();
          if (reply==NULL) {
             openserial_printError(COMPONENT_ICMPv6ECHO,ERR_NO_FREE_PACKET_BUFFER,
@@ -112,12 +112,13 @@ void icmpv6echo_receive(OpenQueueEntry_t* msg) {
          // copy payload from msg to (end of) reply
          packetfunctions_reserveHeaderSize(reply,msg->length);
          memcpy(reply->payload,msg->payload,msg->length);
-         // indicate destination for reply
+         // copy source of msg in destination of reply
          memcpy(&(reply->l3_destinationORsource),&(msg->l3_destinationORsource),sizeof(open_addr_t));
          // free up msg
          openqueue_freePacketBuffer(msg);
          msg = NULL;
          // administrative information for reply
+         reply->l4_protocol                   = IANA_ICMPv6;
          reply->l4_sourcePortORicmpv6Type     = IANA_ICMPv6_ECHO_REPLY;
          ((ICMPv6_ht*)(reply->payload))->type = reply->l4_sourcePortORicmpv6Type;
          packetfunctions_calculateChecksum(reply,(uint8_t*)&(((ICMPv6_ht*)(reply->payload))->checksum));//do last
