@@ -90,21 +90,41 @@ void icmpv6echo_sendDone(OpenQueueEntry_t* msg, error_t error) {
 }
 
 void icmpv6echo_receive(OpenQueueEntry_t* msg) {
+   OpenQueueEntry_t* reply;
    msg->owner = COMPONENT_ICMPv6ECHO;
    switch(msg->l4_sourcePortORicmpv6Type) {
       case IANA_ICMPv6_ECHO_REQUEST:
          openserial_printError(COMPONENT_ICMPv6ECHO,ERR_RCVD_ECHO_REQUEST,
                                (errorparameter_t)0,
                                (errorparameter_t)0);
-         //reply with same OpenQueueEntry_t
-         msg->creator                         = COMPONENT_ICMPv6ECHO;
-         msg->l4_sourcePortORicmpv6Type       = IANA_ICMPv6_ECHO_REPLY;
-         ((ICMPv6_ht*)(msg->payload))->type   = msg->l4_sourcePortORicmpv6Type;
-         packetfunctions_calculateChecksum(msg,(uint8_t*)&(((ICMPv6_ht*)(msg->payload))->checksum));//do last
-         icmpv6echo_vars.busySending = TRUE;
-         if (icmpv6_send(msg)!=E_SUCCESS) {
-            icmpv6echo_vars.busySending = FALSE;
+         //get a new openqueuEntry_t
+         reply = openqueue_getFreePacketBuffer();
+         if (reply==NULL) {
+            openserial_printError(COMPONENT_ICMPv6ECHO,ERR_NO_FREE_PACKET_BUFFER,
+                                  (errorparameter_t)1,
+                                  (errorparameter_t)1);
             openqueue_freePacketBuffer(msg);
+            return;
+         }
+         // take ownership over reply
+         reply->creator = COMPONENT_ICMPv6ECHO;
+         reply->owner   = COMPONENT_ICMPv6ECHO;
+         // copy payload from msg to (end of) reply
+         packetfunctions_reserveHeaderSize(reply,msg->length);
+         memcpy(reply->payload,msg->payload,msg->length);
+         // indicate destination for reply
+         memcpy(&(reply->l3_destinationORsource),&(msg->l3_destinationORsource),sizeof(open_addr_t));
+         // free up msg
+         openqueue_freePacketBuffer(msg);
+         msg = NULL;
+         // administrative information for reply
+         reply->l4_sourcePortORicmpv6Type     = IANA_ICMPv6_ECHO_REPLY;
+         ((ICMPv6_ht*)(reply->payload))->type = reply->l4_sourcePortORicmpv6Type;
+         packetfunctions_calculateChecksum(reply,(uint8_t*)&(((ICMPv6_ht*)(reply->payload))->checksum));//do last
+         icmpv6echo_vars.busySending = TRUE;
+         if (icmpv6_send(reply)!=E_SUCCESS) {
+            icmpv6echo_vars.busySending = FALSE;
+            openqueue_freePacketBuffer(reply);
          }
          break;
       case IANA_ICMPv6_ECHO_REPLY:
