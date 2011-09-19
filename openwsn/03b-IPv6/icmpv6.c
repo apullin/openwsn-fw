@@ -4,6 +4,7 @@
 #include "icmpv6router.h"
 #include "icmpv6rpl.h"
 #include "forwarding.h"
+#include "openqueue.h"
 #include "openserial.h"
 
 //=========================== variables =======================================

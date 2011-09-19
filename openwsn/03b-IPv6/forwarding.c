@@ -46,6 +46,8 @@ void forwarding_sendDone(OpenQueueEntry_t* msg, error_t error) {
          openserial_printError(COMPONENT_FORWARDING,ERR_WRONG_TRAN_PROTOCOL,
                                (errorparameter_t)msg->l4_protocol,
                                (errorparameter_t)0);
+         // free the corresponding packet buffer
+         openqueue_freePacketBuffer(msg);
       }
    }
 }
