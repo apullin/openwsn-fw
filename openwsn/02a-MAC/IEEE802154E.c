@@ -501,9 +501,6 @@ inline void activity_ti1ORri1() {
    uint8_t cellType;
    open_addr_t neighbor;
    
-   // stop outputting serial data
-   openserial_stop();
-   
    // increment ASN (do this first so debug pins are in sync)
    ieee154e_vars.asn++;
    
@@ -549,13 +546,17 @@ inline void activity_ti1ORri1() {
    cellType = schedule_getType(ieee154e_vars.asn);
    switch (cellType) {
       case CELLTYPE_OFF:
-         // I have nothing to do
-         // abort
+         // stop using serial
+         openserial_stop();
+         // abort the slot
          endSlot();
          //start outputing serial
          openserial_startOutput();
          break;
       case CELLTYPE_ADV:
+         // stop using serial
+         openserial_stop();
+         // look for an ADV packet in the queue
          ieee154e_vars.dataToSend = openqueue_macGetAdvPacket();
          if (ieee154e_vars.dataToSend==NULL) {   // I will be listening for an ADV
             // change state
@@ -577,6 +578,9 @@ inline void activity_ti1ORri1() {
          break;
       case CELLTYPE_TXRX:
       case CELLTYPE_TX:
+         // stop using serial
+         openserial_stop();
+         // check whether we can send
          if (schedule_getOkToSend(ieee154e_vars.asn)) {
             schedule_getNeighbor(ieee154e_vars.asn,&neighbor);
             ieee154e_vars.dataToSend = openqueue_macGetDataPacket(&neighbor);
@@ -601,14 +605,16 @@ inline void activity_ti1ORri1() {
             break;
          }
       case CELLTYPE_RX:
-         // I need to listen for packet
+         // stop using serial
+         openserial_stop();
          // change state
          changeState(S_RXDATAOFFSET);
          // arm rt1
          ieee154etimer_schedule(DURATION_rt1);
          break;
       case CELLTYPE_SERIALRX:
-         // I have to listen for data over serial
+         // stop using serial
+         openserial_stop();
          // abort the slot
          endSlot();
          //start inputting serial data
@@ -618,6 +624,8 @@ inline void activity_ti1ORri1() {
          // do nothing (not even endSlot())
          break;
       default:
+         // stop using serial
+         openserial_stop();
          // log the error
          openserial_printError(COMPONENT_IEEE802154E,ERR_WRONG_CELLTYPE,
                                (errorparameter_t)cellType,
