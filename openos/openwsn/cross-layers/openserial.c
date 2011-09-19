@@ -284,7 +284,7 @@ void openserial_stop() {
          case 'P': //Trigger ICMPv6RPL
             icmpv6rpl_trigger();
             break;
-         case 'D': //Trigger OpenBridge (called only by OpenLBR)
+         case 'D': //Trigger OpenBridge (called only by moteProbe)
             openbridge_trigger();
             break;
          case 'C': //Trigger AppUdpChannel

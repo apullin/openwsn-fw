@@ -608,7 +608,11 @@ inline void activity_ti1ORri1() {
          ieee154etimer_schedule(DURATION_rt1);
          break;
       case CELLTYPE_SERIALRX:
-         // TODO
+         // I have to listen for data over serial
+         // abort the slot
+         endSlot();
+         //start inputting serial data
+         openserial_startInput();
          break;
       default:
          // log the error
