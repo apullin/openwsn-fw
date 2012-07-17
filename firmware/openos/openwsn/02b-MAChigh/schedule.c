@@ -128,7 +128,8 @@ void schedule_setFrameLength(frameLength_t newFrameLength) {
 \param newFrameLength is The new frame length.
  */
 void schedule_setDataFrameLength(frameLength_t newFrameLength) {
-	DISABLE_INTERRUPTS();
+	 INTERRUPT_DECLARATION();
+        DISABLE_INTERRUPTS();
 	schedule_vars.dataFrameLength = newFrameLength;
 	ENABLE_INTERRUPTS();
 }
@@ -221,7 +222,8 @@ void  schedule_RemoveCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset
         uint8_t   i;
         scheduleEntry_t* previousSlotWalker;
 	
-	DISABLE_INTERRUPTS();
+	 INTERRUPT_DECLARATION();
+        DISABLE_INTERRUPTS();
 
 	// find if slot & channel has been used
 	slotContainer = &schedule_vars.scheduleBuf[0];
@@ -266,7 +268,8 @@ bool  schedule_IsUsedSlot(slotOffset_t SlotOffset) {
         uint8_t   i;
         bool      flag;
 	
-	DISABLE_INTERRUPTS();
+	 INTERRUPT_DECLARATION();
+        DISABLE_INTERRUPTS();
 
 	// find if SlotOffset has been used
 	flag  =FALSE;
@@ -288,7 +291,8 @@ bool  schedule_IsMyCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset, 
         uint8_t   i;
         bool      flag;
 	
-	DISABLE_INTERRUPTS();
+	 INTERRUPT_DECLARATION();
+         DISABLE_INTERRUPTS();
 
 	// find if SlotOffset has been used
 	flag  =FALSE;
@@ -363,7 +367,8 @@ frameLength_t schedule_getFrameLength() {
 \returns data frame length.
  */
 frameLength_t schedule_getDataFrameLength() {
-	DISABLE_INTERRUPTS();
+	 INTERRUPT_DECLARATION();
+        DISABLE_INTERRUPTS();
 	frameLength_t res;
 	res= schedule_vars.dataFrameLength;
         ENABLE_INTERRUPTS();

@@ -100,6 +100,7 @@ void ResSchedule_addTestCntBC(uint8_t i) {
 slotOffset_t ResSchedule_getNextBusyCheckSlotOffset() {
         slotOffset_t res;
         
+        INTERRUPT_DECLARATION();
         DISABLE_INTERRUPTS();
 	
         if (ResSchedule_vars.NumOfBusyCheck >0) {
@@ -118,7 +119,8 @@ channelOffset_t ResSchedule_getChannelOffset(slotOffset_t slotOffset) {
 	channelOffset_t res;
 	uint8_t i;
         
-        DISABLE_INTERRUPTS();
+         INTERRUPT_DECLARATION();
+         DISABLE_INTERRUPTS();
 	for (i=0; i<MAXRXCELL; i++){
           if (slotOffset == ResSchedule_vars.ResScheduleBuf[i].SlotOffset){
               res= ResSchedule_vars.ResScheduleBuf[i].ChannelOffset;
@@ -131,13 +133,15 @@ channelOffset_t ResSchedule_getChannelOffset(slotOffset_t slotOffset) {
 
 
 void ResSchedule_getNeighbor(open_addr_t* addrToWrite) {
-	DISABLE_INTERRUPTS();
+	 INTERRUPT_DECLARATION();
+        DISABLE_INTERRUPTS();
 	memcpy(addrToWrite,&(ResSchedule_vars.NeighborAddr),sizeof(open_addr_t));
 	ENABLE_INTERRUPTS();
 }
 
 void ResSchedule_SetBusyCeckedResult(slotOffset_t SlotOffset, bool Busy) {
         
+         INTERRUPT_DECLARATION();
         DISABLE_INTERRUPTS();            
         ResSchedule_vars.NumOfBusyCheckDone--;
         ResSchedule_vars.BusyCheckedSlotOffset[ResSchedule_vars.NumOfBusyCheckDone]= SlotOffset;

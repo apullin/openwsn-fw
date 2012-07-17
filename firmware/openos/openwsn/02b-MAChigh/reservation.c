@@ -264,7 +264,7 @@ void sendRes(open_addr_t * NeighborAddr, uint8_t* ResCommand) {
    OpenQueueEntry_t* ResPkt;
    
           // get a free packet buffer
-         ResPkt = openqueue_getFreePacketBuffer();
+         ResPkt = openqueue_getFreePacketBuffer(COMPONENT_RES);
          if (ResPkt==NULL) {
             openserial_printError(COMPONENT_RES,ERR_NO_FREE_PACKET_BUFFER,
                                   (errorparameter_t)0,
