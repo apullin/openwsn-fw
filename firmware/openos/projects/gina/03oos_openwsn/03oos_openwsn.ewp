@@ -2046,15 +2046,6 @@
     </group>
   </group>
   <group>
-    <name>kernel</name>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\kernel\openos\scheduler.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\..\kernel\openos\scheduler.h</name>
-    </file>
-  </group>
-  <group>
     <name>openwsn</name>
     <group>
       <name>02a-MAClow</name>
@@ -2090,6 +2081,18 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\res.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\reservation.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\reservation.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\ResSchedule.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\ResSchedule.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\schedule.c</name>
@@ -2387,6 +2390,15 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\openwsn\cross-layers\packetfunctions.h</name>
+      </file>
+    </group>
+    <group>
+      <name>kernel</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\kernel\openos\scheduler.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\kernel\openos\scheduler.h</name>
       </file>
     </group>
     <file>

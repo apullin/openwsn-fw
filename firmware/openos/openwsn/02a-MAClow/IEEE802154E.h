@@ -18,7 +18,9 @@
 #define TX_POWER                    31 // 1=-25dBm, 31=0dBm (max value)
 #define RESYNCHRONIZATIONGUARD       5 // in 32kHz ticks. min distance to the end of the slot to succesfully synchronize
 #define US_PER_TICK                 30 // number of us per 32kHz clock tick
+
 #define KATIMEOUT                  500 // in slots: @15ms per slot ->  ~8 second
+
 #define DESYNCTIMEOUT             1500 // in slots: @15ms per slot -> ~23 seconds
 
 // the different states of the IEEE802.15.4e state machine
@@ -52,6 +54,11 @@ typedef enum {
    S_TXACKDELAY              = 0x17,   // 'go' signal given, waiting for SFD Tx ACK
    S_TXACK                   = 0x18,   // Tx ACK SFD received, sending bytes
    S_RXPROC                  = 0x19,   // processing received data
+   // Busy check
+   S_BC_RXDATAOFFSET         = 0x1a,   // waiting to prepare for Rx data during Busy Check
+   S_BC_RXDATAPREPARE        = 0x1b,   // preparing for Rx data during Busy Check
+   S_BC_RXDATAREADY          = 0x1c,   // ready to Rx data, waiting for 'go' during Busy Check
+   S_BC_RXDATALISTEN         = 0x1d    // idle listening during Busy Check
 } ieee154e_state_t;
 
 // Atomic durations
@@ -108,7 +115,7 @@ typedef struct {
    PORT_SIGNED_INT_WIDTH timeCorrection;
 } IEEE802154E_ACK_ht;
 
-#define ADV_PAYLOAD_LENGTH 5
+#define ADV_PAYLOAD_LENGTH 11       //5B: asn, 2B: Seed, 4B: BitMap
 
 //=========================== variables =======================================
 

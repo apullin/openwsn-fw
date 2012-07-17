@@ -16,7 +16,14 @@
 #include "radio.h"
 #include "radiotimer.h"
 #include "eui64.h"
+#include "reservation.h"
+#include "scheduler.h"
 
+/*
+//for testing
+#include "scheduler.h"
+#include "reservation.h"
+*/
 // sensors
 #include "gyro.h"
 #include "large_range_accel.h"
@@ -64,6 +71,7 @@ void board_init() {
 #ifdef ISR_BUTTON
    //p2.7 button
    P2DIR &= ~0x80; // Set P2.7 to output direction
+   P2REN |= 0x80;   //chang add
    P2IE |= 0x80; // P2.7 interrupt enabled
    P2IES |= 0x80; // P2.7 Hi/lo edge 
    P2IFG &= ~0x80; // P2.7 IFG cleared
@@ -178,7 +186,8 @@ __interrupt void PORT2_ISR (void) {
 #ifdef ISR_BUTTON
    if ((P2IFG & 0x80)!=0) {                      // button: [P2.7]
       P2IFG &= ~0x80;
-      scheduler_push_task(ID_ISR_BUTTON);
+     //scheduler_push_task(ID_ISR_BUTTON);
+      scheduler_push_task(isr_reservation_button,TASKPRIO_BUTTON);
       __bic_SR_register_on_exit(CPUOFF);
    } else {
       while (1); // should never happen

@@ -4,14 +4,18 @@
 #include "idmanager.h"
 #include "openrandom.h"
 #include "board_info.h"
+#include  "packetfunctions.h"
+
+#include "reservation.h"
 
 //=========================== variables =======================================
 
 typedef struct {
-   scheduleEntry_t  scheduleBuf[MAXACTIVESLOTS];
-   scheduleEntry_t* currentScheduleEntry;
-   uint16_t         frameLength;
-   slotOffset_t     debugPrintRow;
+	scheduleEntry_t  scheduleBuf[MAXACTIVESLOTS];
+	scheduleEntry_t* currentScheduleEntry;
+	uint16_t         frameLength;
+        uint16_t         dataFrameLength;
+	slotOffset_t     debugPrintRow;
 } schedule_vars_t;
 
 schedule_vars_t schedule_vars;
@@ -44,52 +48,53 @@ void schedule_init() {
 
    // set frame length
    schedule_setFrameLength(9);
+        schedule_setDataFrameLength(SUPERFRAMELENGTH);
 
-   // slot 0 is advertisement slot
-   i = 0;
-   memset(&temp_neighbor,0,sizeof(temp_neighbor));
-   schedule_addActiveSlot(i,
-         CELLTYPE_ADV,
-         FALSE,
-         0,
-         &temp_neighbor);
+	// slot 0 is advertisement slot
+	i = 0;
+	memset(&temp_neighbor,0,sizeof(temp_neighbor));
+	schedule_addActiveSlot(i,
+			CELLTYPE_ADV,
+			FALSE,
+			15,
+			&temp_neighbor);
 
-   // slot 1 is shared TXRX anycast
-   i = 1;
-   memset(&temp_neighbor,0,sizeof(temp_neighbor));
-   temp_neighbor.type             = ADDR_ANYCAST;
-   schedule_addActiveSlot(i,
-         CELLTYPE_TXRX,
-         TRUE,
-         0,
-         &temp_neighbor);
+	// slot 1 is shared TXRX anycast
+	i = 1;
+	memset(&temp_neighbor,0,sizeof(temp_neighbor));
+	temp_neighbor.type             = ADDR_ANYCAST;
+	schedule_addActiveSlot(i,
+			CELLTYPE_TXRX,
+			TRUE,
+			15,
+			&temp_neighbor);
 
-   // slot 2 is SERIALRX
-   i = 2;
-   memset(&temp_neighbor,0,sizeof(temp_neighbor));
-   schedule_addActiveSlot(i,
-         CELLTYPE_SERIALRX,
-         FALSE,
-         0,
-         &temp_neighbor);
+	// slot 2 is SERIALRX
+	i = 2;
+	memset(&temp_neighbor,0,sizeof(temp_neighbor));
+	schedule_addActiveSlot(i,
+			CELLTYPE_SERIALRX,
+			FALSE,
+			15,
+			&temp_neighbor);
 
-   // slot 3 is MORESERIALRX
-   i = 3;
-   memset(&temp_neighbor,0,sizeof(temp_neighbor));
-   schedule_addActiveSlot(i,
-         CELLTYPE_MORESERIALRX,
-         FALSE,
-         0,
-         &temp_neighbor);
+	// slot 3 is MORESERIALRX
+	i = 3;
+	memset(&temp_neighbor,0,sizeof(temp_neighbor));
+	schedule_addActiveSlot(i,
+			CELLTYPE_MORESERIALRX,
+			FALSE,
+			15,
+			&temp_neighbor);
 
-   // slot 4 is MORESERIALRX
-   i = 4;
-   memset(&temp_neighbor,0,sizeof(temp_neighbor));
-   schedule_addActiveSlot(i,
-         CELLTYPE_MORESERIALRX,
-         FALSE,
-         0,
-         &temp_neighbor);
+	// slot 4 is MORESERIALRX
+	i = 4;
+	memset(&temp_neighbor,0,sizeof(temp_neighbor));
+	schedule_addActiveSlot(i,
+			CELLTYPE_MORESERIALRX,
+			FALSE,
+			15,
+			&temp_neighbor);
 }
 
 bool debugPrint_schedule() {
@@ -106,9 +111,9 @@ bool debugPrint_schedule() {
 //=== from uRES (writing the schedule)
 
 /**
-\brief Set frame length.
+\brief Set control frame length.
 
-\param newFrameLength The new frame length.
+\param newFrameLength is The new frame length.
  */
 void schedule_setFrameLength(frameLength_t newFrameLength) {
    INTERRUPT_DECLARATION();
@@ -116,6 +121,18 @@ void schedule_setFrameLength(frameLength_t newFrameLength) {
    schedule_vars.frameLength = newFrameLength;
    ENABLE_INTERRUPTS();
 }
+
+/**
+\brief Set data frame length.
+
+\param newFrameLength is The new frame length.
+ */
+void schedule_setDataFrameLength(frameLength_t newFrameLength) {
+	DISABLE_INTERRUPTS();
+	schedule_vars.dataFrameLength = newFrameLength;
+	ENABLE_INTERRUPTS();
+}
+
 
 /**
 \brief Add a new active slot into the schedule.
@@ -198,6 +215,100 @@ void schedule_addActiveSlot(slotOffset_t    slotOffset,
    ENABLE_INTERRUPTS();
 }
 
+
+void  schedule_RemoveCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset, cellType_t CellType, open_addr_t* NeighborAddr) {
+        scheduleEntry_t* slotContainer;
+        uint8_t   i;
+        scheduleEntry_t* previousSlotWalker;
+	
+	DISABLE_INTERRUPTS();
+
+	// find if slot & channel has been used
+	slotContainer = &schedule_vars.scheduleBuf[0];
+	for (i=0; i< MAXACTIVESLOTS; i++) {
+          if ((packetfunctions_sameAddress(&slotContainer->neighbor, NeighborAddr))&&
+             (slotContainer->type ==CellType) && 
+             (slotContainer->slotOffset == SlotOffset)&&
+             (slotContainer->channelOffset == ChannelOffset)  
+               ){
+                 if (schedule_vars.currentScheduleEntry == slotContainer){
+                    schedule_vars.currentScheduleEntry = slotContainer->next;
+                 }
+                 else {
+                    previousSlotWalker = schedule_vars.currentScheduleEntry;
+		    while (previousSlotWalker->next != slotContainer) {
+                         previousSlotWalker = previousSlotWalker->next;
+                    }
+                    previousSlotWalker->next = slotContainer->next;
+                 }
+                   
+                 //scheduleEntry_t* tempSlotContainer = slotContainer->next;
+                 //memcpy(slotContainer,slotContainer->next,sizeof(scheduleEntry_t));
+                 
+                 memset(slotContainer, 0, sizeof(scheduleEntry_t));
+                               
+                break;
+          } else {
+		slotContainer++;
+          }
+	}
+        
+        // maintain debug stats
+	schedule_dbg.numActiveSlotsCur++;
+	if (schedule_dbg.numActiveSlotsCur>schedule_dbg.numActiveSlotsMax) {
+		schedule_dbg.numActiveSlotsMax        = schedule_dbg.numActiveSlotsCur;
+	}
+        ENABLE_INTERRUPTS();
+}
+
+bool  schedule_IsUsedSlot(slotOffset_t SlotOffset) {
+  	scheduleEntry_t* slotContainer;
+        uint8_t   i;
+        bool      flag;
+	
+	DISABLE_INTERRUPTS();
+
+	// find if SlotOffset has been used
+	flag  =FALSE;
+        slotContainer = &schedule_vars.scheduleBuf[0];
+	for (i=0; i< MAXACTIVESLOTS; i++) {
+          if (slotContainer->type!=CELLTYPE_OFF && (slotContainer->slotOffset == SlotOffset)){
+            flag  =TRUE;
+          } else {
+		slotContainer++;
+          }
+	}    
+        ENABLE_INTERRUPTS();
+        return flag;
+}
+
+//before removing a cell, this function is called to see if the cell is being used
+bool  schedule_IsMyCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset, cellType_t CellType, open_addr_t* NeighborAddr) {
+  	scheduleEntry_t* slotContainer;
+        uint8_t   i;
+        bool      flag;
+	
+	DISABLE_INTERRUPTS();
+
+	// find if SlotOffset has been used
+	flag  =FALSE;
+        slotContainer = &schedule_vars.scheduleBuf[0];
+	for (i=0; i< MAXACTIVESLOTS; i++) {
+          if ((packetfunctions_sameAddress(&slotContainer->neighbor, NeighborAddr))&&
+             (slotContainer->type ==CellType) && 
+             (slotContainer->slotOffset == SlotOffset)&&
+             (slotContainer->channelOffset == ChannelOffset)  
+               ){
+                flag=TRUE;
+                break;
+          } else {
+		slotContainer++;
+          }
+	}    
+        ENABLE_INTERRUPTS();
+        return flag;
+}
+
 //=== from IEEE802154E: reading the schedule and updating statistics
 
 void schedule_syncSlotOffset(slotOffset_t targetSlotOffset) {
@@ -230,9 +341,9 @@ slotOffset_t schedule_getNextActiveSlotOffset() {
 }
 
 /**
-\brief Get the frame length.
+\brief Get the control frame length.
 
-\returns The frame length.
+\returns control frame length.
  */
 frameLength_t schedule_getFrameLength() {
    frameLength_t res;
@@ -244,6 +355,20 @@ frameLength_t schedule_getFrameLength() {
    
    return res;
    
+}
+
+/**
+\brief Get the data frame length.
+
+\returns data frame length.
+ */
+frameLength_t schedule_getDataFrameLength() {
+	DISABLE_INTERRUPTS();
+	frameLength_t res;
+	res= schedule_vars.dataFrameLength;
+        ENABLE_INTERRUPTS();
+	return res;
+	
 }
 
 /**

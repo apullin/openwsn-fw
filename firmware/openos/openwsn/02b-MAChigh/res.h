@@ -26,6 +26,9 @@ void    res_sendDone(OpenQueueEntry_t* msg, error_t error);
 void    task_resNotifReceive();
 void    res_receive(OpenQueueEntry_t* msg);
 
+//from reservation.c
+error_t res_send_internal(OpenQueueEntry_t* msg);
+
 /**
 \}
 \}

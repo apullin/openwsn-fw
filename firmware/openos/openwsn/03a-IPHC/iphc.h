@@ -124,6 +124,12 @@ error_t iphc_sendFromBridge(OpenQueueEntry_t *msg);
 void    iphc_sendDone(OpenQueueEntry_t* msg, error_t error);
 void    iphc_receive(OpenQueueEntry_t* msg);
 
+//called by reservation.c
+void  iphc_NewLinkConfirm(open_addr_t* DestAddr,uint8_t NumOfCell);
+void  iphc_NewLinkIndicate(open_addr_t* DestAddr,uint8_t NumOfCell);
+void  iphc_RemoveLinkConfirm(open_addr_t* DestAddr,uint8_t NumOfCell);
+void  iphc_RemoveLinkIndicate(open_addr_t* SrcAddr,uint8_t NumOfCell);
+
 /**
 \}
 \}

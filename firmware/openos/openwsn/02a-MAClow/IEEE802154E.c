@@ -16,6 +16,11 @@
 #include "board.h"
 #include "stdlib.h"
 
+#include "stdio.h"
+
+#include "ResSchedule.h"
+#include "reservation.h"
+
 //=========================== variables =======================================
 
 typedef struct {
@@ -23,7 +28,11 @@ typedef struct {
    asn_t              asn;                  // current absolute slot number
    slotOffset_t       slotOffset;           // current slot offset
    slotOffset_t       nextActiveSlotOffset; // next active slot offset
-   PORT_TIMER_WIDTH   deSyncTimeout;        // how many slots left before looses sync
+   
+   slotOffset_t       currentBusyCheckSlotOffset; //current BusyCheck slot offset for reservation
+   slotOffset_t       nextBusyCheckSlotOffset; //next Busycheck slot offset for reservation
+   
+   PORT_TIMER_WIDTH           deSyncTimeout;        // how many slots left before looses sync
    bool               isSync;               // TRUE iff mote is synchronized to network
    // as shown on the chronogram
    ieee154e_state_t   state;                // state of the FSM
@@ -65,6 +74,7 @@ PRAGMA(pack());
 
 ieee154e_stats_t ieee154e_stats;
 
+
 //=========================== prototypes ======================================
 
 // SYNCHRONIZING
@@ -102,6 +112,16 @@ void     activity_rie5();
 void     activity_ri8(PORT_TIMER_WIDTH capturedTime);
 void     activity_rie6();
 void     activity_ri9(PORT_TIMER_WIDTH capturedTime);
+
+//Busy Check
+void     activity_bc_ri2();
+void     activity_bc_rie1();
+void     activity_bc_ri3();
+void     activity_bc_rie2();
+void     activity_bc_ri4();
+
+
+
 // frame validity check
 bool     isValidAdv(ieee802154_header_iht*     ieee802514_header);
 bool     isValidRxFrame(ieee802154_header_iht* ieee802514_header);
@@ -118,6 +138,7 @@ void     changeIsSync(bool newIsSync);
 // notifying upper layer
 void     notif_sendDone(OpenQueueEntry_t* packetSent, error_t error);
 void     notif_receive(OpenQueueEntry_t* packetReceived);
+
 // statistics
 void     resetStats();
 void     updateStats(PORT_SIGNED_INT_WIDTH timeCorrection);
@@ -141,6 +162,8 @@ void ieee154e_init() {
    // initialize variables
    memset(&ieee154e_vars,0,sizeof(ieee154e_vars_t));
    memset(&ieee154e_dbg,0,sizeof(ieee154e_dbg_t));
+   
+   ieee154e_vars.nextBusyCheckSlotOffset = -1;
    
    if (idmanager_getIsDAGroot()==TRUE) {
       changeIsSync(TRUE);
@@ -281,6 +304,18 @@ void isr_ieee154e_timer() {
       case S_TXACK:
          activity_rie6();
          break;
+      case S_BC_RXDATAOFFSET:
+         activity_bc_ri2();
+         break;
+      case S_BC_RXDATAPREPARE:
+         activity_bc_rie1();
+         break;
+      case S_BC_RXDATAREADY:
+         activity_bc_ri3();
+         break;
+      case S_BC_RXDATALISTEN:
+         activity_bc_rie2();
+         break;
       default:
     
 
@@ -315,6 +350,9 @@ void ieee154e_startOfFrame(PORT_TIMER_WIDTH capturedTime) {
             break;
          case S_RXDATALISTEN:
             activity_ri4(capturedTime);
+            break;
+         case S_BC_RXDATALISTEN:
+            activity_bc_ri4();
             break;
          case S_TXACKDELAY:
             activity_ri8(capturedTime);
@@ -519,10 +557,20 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
       ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
       ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
       memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
-      
+      /*
+      printf("length = %d\n",ieee154e_vars.dataReceived->length);
+      for(uint8_t i=0;i<ieee154e_vars.dataReceived->length;i++)
+      printf("%x ",ieee154e_vars.dataReceived->payload[i]);
+      printf("\n");
+      */
       // toss the IEEE802.15.4 header
       packetfunctions_tossHeader(ieee154e_vars.dataReceived,ieee802514_header.headerLength);
-      
+      /*
+      printf("length = %d\n",ieee154e_vars.dataReceived->length);
+      for(uint8_t i=0;i<ieee154e_vars.dataReceived->length;i++)
+      printf("%x ",ieee154e_vars.dataReceived->payload[i]);
+      printf("\n");
+      */
       // if I just received a valid ADV, handle
       if (isValidAdv(&ieee802514_header)==TRUE) {
          
@@ -531,15 +579,26 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
          
          // record the ASN from the ADV payload
          asnStoreFromAdv(ieee154e_vars.dataReceived);
-         
+         /*
+      printf("length = %d\n",ieee154e_vars.dataReceived->length);
+      for(uint8_t i=0;i<ieee154e_vars.dataReceived->length;i++)
+      printf("%x ",ieee154e_vars.dataReceived->payload[i]);
+      printf("\n");
+         */
          // toss the ADV payload
-         packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);
-         
+        // packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);//for reservation
+         /*
+      printf("length = %d\n",ieee154e_vars.dataReceived->length);
+      for(uint8_t i=0;i<ieee154e_vars.dataReceived->length;i++)
+      printf("%x ",ieee154e_vars.dataReceived->payload[i]);
+      printf("\n");
+         */
          // synchronize (for the first time) to the sender's ADV
          synchronizePacket(ieee154e_vars.syncCapturedTime);
          
          // declare synchronized
          changeIsSync(TRUE);
+         
       //  printf("Synch set to TRUE %d \n ",radiotimer_getPeriod());
 
          // log the "error"
@@ -616,7 +675,10 @@ port_INLINE void activity_ti1ORri1() {
       return;
    }
    
-   if (ieee154e_vars.slotOffset==ieee154e_vars.nextActiveSlotOffset) {
+   //get control plane length
+   frameLength_t controlPlaneLength = schedule_getFrameLength();
+   
+   if (ieee154e_vars.slotOffset == ieee154e_vars.nextActiveSlotOffset) {
       // this is the next active slot
       
       // advance the schedule
@@ -624,7 +686,35 @@ port_INLINE void activity_ti1ORri1() {
       
       // find the next one
       ieee154e_vars.nextActiveSlotOffset    = schedule_getNextActiveSlotOffset();
-   } else {
+   
+   } else { 
+     //printf("slotoffset :%d scheduleLength : %d\n",ieee154e_vars.slotOffset,scheduleLength);
+        if (ieee154e_vars.slotOffset >= controlPlaneLength) {
+
+          if(ieee154e_vars.nextBusyCheckSlotOffset != -1) {
+            
+            if(ieee154e_vars.nextBusyCheckSlotOffset == ieee154e_vars.slotOffset - controlPlaneLength) {
+                ResSchedule_addTestCntBC(1);
+                // This is the next slot needed BusyCheck
+                ieee154e_vars.currentBusyCheckSlotOffset  = ieee154e_vars.slotOffset;
+                      
+                // find the next slot needed BusyCheck
+                ieee154e_vars.nextBusyCheckSlotOffset    = ResSchedule_getNextBusyCheckSlotOffset();
+
+                //stop using serial
+                openserial_stop();
+      
+                changeState(S_BC_RXDATAOFFSET);
+
+                // arm rt1
+                radiotimer_schedule(DURATION_rt1);
+                return;
+              }
+          }
+          else {
+              ieee154e_vars.nextBusyCheckSlotOffset = ResSchedule_getNextBusyCheckSlotOffset();              
+          }
+      }
       // this is NOT the next active slot, abort
       // stop using serial
       openserial_stop();
@@ -1179,7 +1269,7 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
             asnStoreFromAdv(ieee154e_vars.dataReceived);
          }
          // toss the ADV payload
-         packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);
+         //packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);
       }
       
       // record the captured time
@@ -1468,13 +1558,9 @@ port_INLINE void incrementAsnOffset() {
       }
    }
    // increment the offsets
-   ieee154e_vars.slotOffset = (ieee154e_vars.slotOffset+1)%schedule_getFrameLength();
-   
-   ieee154e_vars.asnOffset = (ieee154e_vars.asnOffset+1)%16;
-
-   if (ieee154e_vars.slotOffset%2==0){
-	 //  printf("SlotOffset %d \n", ieee154e_vars.slotOffset);
-   }
+   //return value of schedule_getFrameLength() is the length of control plane
+   //return value of schedule_getDataFrameLength() is the length of data plane
+   ieee154e_vars.slotOffset = (ieee154e_vars.slotOffset+1)%(schedule_getFrameLength()+schedule_getDataFrameLength());
 }
 
 port_INLINE void asnWriteToAdv(OpenQueueEntry_t* advFrame) {
@@ -1561,6 +1647,96 @@ void changeIsSync(bool newIsSync) {
       openqueue_removeAll();//reset the queue to avoid filling it while it is not connected.
    }
 }
+
+//======= Busy Check ==================
+
+inline void activity_bc_ri2() {
+   uint8_t frequency;
+   uint16_t  SlotOffsetOnDataPlane;
+   
+   // change state
+   changeState(S_BC_RXDATAPREPARE);
+
+   // calculate the frequency to transmit on
+   SlotOffsetOnDataPlane= ieee154e_vars.currentBusyCheckSlotOffset-schedule_getFrameLength();
+   frequency = calculateFrequency(ResSchedule_getChannelOffset(SlotOffsetOnDataPlane));
+
+   // configure the radio for that frequency
+   radio_setFrequency(frequency);
+
+   // enable the radio in Rx mode. The radio does not actively listen yet.
+   radio_rxEnable();
+
+   // arm rt2
+   radiotimer_schedule(DURATION_rt2);
+
+   // change state
+   changeState(S_BC_RXDATAREADY);
+}
+
+inline void activity_bc_rie1() {
+   uint16_t  SlotOffsetOnDataPlane;
+   
+   ResSchedule_addTestCntBC(3);
+   radiotimer_cancel();
+    // log the error
+   openserial_printError(COMPONENT_IEEE802154E,ERR_MAXRXDATAPREPARE_OVERFLOWS,
+                         (errorparameter_t)ieee154e_vars.state,
+                         (errorparameter_t)ieee154e_vars.slotOffset);
+
+    SlotOffsetOnDataPlane= ieee154e_vars.currentBusyCheckSlotOffset-schedule_getFrameLength();
+    ResSchedule_SetBusyCeckedResult(SlotOffsetOnDataPlane, TRUE);
+  
+    reservation_IndicateBusyCheck();
+  
+   // abort
+   endSlot();
+}
+
+inline void activity_bc_ri3() {
+   // change state
+   changeState(S_BC_RXDATALISTEN);
+
+   // give the 'go' to receive
+   radio_rxNow();
+
+   // arm rt3
+   radiotimer_schedule(DURATION_rt3);
+}
+
+//return logic slotnum in data plane, and status 
+inline void activity_bc_rie2() {
+  uint16_t  SlotOffsetOnDataPlane;
+  
+  ResSchedule_addTestCntBC(2);
+  SlotOffsetOnDataPlane= ieee154e_vars.currentBusyCheckSlotOffset-schedule_getFrameLength();
+  ResSchedule_SetBusyCeckedResult(SlotOffsetOnDataPlane, FALSE);
+  
+  reservation_IndicateBusyCheck();
+  // abort
+   endSlot();
+}
+
+
+
+//return logic slotnum in data plane, and status
+inline void activity_bc_ri4() {
+  uint16_t  SlotOffsetOnDataPlane;
+   
+   ResSchedule_addTestCntBC(3);
+    
+  SlotOffsetOnDataPlane= ieee154e_vars.currentBusyCheckSlotOffset-schedule_getFrameLength();
+  ResSchedule_SetBusyCeckedResult(SlotOffsetOnDataPlane, TRUE);
+  
+  reservation_IndicateBusyCheck();
+  
+  //abort
+  endSlot();
+}
+
+//======== end of Busy Check sub-routines =====================
+
+
 
 //======= notifying upper layer
 
@@ -1672,8 +1848,9 @@ void changeState(ieee154e_state_t newstate) {
          break;
       case S_SLEEP:
       case S_RXDATAOFFSET:
-         debugpins_fsm_clr();
-         break;
+      case S_BC_RXDATAOFFSET:
+         //debugpins_fsm_clr();
+         //break;
       case S_SYNCRX:
       case S_SYNCPROC:
       case S_TXDATAPREPARE:
@@ -1687,8 +1864,11 @@ void changeState(ieee154e_state_t newstate) {
       case S_RXACK:
       case S_TXPROC:
       case S_RXDATAPREPARE:
+      case S_BC_RXDATAPREPARE:
       case S_RXDATAREADY:
+      case S_BC_RXDATAREADY:  
       case S_RXDATALISTEN:
+      case S_BC_RXDATALISTEN:  
       case S_RXDATA:
       case S_TXACKOFFSET:
       case S_TXACKPREPARE:

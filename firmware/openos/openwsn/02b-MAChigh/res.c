@@ -16,6 +16,8 @@
 #include "bsp_timer.h"
 #include "opentimers.h"
 
+#include "reservation.h"
+
 //=========================== variables =======================================
 
 typedef struct {
@@ -30,7 +32,7 @@ res_vars_t res_vars;
 
 //=========================== prototypes ======================================
 
-error_t res_send_internal(OpenQueueEntry_t* msg);
+
 void    sendAdv();
 void    sendKa();
 void    res_timer_cb();
@@ -92,15 +94,20 @@ void task_resNotifSendDone() {
    }
    // send the packet to where it belongs
    if (msg->creator == COMPONENT_RES) {
-      // discard (ADV or KA) packets this component has created
-      openqueue_freePacketBuffer(msg);
-      // I can send the next ADV or KA
-      res_vars.busySending = FALSE;
-      // restart a random timer
-      res_vars.periodMaintenance = 1700+(openrandom_get16b()&0xff);
-      opentimers_setPeriod(res_vars.timerId,
+     if ((msg->l2_frameType == IEEE154_TYPE_DATA)&&(msg->length >0)){
+        //call a reservation process 
+        reservation_CommandSendDone(msg);
+     } else {
+        // discard (ADV or KA) packets this component has created
+        openqueue_freePacketBuffer(msg);
+        // I can send the next ADV or KA
+        res_vars.busySending = FALSE;
+        // restart a random timer
+        res_vars.periodMaintenance = 1700+(openrandom_get16b()&0xff);
+        opentimers_setPeriod(res_vars.timerId,
                            TIME_MS,
                            res_vars.periodMaintenance);
+     }
    } else {
       // send the rest up the stack
       iphc_sendDone(msg,msg->l2_sendDoneError);
@@ -109,7 +116,7 @@ void task_resNotifSendDone() {
 
 void task_resNotifReceive() {
    OpenQueueEntry_t* msg;
-   
+         
    // get received packet from openqueue
    msg = openqueue_resGetReceivedPacket();
    if (msg==NULL) {
@@ -132,16 +139,23 @@ void task_resNotifReceive() {
    // send the packet up the stack, if it qualifies
    switch (msg->l2_frameType) {
       case IEEE154_TYPE_BEACON:
+          //record Seed and BitMap from the Neighbor's Adv
+          reservation_RecordSeedAndBitMap(msg);
+          break;
       case IEEE154_TYPE_DATA:
-      case IEEE154_TYPE_CMD:
-         if (msg->length>0) {
-            // send to upper layer
-            iphc_receive(msg);
-         } else {
+          if (msg->length>0) {
+            if (msg->payload[0]==0) {
+              //process reservation command 
+              reservation_CommandReceive(msg);
+            }else {
+              // send to upper layer
+              iphc_receive(msg);
+            }
+          } else {
             // free up the RAM
             openqueue_freePacketBuffer(msg);
-         }
-         break;
+          };
+          break;
       case IEEE154_TYPE_ACK:
       default:
          // free the packet's RAM memory
@@ -176,7 +190,7 @@ void timers_res_fired() {
       if (res_vars.MacMgtTaskCounter==0) {
          // don't send ADVs if you're not the master
       } else {
-         sendKa();
+         //sendKa();  //for testing
       }
    }
 }
@@ -233,6 +247,9 @@ readability of the code.
 */
 port_INLINE void sendAdv() {
    OpenQueueEntry_t* adv;
+   uint8_t Seed[2];
+   uint8_t  BitMap[4];
+   
    // only send a packet if I received a sendDone for the previous.
    // the packet might be stuck in the queue for a long time for
    // example while the mote is synchronizing
@@ -250,10 +267,17 @@ port_INLINE void sendAdv() {
       adv->creator = COMPONENT_RES;
       adv->owner   = COMPONENT_RES;
       
-      // reserve space for ADV-specific header
+      // reserve space for ADV-specific header = asn(5)+Seed(2)+BitMap(4)
       packetfunctions_reserveHeaderSize(adv, ADV_PAYLOAD_LENGTH);
       // the actual value of the current ASN will be written by the
       // IEEE802.15.4e when transmitting
+      reservation_GetSeedAndBitMap(Seed,BitMap);
+      adv->payload[5]=Seed[0];
+      adv->payload[6]=Seed[1];
+      adv->payload[7]=BitMap[0];
+      adv->payload[8]=BitMap[1];
+      adv->payload[9]=BitMap[2];
+      adv->payload[10]=BitMap[3];
       
       // some l2 information about this packet
       adv->l2_frameType                     = IEEE154_TYPE_BEACON;

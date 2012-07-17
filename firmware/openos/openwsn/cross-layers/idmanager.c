@@ -5,6 +5,8 @@
 #include "openserial.h"
 #include "neighbors.h"
 #include "board_info.h"
+#include "stdio.h"
+
 //=========================== variables =======================================
 
 typedef struct {
@@ -46,6 +48,7 @@ void idmanager_init() {
       idmanager_vars.isDAGroot         = TRUE;
       idmanager_vars.isBridge          = TRUE;
    }
+        printf("ID : %x",idmanager_vars.my64bID.addr_64b[7]);
 }
 
 bool idmanager_getIsDAGroot() {

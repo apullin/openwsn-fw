@@ -178,6 +178,35 @@ open_addr_t* neighbors_KaNeighbor() {
    }
 }
 
+open_addr_t* neighbors_GetOneNeighbor() {
+   uint8_t      i;
+   open_addr_t* addrPreferred;
+   open_addr_t* addrOther;
+   // initialize
+   addrPreferred = NULL;
+   addrOther     = NULL;
+   // scan through the neighbor table, and populate addrPreferred and addrOther
+   for (i=0;i<MAXNUMNEIGHBORS;i++) {
+      if (neighbors_vars.neighbors[i].used==1) {
+            if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
+               // its a preferred parent
+               addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
+            } else {
+               // its not a preferred parent
+               // poipoi: don't KA to non-preferred parent
+               //addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
+            }
+         }
+   }
+   if        (addrPreferred!=NULL) {
+      return addrPreferred;
+   } else if (addrOther!=NULL) {
+      return addrOther;
+   } else {
+      return NULL;
+   }
+}
+
 bool neighbors_isStableNeighbor(open_addr_t* address) {
    uint8_t i;
    open_addr_t temp_addr_64b;

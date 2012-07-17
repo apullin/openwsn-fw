@@ -453,3 +453,20 @@ ipv6_header_iht retrieveIPv6Header(OpenQueueEntry_t* msg) {
    }
    return ipv6_header;
 }
+
+// called by reservation.c
+void  iphc_NewLinkConfirm(open_addr_t* DestAddr,uint8_t NumOfCell) {
+  return;
+}
+
+void  iphc_NewLinkIndicate(open_addr_t* DestAddr,uint8_t NumOfCell) {
+  return;
+}
+
+void  iphc_RemoveLinkConfirm(open_addr_t* DestAddr,uint8_t NumOfCell) {
+  return;
+}
+
+void  iphc_RemoveLinkIndicate(open_addr_t* SrcAddr,uint8_t NumOfCell) {
+  return;
+}

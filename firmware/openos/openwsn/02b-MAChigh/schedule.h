@@ -12,11 +12,10 @@
 
 //=========================== define ==========================================
 
-#define MAXACTIVESLOTS  5    // the maximum number of active slots
+#define MAXACTIVESLOTS  15    // the maximum number of active slots (Qin 21 for maximum reservation test)
 #define MINBE           2    // min backoff exponent, used in shared TX slots
 #define MAXBE           4    // max backoff exponent, used in shared TX slots
 
- 
 //=========================== typedef =========================================
 
 typedef uint8_t    channelOffset_t;
@@ -75,16 +74,29 @@ PRAGMA(pack());
           bool            debugPrint_schedule();
 // from uRES
           void            schedule_setFrameLength(frameLength_t newFrameLength);
+          void            schedule_setDataFrameLength(frameLength_t newFrameLength);
           void            schedule_addActiveSlot(slotOffset_t    slotOffset,
                                                  cellType_t      type,
                                                  bool            shared,
                                                  uint8_t         channelOffset,
                                                  open_addr_t*    neighbor);
+          void            schedule_RemoveCell(slotOffset_t SlotOffset, 
+                                              channelOffset_t ChannelOffset, 
+                                              cellType_t CellType, 
+                                              open_addr_t* NeighborAddr);
+          bool            schedule_IsMyCell(slotOffset_t SlotOffset, 
+                                            channelOffset_t ChannelOffset, 
+                                            cellType_t CellType, 
+                                            open_addr_t* NeighborAddr);
+
+          bool            schedule_IsUsedSlot (slotOffset_t   SlotOffset);
+          
 // from IEEE802154E
  void            schedule_syncSlotOffset(slotOffset_t targetSlotOffset);
  void            schedule_advanceSlot();
  slotOffset_t    schedule_getNextActiveSlotOffset();
  frameLength_t   schedule_getFrameLength();
+ frameLength_t   schedule_getDataFrameLength();
  cellType_t      schedule_getType();
  void            schedule_getNeighbor(open_addr_t* addrToWrite);
  channelOffset_t schedule_getChannelOffset();

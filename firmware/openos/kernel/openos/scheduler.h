@@ -26,6 +26,8 @@ typedef enum {
    // tasks trigger by other interrupts
    TASKPRIO_BUTTON             = 0x07, // scheduled by P2.7 interrupt
    TASKPRIO_MAX                = 0x08,
+   // task triggered by timer, for testing and debudding reservation
+   TASKPRIO_RESERVATION        = 0x09, //scheduled by timerB CCR2 interrupt
 } task_prio_t;
 
 #define TASK_LIST_DEPTH      10

@@ -45,6 +45,8 @@
 #include "neighbors.h"
 #include "res.h"
 #include "schedule.h"
+#include "reservation.h"
+#include "ResSchedule.h"
 //l2a
 #include "IEEE802154E.h"
 //cross-layer
@@ -80,6 +82,8 @@ void openwsn_init() {
    schedule_init();
    res_init();
    neighbors_init();
+   reservation_init();
+   ResSchedule_init();
    // 03a-IPHC
    openbridge_init();
    iphc_init();
