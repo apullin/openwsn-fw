@@ -134,6 +134,7 @@ typedef struct {
           bool     debugPrint_asn();
           bool     debugPrint_isSync();
           bool     debugPrint_macStats();
+          void    ieee154e_get_asn(asn_t *);
 
 /**
 \}

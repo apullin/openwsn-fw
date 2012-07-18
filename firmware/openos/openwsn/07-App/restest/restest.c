@@ -21,7 +21,7 @@ const uint8_t restest_path0[] = "res"; // debug/restest
 
 typedef struct {
    open_addr_t        neighbor16bID;
-   asn_t              request_asn;
+   uint16_t           request_time;//time in ms
    uint8_t            num_of_links;
    bool               isRequestPending;
 } request_vars_t;
@@ -30,6 +30,7 @@ typedef struct {
    coap_resource_desc_t desc;
    uint8_t num_requests;
    uint8_t num_success; //num_failures = num_requests - num_success
+   asn_t req_init;//time when the reservation request was initiated
    request_vars_t request_vars;
 } restest_vars_t;
 
@@ -62,7 +63,6 @@ void restest_init() {
   
    restest_vars.num_requests =0;
    restest_vars.num_success=0;
-   //restest_vars.request_vars.request_asn=0;
    restest_vars.request_vars.isRequestPending=FALSE;//no requests pending
   
   // prepare the resource descriptor for the /restest path
@@ -92,26 +92,24 @@ void restest_serial_trigger(){
   //first get the serial input buffer:
    uint8_t           msg[136];//worst case: 8B of next hop + 128B of data
    uint8_t           numDataBytes;
-   uint16_t          timeDifference;
+
    numDataBytes = openserial_getNumDataBytes();
    openserial_getInputBuffer(&(msg[0]),numDataBytes);
   
    //copy request parameters (this needs review of course):
-   restest_vars.request_vars.neighbor16bID.addr_64b[7] = msg[0];
-   restest_vars.request_vars.num_of_links = msg[1];
-   // store the ASN
-   restest_vars.request_vars.request_asn.bytes0and1   =     msg[2]+256*msg[3];
-   restest_vars.request_vars.request_asn.bytes2and3   =     msg[4]+256*msg[5];
-   restest_vars.request_vars.request_asn.byte4        =     msg[6];
+   restest_vars.request_vars.neighbor16bID.addr_64b[7] = msg[1];
+   restest_vars.request_vars.num_of_links = msg[2];
+   // store the request time
+   restest_vars.request_vars.request_time   =     (msg[3]<<8)&0xff00 + msg[4]&0x00ff;
    
    restest_vars.request_vars.isRequestPending = TRUE;
    //start one-shot timer with asn difference
-   timeDifference = 15*ieee154e_asnDiff(&(restest_vars.request_vars.request_asn));
-   opentimers_start(timeDifference,TIMER_ONESHOT,TIME_MS,restest_timer_cb);
+   opentimers_start(restest_vars.request_vars.request_time,TIMER_ONESHOT,TIME_MS,restest_timer_cb);
 }
 
 void restest_timer_cb(){
-  //in this function, request a bunch of links from layer 2.5   
+  //in this function, request a bunch of links from layer 2.5
+   ieee154e_get_asn(&restest_vars.req_init);
    reservation_LinkRequest(&restest_vars.request_vars.neighbor16bID,restest_vars.request_vars.num_of_links);
 }
 
@@ -135,7 +133,7 @@ void restest_reservation_granted_cb() {
    //reservation succeeded
    packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload)-1);
    restest_payload.reservation_status = TRUE;
-   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.request_vars.request_asn));
+   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.req_init));
    restest_payload.numRequests = ++restest_vars.num_requests;
    restest_payload.numSuccess = ++restest_vars.num_success;
    memcpy(&pkt->payload[0],&restest_payload,sizeof(restest_payload)-1);
@@ -158,7 +156,7 @@ void restest_reservation_granted_cb() {
    // metadata
    pkt->l4_destination_port         = WKP_UDP_COAP;
    pkt->l3_destinationORsource.type = ADDR_128B;
-   memcpy(&pkt->l3_destinationORsource.addr_128b[0],&ipAddr_motesEecs,16);
+   memcpy(&pkt->l3_destinationORsource.addr_128b[0],&ipAddr_local,16);
    // send
    outcome = opencoap_send(pkt,
                            COAP_TYPE_NON,
@@ -193,9 +191,9 @@ void restest_reservation_failed_cb(){
    //reservation failed
    packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload)-1);
    restest_payload.reservation_status = FALSE;
-   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.request_vars.request_asn));
+   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.req_init));
    restest_payload.numRequests = ++restest_vars.num_requests;
-   restest_payload.numSuccess = ++restest_vars.num_success;
+   restest_payload.numSuccess = restest_vars.num_success;
    memcpy(&pkt->payload[0],&restest_payload,sizeof(restest_payload)-1);
    
    //continue coap packet
@@ -216,7 +214,7 @@ void restest_reservation_failed_cb(){
    // metadata
    pkt->l4_destination_port         = WKP_UDP_COAP;
    pkt->l3_destinationORsource.type = ADDR_128B;
-   memcpy(&pkt->l3_destinationORsource.addr_128b[0],&ipAddr_motesEecs,16);
+   memcpy(&pkt->l3_destinationORsource.addr_128b[0],&ipAddr_local,16);
    // send
    outcome = opencoap_send(pkt,
                            COAP_TYPE_NON,
