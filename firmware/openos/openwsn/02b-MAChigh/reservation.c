@@ -22,6 +22,8 @@ typedef struct {
    reservation_state_t  State;
    uint8_t              MacMgtTaskCounter;
    opentimer_id_t       timerId;
+   reservation_granted_cbt reservationGrantedCb;
+   reservation_granted_cbt reservationFailedCb;
 } reservation_vars_t;
 
 typedef struct {
@@ -116,7 +118,7 @@ void reservation_init() {
       
         // reset local variables to 0, i.e. Seed=0, means Seed hasn't been generated 
         // Seed will be generated at the first time ADV is sent out
-	memset(&reservation_SelfRxUsage_vars,0,sizeof(reservation_SelfRxUsage_t)); 
+	memset(&reservation_SelfRxUsage_vars,0,sizeof(reservation_SelfRxUsage_t));
         
         for (i=0;i<MAXNUMNEIGHBORS;i++){
 	    //reset NeighborRxUsage, Seed=0  
@@ -376,6 +378,11 @@ void reservation_RemoveLinkRequest(open_addr_t* NeighborAddr, uint8_t RequiredNu
     return;
 }
 
+void reservation_setcb(reservation_granted_cbt reservationGrantedCb,reservation_granted_cbt reservationFailedCb){
+   reservation_vars.reservationGrantedCb = reservationGrantedCb;
+   reservation_vars.reservationFailedCb = reservationFailedCb;
+}
+
 //================== private ================================
 
 // Based on the collected NeighborRxUsage, generate SelfRxUsage
@@ -627,8 +634,11 @@ void  activity_Commandi2(open_addr_t* SrcAddr, uint8_t* Command){
     
     // notify upper layer
     iphc_NewLinkConfirm(&reservation_vars.ResNeighborAddr, reservation_vars.ResNumOfCells);    
+    //call the callback:
+    scheduler_push_task(reservation_vars.reservationGrantedCb,1);
   } else {
       //for testing
+      scheduler_push_task(reservation_vars.reservationFailedCb,1);
       LinkRequest_flag = 1;
       P2OUT ^= 0x01;
       iphc_NewLinkConfirm(&reservation_vars.ResNeighborAddr, 0); 

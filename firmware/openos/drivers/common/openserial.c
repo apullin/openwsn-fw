@@ -24,6 +24,7 @@
 #include "leds.h"
 #include "schedule.h"
 #include "uart.h"
+#include "restest.h"
 
 //=========================== variables =======================================
 
@@ -308,6 +309,9 @@ void openserial_stop() {
             break;
          case 'D': //Trigger OpenBridge (called only by moteProbe)
             openbridge_trigger();
+            break;
+         case 'Q': //Trigger restest (application layer code to trigger reservation requests over serial)
+            restest_serial_trigger();
             break;
          default:
             openserial_printError(COMPONENT_OPENSERIAL,ERR_UNSUPPORTED_COMMAND,

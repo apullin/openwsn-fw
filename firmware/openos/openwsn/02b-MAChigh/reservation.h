@@ -42,6 +42,7 @@ typedef enum {
     S_SENDOUTREMOVECELLREQUEST      = 0x06    // waiting for SendDone confirmation
 } reservation_state_t;
 
+typedef void (*reservation_granted_cbt)(void);
 
 //=========================== typedef =========================================
 
@@ -63,4 +64,4 @@ void    reservation_IndicateBusyCheck();
 //called by upper layer
 void reservation_LinkRequest(open_addr_t* NeighborAddr, uint8_t NumOfCell);
 void reservation_RemoveLinkRequest(open_addr_t* NeighborAddr, uint8_t RequiredNumOfCell);
-
+void reservation_setcb(reservation_granted_cbt reservationGrantedCb,reservation_granted_cbt reservationFailedCb);

@@ -110,6 +110,7 @@ void openwsn_init() {
    //rrube_init();
    //rxl1_init();
    layerdebug_init();
+   restest_init();
    //bbk_init();
    //UDP
    udpecho_init();
