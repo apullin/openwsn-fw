@@ -35,6 +35,17 @@ typedef struct {
 
 restest_vars_t restest_vars;
 
+PRAGMA(pack(1));
+typedef struct {
+   bool reservation_status;
+   uint16_t service_time;
+   uint8_t numRequests;
+   uint8_t numSuccess;
+}restest_payload_t;
+PRAGMA(pack());
+
+restest_payload_t restest_payload;
+
 //=========================== prototypes ======================================
 
 error_t restest_receive(OpenQueueEntry_t* msg,
@@ -63,6 +74,8 @@ void restest_init() {
    restest_vars.desc.callbackRx           = &restest_receive;
    restest_vars.desc.callbackSendDone     = &restest_sendDone;
    
+   //register the callbacks from l2.5
+   reservation_setcb(restest_reservation_granted_cb, restest_reservation_failed_cb);
    
    opencoap_register(&restest_vars.desc);
 }
@@ -85,11 +98,12 @@ void restest_serial_trigger(){
   
    //copy request parameters (this needs review of course):
    restest_vars.request_vars.neighbor16bID.addr_64b[7] = msg[0];
+   restest_vars.request_vars.num_of_links = msg[1];
    // store the ASN
-   restest_vars.request_vars.request_asn.bytes0and1   =     msg[1]+256*msg[2];
-   restest_vars.request_vars.request_asn.bytes2and3   =     msg[3]+256*msg[4];
-   restest_vars.request_vars.request_asn.byte4        =     msg[5];
-   restest_vars.request_vars.num_of_links = msg[6];
+   restest_vars.request_vars.request_asn.bytes0and1   =     msg[2]+256*msg[3];
+   restest_vars.request_vars.request_asn.bytes2and3   =     msg[4]+256*msg[5];
+   restest_vars.request_vars.request_asn.byte4        =     msg[6];
+   
    restest_vars.request_vars.isRequestPending = TRUE;
    //start one-shot timer with asn difference
    timeDifference = 15*ieee154e_asnDiff(&(restest_vars.request_vars.request_asn));
@@ -97,8 +111,7 @@ void restest_serial_trigger(){
 }
 
 void restest_timer_cb(){
-  //in this function, request a bunch of links from layer 2 with cb: restest_reservation_cb
-   reservation_setcb(restest_reservation_granted_cb, restest_reservation_failed_cb);
+  //in this function, request a bunch of links from layer 2.5   
    reservation_LinkRequest(&restest_vars.request_vars.neighbor16bID,restest_vars.request_vars.num_of_links);
 }
 
@@ -120,7 +133,12 @@ void restest_reservation_granted_cb() {
    pkt->owner      = COMPONENT_RESTEST;
    
    //reservation succeeded
-   packetfunctions_reserveHeaderSize(pkt,PAYLOADLEN);
+   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload)-1);
+   restest_payload.reservation_status = TRUE;
+   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.request_vars.request_asn));
+   restest_payload.numRequests = ++restest_vars.num_requests;
+   restest_payload.numSuccess = ++restest_vars.num_success;
+   memcpy(&pkt->payload[0],&restest_payload,sizeof(restest_payload)-1);
    
    //continue coap packet
    numOptions = 0;
@@ -173,9 +191,12 @@ void restest_reservation_failed_cb(){
    pkt->owner      = COMPONENT_RESTEST;
    
    //reservation failed
-
-   packetfunctions_reserveHeaderSize(pkt,PAYLOADLEN);
-
+   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload)-1);
+   restest_payload.reservation_status = FALSE;
+   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.request_vars.request_asn));
+   restest_payload.numRequests = ++restest_vars.num_requests;
+   restest_payload.numSuccess = ++restest_vars.num_success;
+   memcpy(&pkt->payload[0],&restest_payload,sizeof(restest_payload)-1);
    
    //continue coap packet
    numOptions = 0;
