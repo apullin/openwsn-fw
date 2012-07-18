@@ -222,7 +222,7 @@ void  schedule_RemoveCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset
         uint8_t   i;
         scheduleEntry_t* previousSlotWalker;
 	
-	 INTERRUPT_DECLARATION();
+	INTERRUPT_DECLARATION();
         DISABLE_INTERRUPTS();
 
 	// find if slot & channel has been used
@@ -233,16 +233,16 @@ void  schedule_RemoveCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset
              (slotContainer->slotOffset == SlotOffset)&&
              (slotContainer->channelOffset == ChannelOffset)  
                ){
-                 if (schedule_vars.currentScheduleEntry == slotContainer){
+                 /*if (schedule_vars.currentScheduleEntry == slotContainer){
                     schedule_vars.currentScheduleEntry = slotContainer->next;
                  }
-                 else {
+                 else {*/
                     previousSlotWalker = schedule_vars.currentScheduleEntry;
 		    while (previousSlotWalker->next != slotContainer) {
                          previousSlotWalker = previousSlotWalker->next;
                     }
                     previousSlotWalker->next = slotContainer->next;
-                 }
+                 //}
                    
                  //scheduleEntry_t* tempSlotContainer = slotContainer->next;
                  //memcpy(slotContainer,slotContainer->next,sizeof(scheduleEntry_t));
@@ -367,7 +367,7 @@ frameLength_t schedule_getFrameLength() {
 \returns data frame length.
  */
 frameLength_t schedule_getDataFrameLength() {
-	 INTERRUPT_DECLARATION();
+	INTERRUPT_DECLARATION();
         DISABLE_INTERRUPTS();
 	frameLength_t res;
 	res= schedule_vars.dataFrameLength;

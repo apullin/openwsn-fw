@@ -31,7 +31,7 @@
 #include "sensitive_accel_temperature.h"
 //#include "ADC_Channel.h"
 
-//#define ISR_BUTTON 1
+#define ISR_BUTTON 1
 //=========================== variables =======================================
 
 //=========================== prototypes ======================================

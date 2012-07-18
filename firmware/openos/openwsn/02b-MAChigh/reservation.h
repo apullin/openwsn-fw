@@ -17,7 +17,7 @@
 
 //=========================== define ==========================================
 
-#define MAXRXCELL           16    // the maximum number of Rx cells for one node
+#define MAXRXCELL           8     // the maximum number of Rx cells for one node
 #define RES_PAYLOAD_LENGTH  7     //1B: =0, distinguish from Iphc frame, 1B: command code, 4B: parameter, 1B: NumOfCell
 
 #define RES_CELL_REQUEST    0x21  //reservation command code

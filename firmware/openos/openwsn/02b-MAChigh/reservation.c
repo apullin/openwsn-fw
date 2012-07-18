@@ -1238,11 +1238,11 @@ void isr_reservation_button() {
           reservation_vars.MacMgtTaskCounter = (reservation_vars.MacMgtTaskCounter+1)%2;
           if(reservation_vars.MacMgtTaskCounter==0)    //if I have added one more Cell
             {
-              if(LinkRequest_flag)//Binary Semaphore for LinkRequest or RemoveLinkRequest
+             if(LinkRequest_flag)//Binary Semaphore for LinkRequest or RemoveLinkRequest
               {
                 P2OUT ^= 0x01;
                 LinkRequest_flag = 0;    //for testing
-                reservation_RemoveLinkRequest(NeighAddr, 1);//remove one Cell              
+                reservation_RemoveLinkRequest(NeighAddr, 2);//remove one Cell              
               }
             }
           else
@@ -1250,7 +1250,7 @@ void isr_reservation_button() {
             { 
               P2OUT ^= 0x01;
               LinkRequest_flag = 0;    //for testing
-              reservation_LinkRequest(NeighAddr, 2);
+              reservation_LinkRequest(NeighAddr, 6);
             }
           
       } else {
