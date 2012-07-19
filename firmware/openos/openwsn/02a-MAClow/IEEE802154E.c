@@ -220,7 +220,7 @@ void ieee154e_init() {
 }
 
 void    ieee154e_get_asn(asn_t *temp_asn){
-   memcpy(&ieee154e_vars.asn,temp_asn,sizeof(asn_t));
+   memcpy(temp_asn,&ieee154e_vars.asn,sizeof(asn_t));
 }
 
 //======= events

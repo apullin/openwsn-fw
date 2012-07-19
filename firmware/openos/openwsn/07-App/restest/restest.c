@@ -10,6 +10,7 @@
 #include "IEEE802154E.h"
 #include "reservation.h"
 #include "packetfunctions.h"
+#include "neighbors.h"
 
 //=========================== defines =========================================
 
@@ -20,7 +21,7 @@ const uint8_t restest_path0[] = "res"; // debug/restest
 //=========================== variables =======================================
 
 typedef struct {
-   open_addr_t        neighbor16bID;
+   open_addr_t        *neighborID;
    uint16_t           request_time;//time in ms
    uint8_t            num_of_links;
    bool               isRequestPending;
@@ -35,6 +36,7 @@ typedef struct {
 } restest_vars_t;
 
 restest_vars_t restest_vars;
+open_addr_t temp_neighborID;
 
 PRAGMA(pack(1));
 typedef struct {
@@ -60,11 +62,24 @@ void restest_reservation_failed_cb();
 //=========================== public ==========================================
 
 void restest_init() {
+   uint8_t counter;
+   temp_neighborID.type=ADDR_64B;
+   temp_neighborID.addr_16b[0]=0x00;
+   temp_neighborID.addr_16b[1]=0x00;
+   temp_neighborID.panid[0]=0x00;
+   temp_neighborID.panid[1]=0x00;
+   for(counter=0;counter<8;counter++)
+      temp_neighborID.addr_64b[counter]=0x00;
+      temp_neighborID.prefix[counter]=0x00;
+   for(counter=0;counter<16;counter++)
+      temp_neighborID.addr_128b[counter]=0x00;
+   
+   restest_vars.request_vars.neighborID = &temp_neighborID;
   
    restest_vars.num_requests =0;
    restest_vars.num_success=0;
    restest_vars.request_vars.isRequestPending=FALSE;//no requests pending
-  
+     
   // prepare the resource descriptor for the /restest path
    restest_vars.desc.path0len             = sizeof(restest_path0)-1;
    restest_vars.desc.path0val             = (uint8_t*)(&restest_path0);
@@ -97,7 +112,7 @@ void restest_serial_trigger(){
    openserial_getInputBuffer(&(msg[0]),numDataBytes);
   
    //copy request parameters (this needs review of course):
-   restest_vars.request_vars.neighbor16bID.addr_64b[7] = msg[1];
+   restest_vars.request_vars.neighborID->addr_64b[7] = msg[1];
    restest_vars.request_vars.num_of_links = msg[2];
    // store the request time
    restest_vars.request_vars.request_time   =     (msg[3]<<8)&0xff00 + msg[4]&0x00ff;
@@ -110,13 +125,14 @@ void restest_serial_trigger(){
 void restest_timer_cb(){
   //in this function, request a bunch of links from layer 2.5
    ieee154e_get_asn(&restest_vars.req_init);
-   reservation_LinkRequest(&restest_vars.request_vars.neighbor16bID,restest_vars.request_vars.num_of_links);
+   reservation_LinkRequest(restest_vars.request_vars.neighborID,restest_vars.request_vars.num_of_links);
 }
 
 void restest_reservation_granted_cb() {
    uint8_t numOptions;
    error_t outcome;
    OpenQueueEntry_t* pkt;
+   uint16_t aux;
    pkt = openqueue_getFreePacketBuffer(COMPONENT_RESTEST);
    if (pkt==NULL) {
       openserial_printError(COMPONENT_RESTEST,ERR_NO_FREE_PACKET_BUFFER,
@@ -131,12 +147,13 @@ void restest_reservation_granted_cb() {
    pkt->owner      = COMPONENT_RESTEST;
    
    //reservation succeeded
-   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload)-1);
-   restest_payload.reservation_status = TRUE;
-   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.req_init));
-   restest_payload.numRequests = ++restest_vars.num_requests;
-   restest_payload.numSuccess = ++restest_vars.num_success;
-   memcpy(&pkt->payload[0],&restest_payload,sizeof(restest_payload)-1);
+   aux= 15*ieee154e_asnDiff(&(restest_vars.req_init));
+   
+   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload));
+   ((restest_payload_t*)pkt->payload)->reservation_status=TRUE;
+   ((restest_payload_t*)pkt->payload)->service_time=aux;
+   ((restest_payload_t*)pkt->payload)->numRequests= ++restest_vars.num_requests;
+   ((restest_payload_t*)pkt->payload)->numSuccess=++restest_vars.num_success;
    
    //continue coap packet
    numOptions = 0;
@@ -175,6 +192,7 @@ void restest_reservation_failed_cb(){
    uint8_t numOptions;
    error_t outcome;
    OpenQueueEntry_t* pkt;
+   uint16_t aux;
    pkt = openqueue_getFreePacketBuffer(COMPONENT_RESTEST);
    if (pkt==NULL) {
       openserial_printError(COMPONENT_RESTEST,ERR_NO_FREE_PACKET_BUFFER,
@@ -189,12 +207,13 @@ void restest_reservation_failed_cb(){
    pkt->owner      = COMPONENT_RESTEST;
    
    //reservation failed
-   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload)-1);
-   restest_payload.reservation_status = FALSE;
-   restest_payload.service_time = 15*ieee154e_asnDiff(&(restest_vars.req_init));
-   restest_payload.numRequests = ++restest_vars.num_requests;
-   restest_payload.numSuccess = restest_vars.num_success;
-   memcpy(&pkt->payload[0],&restest_payload,sizeof(restest_payload)-1);
+   aux= 15*ieee154e_asnDiff(&(restest_vars.req_init));
+   
+   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload));
+   ((restest_payload_t*)pkt->payload)->reservation_status=FALSE;
+   ((restest_payload_t*)pkt->payload)->service_time=aux;
+   ((restest_payload_t*)pkt->payload)->numRequests= ++restest_vars.num_requests;
+   ((restest_payload_t*)pkt->payload)->numSuccess=restest_vars.num_success;
    
    //continue coap packet
    numOptions = 0;
