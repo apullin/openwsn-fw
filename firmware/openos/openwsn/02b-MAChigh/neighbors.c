@@ -340,6 +340,20 @@ uint8_t  neighbors_getNumberOfNeighbors(){
    }  
   return size;
 }
+
+//return the complete address of a neighbor given the last  byte
+open_addr_t*  neighbors_findNeighbourByAdd16(uint8_t *add8){
+  uint8_t j;
+  
+  for(j=0;j<MAXNUMNEIGHBORS;j++) {
+     if(neighbors_vars.neighbors[j].used) {
+       if (neighbors_vars.neighbors[j].addr_64b.addr_64b[7]==*add8){
+           return  &neighbors_vars.neighbors[j].addr_64b;
+       }
+     }
+   }
+   return NULL;
+}
   
 
 //=========================== private =========================================

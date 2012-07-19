@@ -21,7 +21,7 @@ const uint8_t restest_path0[] = "res"; // debug/restest
 //=========================== variables =======================================
 
 typedef struct {
-   open_addr_t        *neighborID;
+   open_addr_t        neighborID;
    uint16_t           request_time;//time in ms
    uint8_t            num_of_links;
    bool               isRequestPending;
@@ -62,19 +62,19 @@ void restest_reservation_failed_cb();
 //=========================== public ==========================================
 
 void restest_init() {
-   uint8_t counter;
-   temp_neighborID.type=ADDR_64B;
-   temp_neighborID.addr_16b[0]=0x00;
-   temp_neighborID.addr_16b[1]=0x00;
-   temp_neighborID.panid[0]=0x00;
-   temp_neighborID.panid[1]=0x00;
-   for(counter=0;counter<8;counter++)
-      temp_neighborID.addr_64b[counter]=0x00;
-      temp_neighborID.prefix[counter]=0x00;
-   for(counter=0;counter<16;counter++)
-      temp_neighborID.addr_128b[counter]=0x00;
-   
-   restest_vars.request_vars.neighborID = &temp_neighborID;
+//   uint8_t counter;
+//   temp_neighborID.type=ADDR_64B;
+//   temp_neighborID.addr_16b[0]=0x00;
+//   temp_neighborID.addr_16b[1]=0x00;
+//   temp_neighborID.panid[0]=0x00;
+//   temp_neighborID.panid[1]=0x00;
+//   for(counter=0;counter<8;counter++)
+//      temp_neighborID.addr_64b[counter]=0x00;
+//      temp_neighborID.prefix[counter]=0x00;
+//   for(counter=0;counter<16;counter++)
+//      temp_neighborID.addr_128b[counter]=0x00;
+   memset(&restest_vars,0,sizeof(restest_vars_t));
+//   restest_vars.request_vars.neighborID = &temp_neighborID;
   
    restest_vars.num_requests =0;
    restest_vars.num_success=0;
@@ -107,15 +107,27 @@ void restest_serial_trigger(){
   //first get the serial input buffer:
    uint8_t           msg[136];//worst case: 8B of next hop + 128B of data
    uint8_t           numDataBytes;
-
+   open_addr_t*      neigh;
+   uint8_t          addr8; 
+   uint16_t          time =  0;
+   
    numDataBytes = openserial_getNumDataBytes();
    openserial_getInputBuffer(&(msg[0]),numDataBytes);
-  
+
+   //we need to find the address of the neighbour that ends with the required id
+    addr8=msg[0];
+    
+    neigh = neighbors_findNeighbourByAdd16(&addr8);
+    
    //copy request parameters (this needs review of course):
-   restest_vars.request_vars.neighborID->addr_64b[7] = msg[1];
-   restest_vars.request_vars.num_of_links = msg[2];
+    memcpy(&restest_vars.request_vars.neighborID,neigh,sizeof(open_addr_t));
+   
+   // restest_vars.request_vars.neighborID.addr_64b[7] = msg[0];
+   restest_vars.request_vars.num_of_links = msg[1];
    // store the request time
-   restest_vars.request_vars.request_time   =     (msg[3]<<8)&0xff00 + msg[4]&0x00ff;
+   time=msg[3];//little endian!!!
+   time=(time<<8)+  msg[2];
+   restest_vars.request_vars.request_time   =    time;
    
    restest_vars.request_vars.isRequestPending = TRUE;
    //start one-shot timer with asn difference
@@ -125,7 +137,7 @@ void restest_serial_trigger(){
 void restest_timer_cb(){
   //in this function, request a bunch of links from layer 2.5
    ieee154e_get_asn(&restest_vars.req_init);
-   reservation_LinkRequest(restest_vars.request_vars.neighborID,restest_vars.request_vars.num_of_links);
+   reservation_LinkRequest(&restest_vars.request_vars.neighborID,restest_vars.request_vars.num_of_links);
 }
 
 void restest_reservation_granted_cb() {
