@@ -308,10 +308,7 @@ void openserial_stop() {
             icmpv6rpl_trigger();
             break;
          case 'D': //Trigger OpenBridge (called only by moteProbe)
-           if (openserial_vars.input_buffer[0] =='Q')//this is a hack: correct it after OpenWSN meeting
-               restest_serial_trigger();
-            else
-               openbridge_trigger();
+            openbridge_trigger();
             break;
          case 'Q': //Trigger restest (application layer code to trigger reservation requests over serial)
             restest_serial_trigger();
