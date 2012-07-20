@@ -7,7 +7,7 @@
 
 #include "openwsn.h"
 //l7
-//#include "restest.h"
+#include "restest.h"
 //#include "bbk.h"
 #include "layerdebug.h"
 //#include "rrube.h"
@@ -111,7 +111,7 @@ void openwsn_init() {
    //rrube_init();
    //rxl1_init();
    layerdebug_init();
-//   restest_init();
+   restest_init();
    //bbk_init();
    //UDP
    udpecho_init();

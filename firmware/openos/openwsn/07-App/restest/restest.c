@@ -33,6 +33,7 @@ typedef struct {
    uint8_t num_success; //num_failures = num_requests - num_success
    asn_t req_init;//time when the reservation request was initiated
    request_vars_t request_vars;
+   uint8_t n_address;//last 8bits of the address
 } restest_vars_t;
 
 restest_vars_t restest_vars;
@@ -44,10 +45,11 @@ typedef struct {
    uint16_t service_time;
    uint8_t numRequests;
    uint8_t numSuccess;
+   uint8_t n_address;//last 8bits of the address
 }restest_payload_t;
 PRAGMA(pack());
 
-restest_payload_t restest_payload;
+
 
 //=========================== prototypes ======================================
 
@@ -116,9 +118,15 @@ void restest_serial_trigger(){
 
    //we need to find the address of the neighbour that ends with the required id
     addr8=msg[0];
-    
+    restest_vars.n_address=addr8;
     neigh = neighbors_findNeighbourByAdd16(&addr8);
-    
+    if (neigh==NULL) {
+      openserial_printError(COMPONENT_RESTEST,ERR_UNSPECIFIED,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
+      return;
+   }
+      
    //copy request parameters (this needs review of course):
     memcpy(&restest_vars.request_vars.neighborID,neigh,sizeof(open_addr_t));
    
@@ -161,12 +169,12 @@ void restest_reservation_granted_cb() {
    //reservation succeeded
    aux= 15*ieee154e_asnDiff(&(restest_vars.req_init));
    
-   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload));
+   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload_t));
    ((restest_payload_t*)pkt->payload)->reservation_status=TRUE;
    ((restest_payload_t*)pkt->payload)->service_time=aux;
    ((restest_payload_t*)pkt->payload)->numRequests= ++restest_vars.num_requests;
    ((restest_payload_t*)pkt->payload)->numSuccess=++restest_vars.num_success;
-   
+   ((restest_payload_t*)pkt->payload)->n_address=restest_vars.n_address;
    //continue coap packet
    numOptions = 0;
    // location-path option
@@ -221,13 +229,14 @@ void restest_reservation_failed_cb(){
    //reservation failed
    aux= 15*ieee154e_asnDiff(&(restest_vars.req_init));
    
-   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload));
+   packetfunctions_reserveHeaderSize(pkt,sizeof(restest_payload_t));
    ((restest_payload_t*)pkt->payload)->reservation_status=FALSE;
    ((restest_payload_t*)pkt->payload)->service_time=aux;
    ((restest_payload_t*)pkt->payload)->numRequests= ++restest_vars.num_requests;
    ((restest_payload_t*)pkt->payload)->numSuccess=restest_vars.num_success;
+   ((restest_payload_t*)pkt->payload)->n_address=restest_vars.n_address;
    
-   //continue coap packet
+    //continue coap packet
    numOptions = 0;
    // location-path option
    packetfunctions_reserveHeaderSize(pkt,sizeof(restest_path0)-1);

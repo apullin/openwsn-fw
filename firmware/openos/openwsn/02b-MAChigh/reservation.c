@@ -635,10 +635,10 @@ void  activity_Commandi2(open_addr_t* SrcAddr, uint8_t* Command){
     // notify upper layer
     iphc_NewLinkConfirm(&reservation_vars.ResNeighborAddr, reservation_vars.ResNumOfCells);    
     //call the callback:
-    scheduler_push_task(reservation_vars.reservationGrantedCb,1);
+   scheduler_push_task(reservation_vars.reservationGrantedCb,TASKPRIO_RESERVATION);
   } else {
       //for testing
-      scheduler_push_task(reservation_vars.reservationFailedCb,1);
+      scheduler_push_task(reservation_vars.reservationFailedCb,TASKPRIO_RESERVATION);
       LinkRequest_flag = 1;
       P2OUT ^= 0x01;
       iphc_NewLinkConfirm(&reservation_vars.ResNeighborAddr, 0); 
