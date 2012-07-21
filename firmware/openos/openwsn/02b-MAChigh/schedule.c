@@ -48,7 +48,7 @@ void schedule_init() {
 
    // set frame length
    schedule_setFrameLength(9);
-        schedule_setDataFrameLength(SUPERFRAMELENGTH);
+   schedule_setDataFrameLength(SUPERFRAMELENGTH);
 
 	// slot 0 is advertisement slot
 	i = 0;
@@ -69,8 +69,33 @@ void schedule_init() {
 			15,
 			&temp_neighbor);
 
-	// slot 2 is SERIALRX
+        
+ 
+        
+        // slot 2 is shared TXRX anycast
 	i = 2;
+	memset(&temp_neighbor,0,sizeof(temp_neighbor));
+	temp_neighbor.type             = ADDR_ANYCAST;
+	schedule_addActiveSlot(i,
+			CELLTYPE_TXRX,
+			TRUE,
+			15,
+			&temp_neighbor);
+
+        // slot 3 is shared TXRX anycast
+	i = 3;
+	memset(&temp_neighbor,0,sizeof(temp_neighbor));
+	temp_neighbor.type             = ADDR_ANYCAST;
+	schedule_addActiveSlot(i,
+			CELLTYPE_TXRX,
+			TRUE,
+			15,
+			&temp_neighbor);
+
+        
+        
+	// slot 4 is SERIALRX
+	i = 4;
 	memset(&temp_neighbor,0,sizeof(temp_neighbor));
 	schedule_addActiveSlot(i,
 			CELLTYPE_SERIALRX,
@@ -78,8 +103,8 @@ void schedule_init() {
 			15,
 			&temp_neighbor);
 
-	// slot 3 is MORESERIALRX
-	i = 3;
+	// slot 5 is MORESERIALRX
+	i = 5;
 	memset(&temp_neighbor,0,sizeof(temp_neighbor));
 	schedule_addActiveSlot(i,
 			CELLTYPE_MORESERIALRX,
@@ -87,8 +112,8 @@ void schedule_init() {
 			15,
 			&temp_neighbor);
 
-	// slot 4 is MORESERIALRX
-	i = 4;
+	// slot 6 is MORESERIALRX
+	i = 6;
 	memset(&temp_neighbor,0,sizeof(temp_neighbor));
 	schedule_addActiveSlot(i,
 			CELLTYPE_MORESERIALRX,

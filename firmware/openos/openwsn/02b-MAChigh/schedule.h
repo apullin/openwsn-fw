@@ -12,7 +12,7 @@
 
 //=========================== define ==========================================
 
-#define MAXACTIVESLOTS  15    // the maximum number of active slots (Qin 21 for maximum reservation test)
+#define MAXACTIVESLOTS  16    // the maximum number of active slots (Qin 21 for maximum reservation test)
 #define MINBE           2    // min backoff exponent, used in shared TX slots
 #define MAXBE           4    // max backoff exponent, used in shared TX slots
 
