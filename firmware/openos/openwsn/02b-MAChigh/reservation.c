@@ -76,13 +76,13 @@ void  GenNeighborRxCellList(ResScheduleEntry_t *pTxCandidateEnrty,uint16_t Seed)
 void  CheckOtherNeighborRx(TxCandidateList_t* pTxCadidateList,uint8_t DestIndex,ResScheduleEntry_t* pResScheduleEntry);
 bool  CheckSelfUsage(ResScheduleEntry_t pResScheduleEntry);
 void  SortBusyCheckList();
-void  ChangeState(reservation_state_t state);
 void  CommandDrivenActivity(open_addr_t* SrcAddr, uint8_t* Command);
 void  SendDoneDrivenActivity(void);
 void  BusyCheckDoneDrivenActivity();
 uint8_t  GenTxRemoveList(open_addr_t* NeighborAddr,uint8_t RequiredNumOfCell,TxCandidateList_t * pTxCandidateList);
 void  ChangeState(reservation_state_t newstate);
-void reservation_timer_cb();
+void  reservation_timer_cb();
+void  timers_reservation_fired();
 
 uint8_t CountOfOne(uint8_t* BitMap);
 void  ClearBit_8(uint8_t index, uint8_t* BitMap_8);
@@ -523,14 +523,18 @@ void ChangeState(reservation_state_t newstate) {
    reservation_vars.State = newstate;
    
    // wiggle the FSM debug pin
-   switch (reservation_vars.State) {
-      case S_IDLE: 
-      case S_TXBUSYCHECK: 
-      case S_SENDOUTRESCELLREQUEST:
-      case S_WAITFORRESPONSE:
-      case S_SENDOUTRESCELLRESPONSE:
-      case S_HIDENCHECK:
+   switch (reservation_vars.State) {      
       case S_SENDOUTREMOVECELLREQUEST:
+      case S_SENDOUTRESCELLRESPONSE:
+      case S_SENDOUTRESCELLREQUEST:     
+      case S_WAITFORRESPONSE:
+           reservation_vars.timerId = opentimers_start(RESERVATION_TIMEOUT,
+                                       TIMER_ONESHOT,TIME_MS,
+                                       reservation_timer_cb);
+            break;
+      case S_TXBUSYCHECK:
+      case S_HIDENCHECK:        
+      case S_IDLE:       
          break;
    }
 }
@@ -1178,54 +1182,40 @@ void RemoveFromSchedule(open_addr_t* NeighborAddr, cellType_t CellType) {
     }
 }
 
-/*
-//for testing
-void timers_reservation_fired() {
-   
-      open_addr_t*      NeighAddr;
-  
-      NeighAddr = neighbors_GetOneNeighbor();
 
-      if (NeighAddr!=NULL) {
-          reservation_vars.MacMgtTaskCounter = (reservation_vars.MacMgtTaskCounter+1)%2;
-          if (reservation_vars.MacMgtTaskCounter==0) {
-            
-            //reservation_RemoveLinkRequest(NeighAddr, 1);
-            
-          } else {
-            
-            if(AddedCellNum)    //if I have added one more Cell
-            {
-              if(LinkRequest_flag)//Binary Semaphore for LinkRequest or RemoveLinkRequest
-              {
-                P2OUT ^= 0x01;
-                LinkRequest_flag = 0;    //for testing
-                //reservation_RemoveLinkRequest(NeighAddr, 1);//remove one Cell
-                reservation_LinkRequest(NeighAddr, 1);                
-              }
-            }
-            else
-            
-            if(LinkRequest_flag)    //Binary Semaphore for LinkRequest or RemoveLinkRequest
-            { 
-              P2OUT ^= 0x01;
-              LinkRequest_flag = 0;    //for testing
-              reservation_LinkRequest(NeighAddr, 1);            
-            }
-            
-          }   
-      } else {
-            openserial_printError(COMPONENT_RES,ERR_NO_FREE_PACKET_BUFFER,
+void reservation_timer_cb() {
+   scheduler_push_task(timers_reservation_fired,TASKPRIO_RESERVATION_TIMEOUT);
+}
+
+
+void timers_reservation_fired() {      
+      switch (reservation_vars.State) {      
+        
+        case S_WAITFORRESPONSE:
+        case S_SENDOUTRESCELLREQUEST:
+        case S_SENDOUTREMOVECELLREQUEST: 
+          LinkRequest_flag =1;
+          P2OUT ^= 0x01;
+          ChangeState(S_IDLE);
+          break;
+        
+         
+        case S_SENDOUTRESCELLRESPONSE:
+          P2OUT ^= 0x01;
+          ChangeState(S_IDLE);
+          break;       
+        
+        case S_TXBUSYCHECK:
+        case S_HIDENCHECK:
+        case S_IDLE:       
+          break;
+      }
+      openserial_printError(COMPONENT_RES,ERR_NO_FREE_PACKET_BUFFER,
                                   (errorparameter_t)0,
                                   (errorparameter_t)0);
-      }
 }
 
-//for testing
-void reservation_timer_cb() {
-   scheduler_push_task(timers_reservation_fired,TASKPRIO_RESERVATION);
-}
-*/
+
 
 //for testing
 void isr_reservation_button() {

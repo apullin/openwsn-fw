@@ -244,7 +244,7 @@ void schedule_addActiveSlot(slotOffset_t    slotOffset,
 
 void  schedule_RemoveCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset, cellType_t CellType, open_addr_t* NeighborAddr) {
         scheduleEntry_t* slotContainer;
-        uint8_t   i;
+        uint8_t   i, CntLoop;
         scheduleEntry_t* previousSlotWalker;
 	
 	INTERRUPT_DECLARATION();
@@ -263,10 +263,15 @@ void  schedule_RemoveCell(slotOffset_t SlotOffset, channelOffset_t ChannelOffset
                  }
                  else {*/
                     previousSlotWalker = schedule_vars.currentScheduleEntry;
+                    CntLoop=0;
 		    while (previousSlotWalker->next != slotContainer) {
+                         CntLoop++;
                          previousSlotWalker = previousSlotWalker->next;
                     }
                     previousSlotWalker->next = slotContainer->next;
+                    if (schedule_vars.currentScheduleEntry == slotContainer) {
+                      schedule_vars.currentScheduleEntry= slotContainer->next;
+                    }
                  //}
                    
                  //scheduleEntry_t* tempSlotContainer = slotContainer->next;

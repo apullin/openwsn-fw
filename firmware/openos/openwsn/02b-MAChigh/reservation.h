@@ -30,6 +30,8 @@
 #define SUCCESS             1
 #define FAILURE             0
 
+#define RESERVATION_TIMEOUT         30000  //in ms
+
 typedef enum {
     S_IDLE                      = 0x00,   // ready for next event
     // RESCELLREQUEST

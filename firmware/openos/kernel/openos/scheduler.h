@@ -28,6 +28,7 @@ typedef enum {
    TASKPRIO_MAX                = 0x08,
    // task triggered by timer, for testing and debudding reservation
    TASKPRIO_RESERVATION        = 0x09, //scheduled by timerB CCR2 interrupt
+   TASKPRIO_RESERVATION_TIMEOUT =0x0a  //scheduled by timerB CCR2 interrupt
 } task_prio_t;
 
 #define TASK_LIST_DEPTH      10
