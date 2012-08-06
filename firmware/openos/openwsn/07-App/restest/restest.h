@@ -18,6 +18,7 @@
 
 void restest_init();
 void restest_serial_trigger();
+void restest_button_trigger();
 
 /**
 \}

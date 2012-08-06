@@ -15,8 +15,8 @@
 //=========================== defines =========================================
 
 /// inter-packet period (in ms)
-#define DEBUGPERIODNBS    11000
-#define DEBUGPERIODSCH    7000
+#define DEBUGPERIODNBS    60000
+#define DEBUGPERIODSCH    59000
 #define MAXPAYLOADLEN     80
 
 

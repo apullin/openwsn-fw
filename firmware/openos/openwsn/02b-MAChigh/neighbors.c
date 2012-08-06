@@ -6,6 +6,7 @@
 #include "openserial.h"
 #include "IEEE802154E.h"
 #include "linkcost.h"
+#include "openrandom.h"
 
 //=========================== variables =======================================
 
@@ -43,32 +44,32 @@ void neighbors_init() {
 
 void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
    uint8_t i;
-   //uint8_t temp_linkCost;
+   uint8_t temp_linkCost;
    msg->owner = COMPONENT_NEIGHBORS;
    if (isNeighbor(&(msg->l2_nextORpreviousHop))==TRUE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
          if (isThisRowMatching(&(msg->l2_nextORpreviousHop),i)) {
             neighbors_vars.neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
             // poipoi: single hop
-//            if (neighbors_vars.neighbors[i].DAGrank==0x00) {
-//               neighbors_vars.neighbors[i].parentPreference=MAXPREFERENCE;
-//               if (neighbors_vars.neighbors[i].numTxACK==0) {
-//                  temp_linkCost=15; //TODO: evaluate using RSSI?
-//               } else {
-//                  temp_linkCost=linkcost_calcETX(neighbors_vars.neighbors[i].numTx,neighbors_vars.neighbors[i].numTxACK);
-//               }
-//               if (idmanager_getIsDAGroot()==FALSE) {
-//                 neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
-//               }
-//            } else {
-//               neighbors_vars.neighbors[i].parentPreference=0;
-//            }
+            if (neighbors_vars.neighbors[i].DAGrank==0x00) {
+               neighbors_vars.neighbors[i].parentPreference=MAXPREFERENCE;
+               if (neighbors_vars.neighbors[i].numTxACK==0) {
+                  temp_linkCost=15; //TODO: evaluate using RSSI?
+               } else {
+                  temp_linkCost=linkcost_calcETX(neighbors_vars.neighbors[i].numTx,neighbors_vars.neighbors[i].numTxACK);
+               }
+               if (idmanager_getIsDAGroot()==FALSE) {
+                 neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
+               }
+            } else {
+               neighbors_vars.neighbors[i].parentPreference=0;
+            }
             break;
          }
       }
    }
    // poipoi: single hop
-   neighbors_updateMyDAGrankAndNeighborPreference(); 
+   //neighbors_updateMyDAGrankAndNeighborPreference(); 
 }
 
 void neighbors_indicateRx(open_addr_t* l2_src,
@@ -179,32 +180,52 @@ open_addr_t* neighbors_KaNeighbor() {
 }
 
 open_addr_t* neighbors_GetOneNeighbor() {
-   uint8_t      i;
+   uint8_t      i,count;
    open_addr_t* addrPreferred;
-   open_addr_t* addrOther;
+   uint16_t aux;
+   //open_addr_t* addrOther;
    // initialize
    addrPreferred = NULL;
-   addrOther     = NULL;
+   //addrOther     = NULL;
    // scan through the neighbor table, and populate addrPreferred and addrOther
+   count = 0;
+   
    for (i=0;i<MAXNUMNEIGHBORS;i++) {
       if (neighbors_vars.neighbors[i].used==1) {
-            if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
-               // its a preferred parent
-               addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
-            } else {
-               // its not a preferred parent
-               // poipoi: don't KA to non-preferred parent
-               //addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
-            }
-         }
+        count++;
+      }
    }
-   if        (addrPreferred!=NULL) {
-      return addrPreferred;
-   } else if (addrOther!=NULL) {
-      return addrOther;
-   } else {
-      return NULL;
+   
+   if (count < 1 )
+   {
+     return NULL;
    }
+   
+   aux = openrandom_get16b();
+   
+   addrPreferred=&(neighbors_vars.neighbors[((uint8_t)aux)%count].addr_64b);
+   
+   return addrPreferred;
+   
+//   for (i=0;i<MAXNUMNEIGHBORS;i++) {
+//      if (neighbors_vars.neighbors[i].used==1) {
+//            if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
+//               // its a preferred parent
+//               addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
+//            } else {
+//               // its not a preferred parent
+//               // poipoi: don't KA to non-preferred parent
+//               //addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
+//            }
+//         }
+//   }
+//   if        (addrPreferred!=NULL) {
+//      return addrPreferred;
+//   } else if (addrOther!=NULL) {
+//      return addrOther;
+//   } else {
+//      return NULL;
+//   }
 }
 
 bool neighbors_isStableNeighbor(open_addr_t* address) {

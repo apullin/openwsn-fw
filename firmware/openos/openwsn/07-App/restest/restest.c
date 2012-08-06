@@ -64,19 +64,8 @@ void restest_reservation_failed_cb();
 //=========================== public ==========================================
 
 void restest_init() {
-//   uint8_t counter;
-//   temp_neighborID.type=ADDR_64B;
-//   temp_neighborID.addr_16b[0]=0x00;
-//   temp_neighborID.addr_16b[1]=0x00;
-//   temp_neighborID.panid[0]=0x00;
-//   temp_neighborID.panid[1]=0x00;
-//   for(counter=0;counter<8;counter++)
-//      temp_neighborID.addr_64b[counter]=0x00;
-//      temp_neighborID.prefix[counter]=0x00;
-//   for(counter=0;counter<16;counter++)
-//      temp_neighborID.addr_128b[counter]=0x00;
+
    memset(&restest_vars,0,sizeof(restest_vars_t));
-//   restest_vars.request_vars.neighborID = &temp_neighborID;
   
    restest_vars.num_requests =0;
    restest_vars.num_success=0;
@@ -137,6 +126,36 @@ void restest_serial_trigger(){
    time=(time<<8)+  msg[2];
    restest_vars.request_vars.request_time   =    time;
    
+   restest_vars.request_vars.isRequestPending = TRUE;
+   //start one-shot timer with asn difference
+   opentimers_start(restest_vars.request_vars.request_time,TIMER_ONESHOT,TIME_MS,restest_timer_cb);
+}
+
+
+
+void restest_button_trigger(){
+  //first get the serial input buffer:
+   uint16_t          time =  0;
+   open_addr_t*      neigh;
+  
+    neigh = neighbors_GetOneNeighbor();
+
+   if (neigh==NULL) {
+      openserial_printError(COMPONENT_RESTEST,ERR_UNSPECIFIED,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
+      return;
+   }
+
+      
+   //copy request parameters (this needs review of course):
+    memcpy(&restest_vars.request_vars.neighborID,neigh,sizeof(open_addr_t));
+   
+   // restest_vars.request_vars.neighborID.addr_64b[7] = msg[0];
+   restest_vars.request_vars.num_of_links = 1;
+   // store the request time
+   time=300;//fixed
+   restest_vars.request_vars.request_time   =    time;
    restest_vars.request_vars.isRequestPending = TRUE;
    //start one-shot timer with asn difference
    opentimers_start(restest_vars.request_vars.request_time,TIMER_ONESHOT,TIME_MS,restest_timer_cb);

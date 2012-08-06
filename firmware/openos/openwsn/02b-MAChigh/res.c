@@ -40,7 +40,7 @@ void    res_timer_cb();
 //=========================== public ==========================================
 
 void res_init() {
-   res_vars.periodMaintenance = 1700+(openrandom_get16b()&0xff); // fires every 1 sec on average
+   res_vars.periodMaintenance = 4700+(openrandom_get16b()&0xff); // fires every 1 sec on average
    res_vars.busySending       = FALSE;
    res_vars.dsn               = 0;
    res_vars.MacMgtTaskCounter = 0;

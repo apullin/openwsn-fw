@@ -24,7 +24,7 @@
 #define REMOVE_CELL_REQUEST 0x22  //reservation command code
 #define RES_CELL_RESPONSE   0x23  //reservation command code
 
-#define SUPERFRAMELENGTH    32    //length of superframe
+#define SUPERFRAMELENGTH    16    //length of superframe
 #define NUMOFCHANNEL        8     //number of avariable channel
 
 #define SUCCESS             1
