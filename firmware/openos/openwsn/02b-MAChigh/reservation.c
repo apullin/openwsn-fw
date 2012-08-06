@@ -317,11 +317,13 @@ void reservation_IndicateBusyCheck() {
 //from upper layer
 
 void reservation_LinkRequest(open_addr_t* NeighborAddr, uint8_t NumOfCell) {
+    uint8_t       NumOfCandidate;
+    uint8_t       ResCommand[6];
   
-    //printf("%d",NeighborAddr->type);  
     //according to NeighborRxUsage, ActiveSlot in schedule, 
     GenTxCandidate(NeighborAddr,&TxCandidateList_vars);
     
+/*
     //Sort the slots needed busy check from biggest number to smallest number
     SortBusyCheckList();
     
@@ -336,13 +338,38 @@ void reservation_LinkRequest(open_addr_t* NeighborAddr, uint8_t NumOfCell) {
         LinkRequest_flag = 1;    //for testing
         P2OUT ^= 0x01;
         return;
-    }
-    
+    }    
     //change state to TX busy check state
     memcpy(&reservation_vars.ResNeighborAddr,NeighborAddr,sizeof(open_addr_t));
     reservation_vars.ResNumOfCells = NumOfCell;
     
-    ChangeState(S_TXBUSYCHECK);
+    ChangeState(S_TXBUSYCHECK); 
+ */   
+    memcpy(&reservation_vars.ResNeighborAddr,NeighborAddr,sizeof(open_addr_t));  
+    NumOfCandidate = CountOfOne (TxCandidateList_vars.TxCandidateBitMap);
+    if (NumOfCandidate >= NumOfCell) {         
+      reservation_vars.ResNumOfCells = NumOfCell;
+      
+      ResCommand[0] = RES_CELL_REQUEST;
+      ResCommand[1] = TxCandidateList_vars.TxCandidateBitMap[0];
+      ResCommand[2] = TxCandidateList_vars.TxCandidateBitMap[1];
+      ResCommand[3] = TxCandidateList_vars.TxCandidateBitMap[2];
+      ResCommand[4] = TxCandidateList_vars.TxCandidateBitMap[3];
+      ResCommand[5] = NumOfCell;         
+      
+      //Send out reservation request
+      sendRes(&reservation_vars.ResNeighborAddr, ResCommand);
+
+      //ChangeState;
+      ChangeState(S_SENDOUTRESCELLREQUEST);
+    } else {
+       //report
+        iphc_NewLinkConfirm(NeighborAddr,0);
+        LinkRequest_flag = 1;    //for testing
+        P2OUT ^= 0x01;
+        //ChangeState(S_IDLE);
+    } 
+ 
 }
 
 
@@ -541,7 +568,8 @@ void ChangeState(reservation_state_t newstate) {
 
 //Receive RES_CELL_REQUEST or REMOVE_CELL_REQUEST command
 void  activity_Commandi1(open_addr_t * SrcAddr, uint8_t* Command) {
-  uint8_t       NumOfRemoveCells;
+  uint8_t       NumOfRemoveCells, NumOfCandidate;
+  uint8_t       ResCommand[6];
   uint8_t       i;   
   
   
@@ -568,11 +596,11 @@ void  activity_Commandi1(open_addr_t * SrcAddr, uint8_t* Command) {
                   ClearBit_32(i,&TxCandidateList_vars.TxCandidateBitMap[0]);
           }
         }
-    
+ /*         
         //hiden check
         //Sort the slots needed busy check from biggest number to smallest number
         SortBusyCheckList();
-    
+        
         // fill Busy Ceck List in ResSchedule
         if (SortedCheckList_vars.NumOfCells >0) {
             ResSchedule_SetBusyCheckList(&SortedCheckList_vars.SortedCheckListEntry[0], SortedCheckList_vars.NumOfCells);
@@ -584,6 +612,46 @@ void  activity_Commandi1(open_addr_t * SrcAddr, uint8_t* Command) {
         } else {
             //report error
         }    
+ */       
+        memcpy(&reservation_vars.ResNeighborAddr,SrcAddr,sizeof(open_addr_t));
+        NumOfCandidate = CountOfOne (TxCandidateList_vars.TxCandidateBitMap);
+       
+        //form ResCommaned and make registration
+        ResCommand[0] = RES_CELL_RESPONSE;
+        if (NumOfCandidate < reservation_vars.ResNumOfCells) {
+          ResCommand[1] = 0;
+          ResCommand[2] = 0;
+          ResCommand[3] = 0;
+          ResCommand[4] = 0;
+          ResCommand[5] = 0;
+        } else {
+          //clear (NumOfCandidate - reservation_vars.ResNumOfCells) bits in the BitMap
+          ClearExtraBits(reservation_vars.ResNumOfCells,TxCandidateList_vars.TxCandidateBitMap);
+          ResCommand[1] = TxCandidateList_vars.TxCandidateBitMap[0];
+          ResCommand[2] = TxCandidateList_vars.TxCandidateBitMap[1];
+          ResCommand[3] = TxCandidateList_vars.TxCandidateBitMap[2];
+          ResCommand[4] = TxCandidateList_vars.TxCandidateBitMap[3];
+          ResCommand[5] = reservation_vars.ResNumOfCells;
+          
+          //register to schedule.c
+          RegisterToSchedule(CELLTYPE_RX);
+          
+          //register to SelfRxUsage
+          reservation_SelfRxUsage_vars.RxBitMap[0] ^= TxCandidateList_vars.TxCandidateBitMap[0];
+          reservation_SelfRxUsage_vars.RxBitMap[1] ^= TxCandidateList_vars.TxCandidateBitMap[1];
+          reservation_SelfRxUsage_vars.RxBitMap[2] ^= TxCandidateList_vars.TxCandidateBitMap[2];
+          reservation_SelfRxUsage_vars.RxBitMap[3] ^= TxCandidateList_vars.TxCandidateBitMap[3];
+          
+          //notify upper layer
+          iphc_NewLinkIndicate(&reservation_vars.ResNeighborAddr,reservation_vars.ResNumOfCells);
+        }
+        
+        //Send out reservation response
+        sendRes(&reservation_vars.ResNeighborAddr, ResCommand);
+        
+        //Change stste
+        ChangeState(S_SENDOUTRESCELLRESPONSE); 
+        
   } else if (Command[0] == REMOVE_CELL_REQUEST) {
         P2OUT ^= 0x01;
         //set RemoveCellList into TxCandidateList
@@ -846,11 +914,7 @@ void  GenTxCandidate(open_addr_t * NeighborAddr, TxCandidateList_t * pTxCandidat
         CheckOtherNeighborRx(pTxCandidateList, i, &NeighborRxCell[0]);
       }
     }
-    /*
-         printf("\n2:");
-        for(uint8_t j=0;j<4;j++)
-    printf("%x ",pTxCandidateList->TxCandidateBitMap[j]);
-    */
+    
     //self usage check
     for (i=0; i<MAXRXCELL; i++) {
              if (TestSet_32(i,&TxCandidateList_vars.TxCandidateBitMap[0])&&
@@ -858,18 +922,6 @@ void  GenTxCandidate(open_addr_t * NeighborAddr, TxCandidateList_t * pTxCandidat
                  ClearBit_32(i,&TxCandidateList_vars.TxCandidateBitMap[0]); 
               }
      }
-    /*
-    printf("\n3:");
-    for(uint8_t j=0;j<4;j++)
-      printf("%x ",pTxCandidateList->TxCandidateBitMap[j]);
-    
-    printf("\n slot  chan\n");
-    for(uint8_t j=0;j<MAXRXCELL;j++)
-    {
-      printf(" %d %d\n",TxCandidateList_vars.ResScheduleEntry[j].SlotOffset,TxCandidateList_vars.ResScheduleEntry[j].ChannelOffset);
-    }
-    */
-    
 }
 
 
