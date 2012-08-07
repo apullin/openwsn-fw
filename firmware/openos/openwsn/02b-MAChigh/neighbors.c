@@ -201,31 +201,31 @@ open_addr_t* neighbors_GetOneNeighbor() {
      return NULL;
    }
    
-   aux = openrandom_get16b();
+ //  aux = openrandom_get16b();
    
-   addrPreferred=&(neighbors_vars.neighbors[((uint8_t)aux)%count].addr_64b);
+ //  addrPreferred=&(neighbors_vars.neighbors[((uint8_t)aux)%count].addr_64b);
    
-   return addrPreferred;
+ //  return addrPreferred;
    
-//   for (i=0;i<MAXNUMNEIGHBORS;i++) {
-//      if (neighbors_vars.neighbors[i].used==1) {
-//            if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
-//               // its a preferred parent
-//               addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
-//            } else {
-//               // its not a preferred parent
-//               // poipoi: don't KA to non-preferred parent
-//               //addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
-//            }
-//         }
-//   }
-//   if        (addrPreferred!=NULL) {
-//      return addrPreferred;
-//   } else if (addrOther!=NULL) {
-//      return addrOther;
-//   } else {
-//      return NULL;
-//   }
+  for (i=0;i<MAXNUMNEIGHBORS;i++) {
+      if (neighbors_vars.neighbors[i].used==1) {
+            if (neighbors_vars.neighbors[i].parentPreference==MAXPREFERENCE) {
+               // its a preferred parent
+               addrPreferred = &(neighbors_vars.neighbors[i].addr_64b);
+            } else {
+               // its not a preferred parent
+               // poipoi: don't KA to non-preferred parent
+               //addrOther =     &(neighbors_vars.neighbors[i].addr_64b);
+            }
+         }
+   }
+   if        (addrPreferred!=NULL) {
+      return addrPreferred;
+ //  } else if (addrOther!=NULL) {
+ //     return addrOther;
+   } else {
+      return NULL;
+   }
 }
 
 bool neighbors_isStableNeighbor(open_addr_t* address) {
