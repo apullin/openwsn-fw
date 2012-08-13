@@ -21,7 +21,7 @@ static const uint8_t infoStackName[] = "OpenWSN ";
 #define OPENWSN_VERSION_PATCH 1
 
 // enter the last byte of your mote's address if you want it to be an LBR
-#define DEBUG_MOTEID_MASTER 0xEA
+#define DEBUG_MOTEID_MASTER 0xED
 
 
 #ifndef TRUE
@@ -66,6 +66,7 @@ enum {
    IANA_ICMPv6_RA_PREFIX_INFORMATION   =    3,
    IANA_ICMPv6_RPL                     =  155,
    IANA_ICMPv6_RPL_DIO                 = 0x01,
+   IANA_ICMPv6_RPL_DAO                 = 0x04,
    IANA_RSVP                           = 46,
 };
 
@@ -164,6 +165,7 @@ enum {
    COMPONENT_LAYERDEBUG                = 0x2b,
    COMPONENT_UDPRAND                   = 0x2c,
    COMPONENT_UDPSTORM                  = 0x2d,
+   COMPONENT_TEST                      = 0x2e,
 };
 
 /**
@@ -228,7 +230,7 @@ enum {
 typedef uint16_t  shortnodeid_t;
 typedef uint64_t  longnodeid_t;
 typedef uint16_t  errorparameter_t;
-typedef uint8_t   dagrank_t;
+typedef uint16_t   dagrank_t;
 typedef uint8_t   error_t;
 #define bool uint8_t
 

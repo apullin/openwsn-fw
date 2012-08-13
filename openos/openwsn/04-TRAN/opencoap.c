@@ -60,6 +60,8 @@ void opencoap_receive(OpenQueueEntry_t* msg) {
    
    // take ownership over the received packet
    msg->owner                = COMPONENT_OPENCOAP;
+   // added by Ahmad for printing the data received
+     openserial_printData((uint8_t*)(msg->payload),msg->length);
    
    //=== step 1. parse the packet
    
