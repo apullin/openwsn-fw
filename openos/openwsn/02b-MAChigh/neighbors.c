@@ -45,7 +45,7 @@ void neighbors_init() {
 
 void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
    uint8_t i;
-   uint8_t temp_linkCost;
+ //  uint8_t temp_linkCost;
    msg->owner = COMPONENT_NEIGHBORS;
    if (isNeighbor(&(msg->l2_nextORpreviousHop))==TRUE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {

@@ -59,9 +59,9 @@ void icmpv6rpl_init() {
   
   icmpv6rpl_dio.reserved     = 0;
   icmpv6rpl_dio.flags        = 0;
-  icmpv6rpl_dio.DTSN         = 0x33;
-  icmpv6rpl_dio.verNumb      = 0x11;
-  icmpv6rpl_dio.rplinstanceId= 0x22;
+  icmpv6rpl_dio.DTSN         = 0x33; //?? this values are not correct.
+  icmpv6rpl_dio.verNumb      = 0x11; //?? this values are not correct.
+  icmpv6rpl_dio.rplinstanceId= 0x22; //?? this values are not correct.
   icmpv6rpl_dio.rplOptions   =0x00| MOP_DIO_A | MOP_DIO_B | MOP_DIO_C | PRF_DIO_A | PRF_DIO_B | PRF_DIO_C | G_DIO ;
   
   //set flag to zero first
@@ -113,9 +113,7 @@ void icmpv6rpl_init() {
   //   icmpv6rpl_dao_rpl_target.optionLength  =0x00; 
   //   icmpv6rpl_dao_rpl_target.flags         =0X00;
   //   icmpv6rpl_dao_rpl_target.prefixLength  =0X08;
-  
-  
-  
+    
   icmpv6rpl_dao_transit_info.type        =0x06;
   icmpv6rpl_dao_transit_info.E_flags     =0x00 | E_DAO_Transit_Info;
   icmpv6rpl_dao_transit_info.PathControl =0x00 | PC1_A_DAO_Transit_Info | PC1_B_DAO_Transit_Info | PC2_A_DAO_Transit_Info | PC2_B_DAO_Transit_Info | PC3_A_DAO_Transit_Info | PC3_B_DAO_Transit_Info | PC4_A_DAO_Transit_Info | PC4_B_DAO_Transit_Info;  
@@ -179,9 +177,6 @@ void icmpv6rpl_trigger() {
   }
 }
 
-
-
-
 void icmpv6rpl_sendDone(OpenQueueEntry_t* msg, error_t error) {
   msg->owner = COMPONENT_ICMPv6RPL;
   if (msg->creator!=COMPONENT_ICMPv6RPL) {//that was a packet I had not created
@@ -215,11 +210,11 @@ void icmpv6rpl_receive(OpenQueueEntry_t* msg) {
       icmpv6rpl_vars.DODAGIDFlagSet=1;
       // copy the DODAGID for DIO and DAO as well
       // for DIO
-      memcpy(  &(icmpv6rpl_dio.DODAGID[0]),
+      memcpy(&(icmpv6rpl_dio.DODAGID[0]),
              &(((icmpv6rpl_dio_t*)(msg->payload))->DODAGID[0]),
              sizeof(icmpv6rpl_dio.DODAGID));
       //for DAO
-      memcpy(  &(icmpv6rpl_dao.DODAGID[0]),
+      memcpy(&(icmpv6rpl_dao.DODAGID[0]),
              &(((icmpv6rpl_dio_t*)(msg->payload))->DODAGID[0]),
              sizeof(icmpv6rpl_dao.DODAGID));
       // now to set the prefix
@@ -252,10 +247,7 @@ void icmpv6rpl_receive(OpenQueueEntry_t* msg) {
   else if(codeValue== IANA_ICMPv6_RPL_DAO)
   {
     // IT shouldn't get DAO because it will be handled in the lower layer.
-  }
-  else
-  {
-    
+    while(1);
   }
   
   //free packet
@@ -293,7 +285,6 @@ void timers_rpl_DAO_fired() {
 void sendDIO() {
   // dagrank_t myCurrentRank;
   open_addr_t* temp_prefixID;
-  uint8_t test2;
   OpenQueueEntry_t* msg;
   // check if my rank is not the default rank before sending DIO
   if(idmanager_getIsBridge()==FALSE)
@@ -322,8 +313,7 @@ void sendDIO() {
         
         //============ Now check if the prefix set then it has to be part of the DIO options ==========//
         if(isPrefixSet()==TRUE)
-        {
-          
+        {        
           // check if the below is fine ! 
           temp_prefixID=idmanager_getMyID(ADDR_PREFIX);
           memcpy(&(icmpv6rpl_dio_options.prefix),temp_prefixID,sizeof(open_addr_t));
@@ -339,17 +329,6 @@ void sendDIO() {
           
         }
         
-        //================ ==================================== ============//      
-        
-        //         test2=0xcc;
-        //        packetfunctions_reserveHeaderSize(msg,sizeof(test2));
-        //        memcpy(((uint8_t*)(msg->payload)),&(test2),sizeof(test2));
-        //        
-        //        test2=0xdd;
-        //        packetfunctions_reserveHeaderSize(msg,sizeof(test2));
-        //        memcpy(((uint8_t*)(msg->payload)),&(test2),sizeof(test2));
-        
-        
         //====================== RESERVING THE WHOLE STRUCTURE (icmpv6rpl_dio_t) ================//
         
         // Setting the Rank
@@ -357,30 +336,8 @@ void sendDIO() {
         packetfunctions_reserveHeaderSize(msg,sizeof(icmpv6rpl_dio_t));
         
         memcpy(((icmpv6rpl_dio_t*)(msg->payload)),&(icmpv6rpl_dio),sizeof(icmpv6rpl_dio));
-        
-        //     //RPL instance ID
-        //     memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->rplinstanceId),&(icmpv6rpl_dio.rplinstanceId),sizeof(icmpv6rpl_dio.rplinstanceId));
-        //     // version number
-        //     memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->verNumb),&(icmpv6rpl_dio.verNumb),sizeof(icmpv6rpl_dio.verNumb));
-        //     //payload (rank)
-        //      packetfunctions_htons(neighbors_getMyDAGrank(),(uint8_t*)&(icmpv6rpl_dio.rank));
-        //      memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->rank),&(icmpv6rpl_dio.rank),sizeof(icmpv6rpl_dio.rank));
-        //     //rplOptions
-        //     icmpv6rpl_dio.rplOptions=0x00| MOP_DIO_A | MOP_DIO_B | MOP_DIO_C | PRF_DIO_A | PRF_DIO_B | PRF_DIO_C | G_DIO ;
-        //     memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->rplOptions),&(icmpv6rpl_dio.rplOptions),sizeof(icmpv6rpl_dio.rplOptions));
-        //     //DTSN (Temp. zeros later it should be changed when DAO is active)
-        //     memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->DTSN),&(icmpv6rpl_dio.DTSN),sizeof(icmpv6rpl_dio.DTSN));
-        //     //flags zeros
-        //     memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->flags),&(icmpv6rpl_dio.flags),sizeof(icmpv6rpl_dio.flags));
-        //     //Reserved zeros
-        //     memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->reserved),&(icmpv6rpl_dio.reserved),sizeof(icmpv6rpl_dio.reserved));
-        //     //DODAGID
-        //     memcpy(&(((icmpv6rpl_dio_t*)(msg->payload))->DODAGID),&(icmpv6rpl_dio.DODAGID),sizeof(icmpv6rpl_dio.DODAGID));
-        //     
+  
         //=====================================================================//
-        
-        
-        
         //ICMPv6 header
         icmpv6rpl_vars.checksize=sizeof(ICMPv6_ht);
         packetfunctions_reserveHeaderSize(msg,sizeof(ICMPv6_ht));
@@ -406,9 +363,8 @@ void sendDIO() {
 }
 
 void sendDAO() {
-  //uint8_t test3;
-  open_addr_t* temp_prefix64btoWrite;
-  uint8_t* temp_prefix64btoWrite_parent;
+  //open_addr_t* temp_prefix64btoWrite;
+  //uint8_t* temp_prefix64btoWrite_parent;
   uint8_t i,j;
   OpenQueueEntry_t* msg;
   if(idmanager_getIsBridge()==FALSE)
@@ -439,41 +395,16 @@ void sendDAO() {
         (msg->l3_destinationORsource).type=ADDR_128B;
         
         for (i=0;i<sizeof(icmpv6rpl_dio.DODAGID);i++) {
-        //  msg->l3_destinationORsource.addr_128b[i] =icmpv6rpl_dio.DODAGID[sizeof(icmpv6rpl_dio.DODAGID)-1-i];
-          //big endian  
+         //big endian  
           msg->l3_destinationORsource.addr_128b[i] =icmpv6rpl_dio.DODAGID[i];
         }
-        //this is not correct!! the address is little endian and the dodagid is big endian.. reverse it.
-        // memcpy(&((msg->l3_destinationORsource).addr_128b[0]),&(icmpv6rpl_dio.DODAGID[0]),sizeof(icmpv6rpl_dio.DODAGID));
-        
-        
-        // send it to the DODAGID (to the root), getting the address of DODAGID from DIO filed == one in DAO field.
-        // memcpy(&(msg->l3_destinationORsource),&(((icmpv6rpl_dio_t*)(msg->payload))->DODAGID[0]),sizeof(icmpv6rpl_dio.DODAGID));
-        // memcpy(&(msg->l3_destinationORsource->addr_128),&(icmpv6rpl_dio.DODAGID),sizeof(icmpv6rpl_dio.DODAGID));
-        
-        
-        // neighbors_getPreferredParent(&(msg->l3_destinationORsource),ADDR_128B);
-        //memcpy(&(msg->l3_destinationORsource),temp_prefix64btoWrite,sizeof(open_addr_t));
-        // do it here copy the DoDAG ID
-        //========== For multicast ======//
-        //memcpy(&(msg->l3_destinationORsource),&icmpv6rpl_vars.all_routers_multicast,sizeof(open_addr_t));
-        
-        //========================
-        //        test3=0xDD;
-        //      packetfunctions_reserveHeaderSize(msg,sizeof(test3));
-        //      memcpy(((uint8_t*)(msg->payload)),&(test3),sizeof(test3));
-        //   
-        //==================================================================================================//   
-        //==================================================================================================//  
         //======================= Reserve for the Transite option ============//
         j=0;
         for (i=0;i<MAXNUMNEIGHBORS;i++) {
           if((isNeighborsWithLowerDAGrank(neighbors_getMyDAGrank(),i))== TRUE)
           {
-            icmpv6rpl_vars.getaddBefore1=msg->payload; //testing
             packetfunctions_reserveHeaderSize(msg,8);
             getNeighborsWithLowerDAGrank((msg->payload),ADDR_64B,i);    
-            icmpv6rpl_vars.getaddAfter=msg->payload;   //testing
             j++;
           }  
         }
@@ -489,9 +420,6 @@ void sendDAO() {
           icmpv6rpl_dao_transit_info.PathSequence++;  
           icmpv6rpl_dao.options      =0x06;    // indicate that in DAO the transit frame will be appended to the main DAO frame.
         }
-        
-        //==================================================================================================//  
-        //==============================================================================================//
         //======================= Reserve for the RPL Target option ============//
         //      j=0;
         //      for (i=0;i<MAXNUMNEIGHBORS;i++) {
@@ -500,41 +428,24 @@ void sendDAO() {
         //             packetfunctions_reserveHeaderSize(msg,sizeof(open_addr_t));
         //             memcpy(((open_addr_t*)(msg->payload)),temp_prefix64btoWrite_parent,sizeof(open_addr_t));
         //             j++;
-        //           }
-        //       
-        //        
+        //           }        
         //      }
         //      
         //      icmpv6rpl_dao_rpl_target.optionLength  =j;
         //      packetfunctions_reserveHeaderSize(msg,sizeof(icmpv6rpl_dao_rpl_target_t));
         //      memcpy(((icmpv6rpl_dao_rpl_target_t*)(msg->payload)),&(icmpv6rpl_dao_rpl_target),sizeof(icmpv6rpl_dao_rpl_target));
-        
-        
-        
+                
         //====================== RESERVING THE WHOLE STRUCTURE (icmpv6rpl_dao_t) ================//
         packetfunctions_reserveHeaderSize(msg,sizeof(icmpv6rpl_dao_t));
-        
         memcpy(((icmpv6rpl_dao_t*)(msg->payload)),&(icmpv6rpl_dao),sizeof(icmpv6rpl_dao));
-        
-        
-        //     //RPL instance ID
-        //     memcpy(&(((icmpv6rpl_dao_t*)(msg->payload))->rplinstanceId),&(icmpv6rpl_dao.rplinstanceId),sizeof(icmpv6rpl_dao.rplinstanceId));
-        //     //K_D_flags
-        //     icmpv6rpl_dao.K_D_flags=0x00| FLAG_DAO_A | FLAG_DAO_B | FLAG_DAO_C | FLAG_DAO_D | FLAG_DAO_E | PRF_DIO_C | FLAG_DAO_F | D_DAO | K_DAO;
-        //     memcpy(&(((icmpv6rpl_dao_t*)(msg->payload))->K_D_flags),&(icmpv6rpl_dao.K_D_flags),sizeof(icmpv6rpl_dao.K_D_flags));
-        //     //Reserved zeros
-        //     memcpy(&(((icmpv6rpl_dao_t*)(msg->payload))->reserved),&(icmpv6rpl_dao.reserved),sizeof(icmpv6rpl_dao.reserved));
-        //     //DAOSequance
-        //     memcpy(&(((icmpv6rpl_dao_t*)(msg->payload))->DAOSequance),&(icmpv6rpl_dao.DAOSequance),sizeof(icmpv6rpl_dao.DAOSequance));
-        //     //DODAGID
-        //     memcpy(&(((icmpv6rpl_dao_t*)(msg->payload))->DODAGID),&(icmpv6rpl_dao.DODAGID),sizeof(icmpv6rpl_dao.DODAGID));
-        
+             
         //=====================================================================//   
         //ICMPv6 header
         icmpv6rpl_vars.checksize=sizeof(ICMPv6_ht);
         packetfunctions_reserveHeaderSize(msg,sizeof(ICMPv6_ht));
         ((ICMPv6_ht*)(msg->payload))->type         = msg->l4_sourcePortORicmpv6Type;
         ((ICMPv6_ht*)(msg->payload))->code         = IANA_ICMPv6_RPL_DAO;
+     
         // Below Identifier might need to be replaced by the identifier used by icmpv6rpl
         // packetfunctions_htons(0x1234,(uint8_t*)&((ICMPv6_ht*)(msg->payload))->identifier);
         // Below sequence_number might need to be removed
@@ -565,8 +476,5 @@ void icmpv6rpl_timer_DAO_cb() {
 void icmpv6rpl_receiveDAO(OpenQueueEntry_t* msg){
   icmpv6rpl_vars.counterForTesting=icmpv6rpl_vars.counterForTesting+1; 
   
-  // first append your address to the packet 
-  
-  // then do the check sum. 
-  
+ //should neve happen right? 
 }
