@@ -149,7 +149,7 @@ void icmpv6rpl_init() {
                                                TIMER_PERIODIC,TIME_MS,
                                                icmpv6rpl_timer_cb);
   //====== by Ahmad =====//
-  icmpv6rpl_vars.periodDAO  = 2000+(openrandom_get16b()&0xff);       // pseudo-random (2000 can be changed base on the network)
+  icmpv6rpl_vars.periodDAO  = 10000+(openrandom_get16b()&0xff);       // pseudo-random (2000 can be changed base on the network)
   icmpv6rpl_vars.timerId    = opentimers_start(icmpv6rpl_vars.periodDAO,
                                                TIMER_PERIODIC,TIME_MS,
                                                icmpv6rpl_timer_DAO_cb);
@@ -202,8 +202,8 @@ void icmpv6rpl_receive(OpenQueueEntry_t* msg) {
   {
     if(idmanager_getIsBridge()==FALSE) // check that I'm not a root
     {
-      //update neighbor table
-      neighbors_receiveDIO(msg);
+       //update neighbor table
+      neighbors_receiveDIO(msg,(icmpv6rpl_dio_t*)(msg->payload));//pass dio specific object
       // now check the DODAGID and copy it if yet it has not been updated.
       // if(icmpv6rpl_vars.DODAGIDFlagSet==0)
       // {
@@ -286,6 +286,8 @@ void sendDIO() {
   // dagrank_t myCurrentRank;
   open_addr_t* temp_prefixID;
   OpenQueueEntry_t* msg;
+  dagrank_t temp_rang;
+  
   // check if my rank is not the default rank before sending DIO
   if(idmanager_getIsBridge()==FALSE)
   {
@@ -332,9 +334,11 @@ void sendDIO() {
         //====================== RESERVING THE WHOLE STRUCTURE (icmpv6rpl_dio_t) ================//
         
         // Setting the Rank
-        packetfunctions_htons(neighbors_getMyDAGrank(),(uint8_t*)&(icmpv6rpl_dio.rank));
-        packetfunctions_reserveHeaderSize(msg,sizeof(icmpv6rpl_dio_t));
+        //packetfunctions_htons(neighbors_getMyDAGrank(),(uint8_t*)&(icmpv6rpl_dio.rank));
+        //poipoi xv the rang should be big endian??
         
+        packetfunctions_reserveHeaderSize(msg,sizeof(icmpv6rpl_dio_t));
+        icmpv6rpl_dio.rank=neighbors_getMyDAGrank();
         memcpy(((icmpv6rpl_dio_t*)(msg->payload)),&(icmpv6rpl_dio),sizeof(icmpv6rpl_dio));
   
         //=====================================================================//
