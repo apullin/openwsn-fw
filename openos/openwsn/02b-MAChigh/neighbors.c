@@ -43,14 +43,16 @@ void neighbors_init() {
    }
 }
 
-void neighbors_receiveDIO(OpenQueueEntry_t* msg) {
+void neighbors_receiveDIO(OpenQueueEntry_t* msg,icmpv6rpl_dio_t* dio) {
    uint8_t i;
  //  uint8_t temp_linkCost;
    msg->owner = COMPONENT_NEIGHBORS;
    if (isNeighbor(&(msg->l2_nextORpreviousHop))==TRUE) {
       for (i=0;i<MAXNUMNEIGHBORS;i++) {
          if (isThisRowMatching(&(msg->l2_nextORpreviousHop),i)) {
-            neighbors_vars.neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
+            //neighbors_vars.neighbors[i].DAGrank = *((uint8_t*)(msg->payload));
+           //poipoi xv is the rang big endian??
+           neighbors_vars.neighbors[i].DAGrank = dio->rank;
             // poipoi: single hop
            /* if (neighbors_vars.neighbors[i].DAGrank==0x00) {
                neighbors_vars.neighbors[i].parentPreference=MAXPREFERENCE;
@@ -97,7 +99,7 @@ void neighbors_indicateRx(open_addr_t* l2_src,
                neighbors_vars.neighbors[i].switchStabilityCounter++;
                if (neighbors_vars.neighbors[i].switchStabilityCounter>=SWITCHSTABILITYTHRESHOLD) {
                   neighbors_vars.neighbors[i].switchStabilityCounter=0;
-                  neighbors_vars.neighbors[i].stableNeighbor=FALSE;
+                   neighbors_vars.neighbors[i].stableNeighbor=FALSE;
                }
             } else {
                neighbors_vars.neighbors[i].switchStabilityCounter=0;
@@ -253,6 +255,7 @@ void neighbors_getPreferredParent(open_addr_t* addressToWrite, uint8_t addr_type
          switch(addr_type) {
             case ADDR_64B:
                memcpy(addressToWrite,&(neighbors_vars.neighbors[i].addr_64b),sizeof(open_addr_t));
+               addressToWrite->type=ADDR_64B;
                break;
             default:
                openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
@@ -378,6 +381,7 @@ void getNeighborsWithLowerDAGrank(uint8_t* addressToWrite,uint8_t addr_type, uin
      switch(addr_type) {
             case ADDR_64B:
                memcpy(addressToWrite,&(neighbors_vars.neighbors[index].addr_64b),sizeof(open_addr_t));
+               addressToWrite->type=ADDR_64B;
                break;
             default:
                openserial_printError(COMPONENT_NEIGHBORS,ERR_WRONG_ADDR_TYPE,
@@ -505,55 +509,58 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
       i=0;
       while(i<MAXNUMNEIGHBORS) {
          neighbors_vars.neighbors[i].parentPreference=0;
-         if (neighbors_vars.neighbors[i].used==TRUE && neighbors_vars.neighbors[i].stableNeighbor==TRUE) {
+         //poipoi xv
+         if (neighbors_vars.neighbors[i].used==TRUE /*&& neighbors_vars.neighbors[i].stableNeighbor==TRUE*/) {
             if (neighbors_vars.neighbors[i].numTxACK==0) {
                temp_linkCost=15; //TODO: evaluate using RSSI?
             } else {
                temp_linkCost=(uint8_t)((((float)neighbors_vars.neighbors[i].numTx)/((float)neighbors_vars.neighbors[i].numTxACK))*10.0);
             }
             temp_myTentativeDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
-            if (idmanager_getIsDAGroot()==FALSE && temp_myTentativeDAGrank<neighbors_vars.myDAGrank && temp_myTentativeDAGrank<0xffff) {
-               neighbors_vars.myDAGrank=temp_myTentativeDAGrank;
+           //poipoi xv -- avoiding dynamic routing...
+//            if (idmanager_getIsDAGroot()==FALSE && temp_myTentativeDAGrank<neighbors_vars.myDAGrank && temp_myTentativeDAGrank<0xffff) {
+//               
+//              neighbors_vars.myDAGrank=temp_myTentativeDAGrank;
+//               temp_preferredParentExists=TRUE;
+//               temp_preferredParentRow=i;
+//            }
+            //the following is equivalent to manual routing 
+            
+           //  below to enforce the routing as follow: 0x9B ==> //0x92 ==> 0xC9 ==> 0xD8
+               switch ((idmanager_getMyID(ADDR_64B))->addr_64b[7]) {
+               case 0x92:
+               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0xD8) {
+               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
                temp_preferredParentExists=TRUE;
                temp_preferredParentRow=i;
-               break;     // bug has been fixed, it has to break here before adding i++ for next round   //>>>>>> diodio
-            }
-            //the following is equivalent to manual routing
-            neighbors_vars.testing=(idmanager_getMyID(ADDR_64B))->addr_64b[7];
-            
-            
-            // below to enforce the routing as follow: 0x9D ==> //0xE2 ==> 0xE4 ==> 0xA1
-//               switch ((idmanager_getMyID(ADDR_64B))->addr_64b[7]) {
-//               case 0xEE:
-//               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0xEC) {
-//               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
-//               temp_preferredParentExists=TRUE;
-//               temp_preferredParentRow=i;
-//               }
-//               break;
-//               case 0xEC:
-//               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0xE8) {
-//               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
-//               temp_preferredParentExists=TRUE;
-//               temp_preferredParentRow=i;
-//               }
-//               break;
-//               case 0xE8:
-//               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0xED) {
-//               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
-//               temp_preferredParentExists=TRUE;
-//               temp_preferredParentRow=i;
-//               }
-//               break;
-//               default:
-//               break;
-//               }
+               }
+               break;
+               case 0xC9:
+               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0x9B) {
+               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
+               temp_preferredParentExists=TRUE;
+               temp_preferredParentRow=i;
+               }
+               break;
+               case 0xD8:
+               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0xC9) {
+               neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
+               temp_preferredParentExists=TRUE;
+               temp_preferredParentRow=i;
+               }
+               break;
+               default:
+               break;
+               }
                
          }
          i++;
       }
       if (temp_preferredParentExists) {
          neighbors_vars.neighbors[temp_preferredParentRow].parentPreference=MAXPREFERENCE;
+         neighbors_vars.neighbors[temp_preferredParentRow].stableNeighbor=TRUE;
+         neighbors_vars.neighbors[temp_preferredParentRow].switchStabilityCounter = 0;
+         
       }
    } else {
       neighbors_vars.myDAGrank=0;
