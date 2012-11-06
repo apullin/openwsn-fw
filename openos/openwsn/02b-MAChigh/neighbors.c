@@ -536,7 +536,7 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
                }
                break;
                case 0xC9:
-               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0x9B) {
+               if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0xED) {
                neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
                temp_preferredParentExists=TRUE;
                temp_preferredParentRow=i;

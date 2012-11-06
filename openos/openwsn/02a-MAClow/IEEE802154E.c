@@ -1415,7 +1415,7 @@ port_INLINE bool isValidAdv(ieee802154_header_iht* ieee802514_header) {
    add=idmanager_getMyID(ADDR_64B);
    switch(add->addr_64b[7]){
    case 0xC9:
-     res=res&(ieee802514_header->src.addr_64b[7]==0x9B);//only ADV from ED
+     res=res&(ieee802514_header->src.addr_64b[7]==0xED);//only ADV from ED
      break;
    case 0x92:
      res=res&(ieee802514_header->src.addr_64b[7]==0xD8);//only ADV from E8
@@ -1461,11 +1461,11 @@ port_INLINE bool isValidRxFrame(ieee802154_header_iht* ieee802514_header) {
    
    switch(add->addr_64b[7]){
    
-   case 0x9B:
+   case 0xED:
      res=res&(ieee802514_header->src.addr_64b[7]==0xC9);//only PKT from EC
      break;  
    case 0xC9:
-     res=res&(ieee802514_header->src.addr_64b[7]==0x9B ||ieee802514_header->src.addr_64b[7]==0xD8);//only PKT from ED or E8
+     res=res&(ieee802514_header->src.addr_64b[7]==0xED ||ieee802514_header->src.addr_64b[7]==0xD8);//only PKT from ED or E8
      break;
    case 0xD8:
      res=res&(ieee802514_header->src.addr_64b[7]==0xC9||ieee802514_header->src.addr_64b[7]==0x92);//only PKT from E8 or F5
