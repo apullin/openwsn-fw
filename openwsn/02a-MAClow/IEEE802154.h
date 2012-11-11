@@ -19,6 +19,7 @@ enum IEEE802154_fcf_enums {
    IEEE154_FCF_FRAME_PENDING           = 4,
    IEEE154_FCF_ACK_REQ                 = 5,
    IEEE154_FCF_INTRAPAN                = 6,
+   IEEE154_FCF_IELISTPRESENT           = 1,
    IEEE154_FCF_DEST_ADDR_MODE          = 2,
    IEEE154_FCF_SRC_ADDR_MODE           = 6,
 };
@@ -91,6 +92,7 @@ typedef struct {
    bool        framePending;
    bool        ackRequested;
    bool        panIDCompression;
+   bool        IEListPresent;   //did have IE field?
    uint8_t     dsn;
    open_addr_t panid;
    open_addr_t dest;
@@ -106,6 +108,7 @@ typedef struct {
 void ieee802154_prependHeader  (OpenQueueEntry_t*      msg,
                                 uint8_t                frameType,
                                 bool                   securityEnabled,
+                                bool                   IEListPresent,
                                 uint8_t                sequenceNumber,
                                 open_addr_t*           nextHop);
 void ieee802154_retrieveHeader (OpenQueueEntry_t*      msg,

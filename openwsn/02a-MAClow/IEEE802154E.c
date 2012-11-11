@@ -108,6 +108,11 @@ bool     isValidAck(ieee802154_header_iht*     ieee802514_header,
 void     incrementAsnOffset();
 void     asnWriteToAdv(OpenQueueEntry_t* advFrame);
 void     asnStoreFromAdv(OpenQueueEntry_t* advFrame);
+// ASN handling
+void     uResAsnWriteToAdv(OpenQueueEntry_t* advFrame);
+void     uResAsnStoreFromAdv(OpenQueueEntry_t* advFrame);
+
+
 // synchronization
 void     synchronizePacket(PORT_TIMER_WIDTH timeReceived);
 void     synchronizeAck(PORT_SIGNED_INT_WIDTH timeCorrection);
@@ -175,7 +180,7 @@ void ieee154e_init() {
    DISABLE_INTERRUPTS();
    if (ieee154e_vars.asn.byte4 != someASN->byte4) {
 	   ENABLE_INTERRUPTS();
-	   return (PORT_TIMER_WIDTH)0xFFFFFFFF;;
+	   return (PORT_TIMER_WIDTH)0xFFFFFFFF;
    }
    
    diff = 0;
@@ -513,8 +518,9 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
       ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
       
       // store header details in packet buffer
-      ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
-      ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
+      ieee154e_vars.dataReceived->l2_frameType          = ieee802514_header.frameType;
+      ieee154e_vars.dataReceived->l2_dsn                = ieee802514_header.dsn;
+      ieee154e_vars.dataReceived->l2_IEListPresent      = ieee802514_header.IEListPresent;
       memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
       
       // toss the IEEE802.15.4 header
@@ -526,10 +532,11 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
          radio_rfOff();
          
          // record the ASN from the ADV payload
-         asnStoreFromAdv(ieee154e_vars.dataReceived);
+         //asnStoreFromAdv(ieee154e_vars.dataReceived);
+         uResAsnStoreFromAdv(ieee154e_vars.dataReceived);
          
          // toss the ADV payload
-         packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);
+         //packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);
          
          // synchronize (for the first time) to the sender's ADV
          synchronizePacket(ieee154e_vars.syncCapturedTime);
@@ -650,7 +657,8 @@ port_INLINE void activity_ti1ORri1() {
             // change owner
             ieee154e_vars.dataToSend->owner = COMPONENT_IEEE802154E;
             // fill in the ASN field of the ADV
-            asnWriteToAdv(ieee154e_vars.dataToSend);
+            //asnWriteToAdv(ieee154e_vars.dataToSend);
+            uResAsnWriteToAdv(ieee154e_vars.dataToSend);
             // record that I attempt to transmit this packet
             ieee154e_vars.dataToSend->l2_numTxAttempts++;
             // arm tt1
@@ -1162,8 +1170,9 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
       ieee802154_retrieveHeader(ieee154e_vars.dataReceived,&ieee802514_header);
       
       // store header details in packet buffer
-      ieee154e_vars.dataReceived->l2_frameType = ieee802514_header.frameType;
-      ieee154e_vars.dataReceived->l2_dsn       = ieee802514_header.dsn;
+      ieee154e_vars.dataReceived->l2_frameType          = ieee802514_header.frameType;
+      ieee154e_vars.dataReceived->l2_dsn                = ieee802514_header.dsn;
+      ieee154e_vars.dataReceived->l2_IEListPresent      = ieee802514_header.IEListPresent;
       memcpy(&(ieee154e_vars.dataReceived->l2_nextORpreviousHop),&(ieee802514_header.src),sizeof(open_addr_t));
       
       // toss the IEEE802.15.4 header
@@ -1172,10 +1181,11 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
       // if I just received a valid ADV, record the ASN and toss the payload
       if (isValidAdv(&ieee802514_header)==TRUE) {
          if (idmanager_getIsDAGroot()==FALSE) {
-            asnStoreFromAdv(ieee154e_vars.dataReceived);
+            //asnStoreFromAdv(ieee154e_vars.dataReceived);
+           uResAsnStoreFromAdv(ieee154e_vars.dataReceived);
          }
          // toss the ADV payload
-         packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);
+         //packetfunctions_tossHeader(ieee154e_vars.dataReceived,ADV_PAYLOAD_LENGTH);
       }
       
       // record the captured time
@@ -1261,6 +1271,7 @@ port_INLINE void activity_ri6() {
    ieee802154_prependHeader(ieee154e_vars.ackToSend,
                             ieee154e_vars.ackToSend->l2_frameType,
                             IEEE154_SEC_NO_SECURITY,
+                            0,
                             ieee154e_vars.dataReceived->l2_dsn,
                             &(ieee154e_vars.dataReceived->l2_nextORpreviousHop)
                             );
@@ -1489,6 +1500,41 @@ port_INLINE void asnStoreFromAdv(OpenQueueEntry_t* advFrame) {
    ieee154e_vars.asn.bytes2and3   =     ieee154e_vars.dataReceived->payload[2]+
                                     256*ieee154e_vars.dataReceived->payload[3];
    ieee154e_vars.asn.byte4        =     ieee154e_vars.dataReceived->payload[4];
+   
+   // determine the current slotOffset
+   /*
+   Note: this is a bit of a hack. Normally, slotOffset=ASN%slotlength. But since
+   the ADV is exchanged in slot 0, we know that we're currently at slotOffset==0
+   */
+   ieee154e_vars.slotOffset       = 0;
+   schedule_syncSlotOffset(ieee154e_vars.slotOffset);
+   ieee154e_vars.nextActiveSlotOffset = schedule_getNextActiveSlotOffset();
+   
+   /* 
+   infer the asnOffset based on the fact that
+   ieee154e_vars.freq = 11 + (asnOffset + channelOffset)%16 
+   */
+   ieee154e_vars.asnOffset = ieee154e_vars.freq - 11 - schedule_getChannelOffset();
+   
+
+}
+
+port_INLINE void uResAsnWriteToAdv(OpenQueueEntry_t* advFrame) {
+   advFrame->l2_ASN[0]        = (ieee154e_vars.asn.bytes0and1     & 0xff);
+   advFrame->l2_ASN[1]        = (ieee154e_vars.asn.bytes0and1/256 & 0xff);
+   advFrame->l2_ASN[2]        = (ieee154e_vars.asn.bytes2and3     & 0xff);
+   advFrame->l2_ASN[3]        = (ieee154e_vars.asn.bytes2and3/256 & 0xff);
+   advFrame->l2_ASN[4]        =  ieee154e_vars.asn.byte4;
+}
+
+port_INLINE void uResAsnStoreFromAdv(OpenQueueEntry_t* advFrame) {
+   
+   // store the ASN
+   ieee154e_vars.asn.bytes0and1   =     ieee154e_vars.dataReceived->payload[4]+
+                                    256*ieee154e_vars.dataReceived->payload[5];
+   ieee154e_vars.asn.bytes2and3   =     ieee154e_vars.dataReceived->payload[6]+
+                                    256*ieee154e_vars.dataReceived->payload[7];
+   ieee154e_vars.asn.byte4        =     ieee154e_vars.dataReceived->payload[8];
    
    // determine the current slotOffset
    /*

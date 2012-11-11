@@ -47,7 +47,7 @@ void schedule_init() {
    // set frame length
    schedule_setFrameLength(9);
  
-   if (idmanager_getIsDAGroot() == TRUE) {
+   //if (idmanager_getIsDAGroot() == TRUE) {
    // slot 0 is advertisement slot
    i = 0;
    memset(&temp_neighbor,0,sizeof(temp_neighbor));
@@ -56,7 +56,7 @@ void schedule_init() {
          FALSE,
          0,
          &temp_neighbor);
-   }
+   //}
    // slot 1 is shared TXRX anycast
    i = 1;
    memset(&temp_neighbor,0,sizeof(temp_neighbor));

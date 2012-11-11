@@ -15,6 +15,8 @@
 #include "scheduler.h"
 #include "bsp_timer.h"
 #include "opentimers.h"
+#include "processIE.h"
+#include "IEfield.h"
 
 //=========================== variables =======================================
 
@@ -24,6 +26,8 @@ typedef struct {
    uint8_t         dsn;                  // current data sequence number
    uint8_t         MacMgtTaskCounter;    // counter to determine what management task to do
    opentimer_id_t  timerId;
+   asn_t           ADVasn;
+   uint8_t         joinPriority;
 } res_vars_t;
 
 res_vars_t res_vars;
@@ -35,6 +39,10 @@ void    sendAdv();
 void    sendKa();
 void    res_timer_cb();
 
+void    incrementADVasn();
+
+void    recordADV(OpenQueueEntry_t* msg);
+
 //=========================== public ==========================================
 
 void res_init() {
@@ -45,6 +53,10 @@ void res_init() {
    res_vars.timerId = opentimers_start(res_vars.periodMaintenance,
                                        TIMER_PERIODIC,TIME_MS,
                                        res_timer_cb);
+   res_vars.ADVasn.byte4 = 0;
+   res_vars.ADVasn.bytes2and3 = 0;
+   res_vars.ADVasn.bytes0and1 = 0;
+   res_vars.joinPriority = 0;   
 }
 
 bool debugPrint_myDAGrank() {
@@ -132,6 +144,8 @@ void task_resNotifReceive() {
    // send the packet up the stack, if it qualifies
    switch (msg->l2_frameType) {
       case IEEE154_TYPE_BEACON:
+        if (msg->l2_IEListPresent)
+            uRes_retrieveIE(msg);
       case IEEE154_TYPE_DATA:
       case IEEE154_TYPE_CMD:
          if (msg->length>0) {
@@ -214,6 +228,7 @@ error_t res_send_internal(OpenQueueEntry_t* msg) {
    ieee802154_prependHeader(msg,
                             msg->l2_frameType,
                             IEEE154_SEC_NO_SECURITY,
+                            msg->l2_IEListPresent,
                             msg->l2_dsn,
                             &(msg->l2_nextORpreviousHop)
                             );
@@ -251,9 +266,19 @@ port_INLINE void sendAdv() {
       adv->owner   = COMPONENT_RES;
       
       // reserve space for ADV-specific header
-      packetfunctions_reserveHeaderSize(adv, ADV_PAYLOAD_LENGTH);
+      //packetfunctions_reserveHeaderSize(adv, ADV_PAYLOAD_LENGTH);
       // the actual value of the current ASN will be written by the
       // IEEE802.15.4e when transmitting
+      //set subIE
+      setSubSyncIE();
+      //set IE after set all required subIE
+      setMLME_IE();
+      
+      //add an IE to adv's payload
+      uRes_prependIE(adv);
+      
+      //I has an IE in my payload
+      adv->l2_IEListPresent = 1;
       
       // some l2 information about this packet
       adv->l2_frameType                     = IEEE154_TYPE_BEACON;
@@ -310,4 +335,27 @@ port_INLINE void sendKa() {
 
 void res_timer_cb() {
    scheduler_push_task(timers_res_fired,TASKPRIO_RES);
+}
+
+port_INLINE void incrementADVasn() {
+   // increment the asn
+   res_vars.ADVasn.bytes0and1++;
+   if (res_vars.ADVasn.bytes0and1==0) {
+      res_vars.ADVasn.bytes2and3++;
+      if (res_vars.ADVasn.bytes2and3==0) {
+         res_vars.ADVasn.byte4++;
+      }
+   }
+}
+
+asn_t      getADVasn(){
+    return res_vars.ADVasn;
+}
+
+uint8_t    getJoinPriority(){
+    return res_vars.joinPriority;
+}
+
+void recordADV(OpenQueueEntry_t* msg) {
+    
 }

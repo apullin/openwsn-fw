@@ -14,6 +14,7 @@ void    ieee802154_prependAuxHeader(OpenQueueEntry_t* msg);
 void ieee802154_prependHeader(OpenQueueEntry_t* msg,
                               uint8_t           frameType,
                               bool              securityEnabled,
+                              bool              IEListPresent,
                               uint8_t           sequenceNumber,
                               open_addr_t*      nextHop) {
    uint8_t temp_8b;
@@ -62,7 +63,7 @@ void ieee802154_prependHeader(OpenQueueEntry_t* msg,
    temp_8b              = 0;
    // poipoi: 16-bit source/dest addresses                                                                                            
                                                                                                 //bit8 Seq
-                                                                                                //bit9, IE
+   temp_8b             |= IEListPresent                   << IEEE154_FCF_IELISTPRESENT;         //bit9, IE
    temp_8b             |= IEEE154_ADDR_SHORT              << IEEE154_FCF_DEST_ADDR_MODE;        //bit10..11
                                                                                                 //bit12..13 Frame version
    temp_8b             |= IEEE154_ADDR_SHORT              << IEEE154_FCF_SRC_ADDR_MODE;         //bit14..15
@@ -117,6 +118,9 @@ void ieee802154_retrieveHeader(OpenQueueEntry_t*      msg,
    //fcf, byte 2
    if (ieee802514_header->headerLength>msg->length) {  return; }
    temp_8b = *((uint8_t*)(msg->payload)+ieee802514_header->headerLength);
+   
+   ieee802514_header->IEListPresent     = (temp_8b >> IEEE154_FCF_IELISTPRESENT   ) & 0x01;//1b
+   
    switch ( (temp_8b >> IEEE154_FCF_DEST_ADDR_MODE ) & 0x03 ) {
       case IEEE154_ADDR_NONE:
          ieee802514_header->dest.type = ADDR_NONE;
