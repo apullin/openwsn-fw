@@ -277,7 +277,7 @@ typedef struct {
    asn_t         l2_asn;                         // at what ASN the packet was Tx'ed or Rx'ed
    uint8_t*      l2_payload;                     // pointer to the start of the payload of l2 (used for MAC to fill in ASN in ADV)
    bool          l2_IEListPresent;               //did have IE field?
-   uint8_t*      l2_ASN;
+   uint8_t*      l2_ASN_payload;
    //l1 (drivers)
    uint8_t       l1_txPower;                     // power for packet to Tx at
    int8_t        l1_rssi;                        // RSSI of received packet

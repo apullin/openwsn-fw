@@ -25,9 +25,10 @@ void    task_resNotifSendDone();
 void    res_sendDone(OpenQueueEntry_t* msg, error_t error);
 void    task_resNotifReceive();
 void    res_receive(OpenQueueEntry_t* msg);
-
-asn_t      getADVasn();
-uint8_t    getJoinPriority();
+// from processIE
+asn_t      res_getADVasn();
+uint8_t    res_getJoinPriority();
+void    task_resNotifRetrieveIEDone();
 
 /**
 \}

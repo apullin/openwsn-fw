@@ -24,10 +24,13 @@ typedef struct {
 
 schedule_dbg_t schedule_dbg;
 
+Link_t links[MAXACTIVESLOTS];
+
 
 //=========================== prototypes ======================================
 
 void schedule_resetEntry(scheduleEntry_t* pScheduleEntry);
+bool schedule_checkExistSchedule(uint16_t slotOffset);
 
 //=========================== public ==========================================
 
@@ -47,7 +50,7 @@ void schedule_init() {
    // set frame length
    schedule_setFrameLength(9);
  
-   //if (idmanager_getIsDAGroot() == TRUE) {
+
    // slot 0 is advertisement slot
    i = 0;
    memset(&temp_neighbor,0,sizeof(temp_neighbor));
@@ -56,7 +59,8 @@ void schedule_init() {
          FALSE,
          0,
          &temp_neighbor);
-   //}
+
+   if (idmanager_getIsDAGroot() == TRUE) {
    // slot 1 is shared TXRX anycast
    i = 1;
    memset(&temp_neighbor,0,sizeof(temp_neighbor));
@@ -93,6 +97,7 @@ void schedule_init() {
          FALSE,
          0,
          &temp_neighbor);
+  }
 }
 
 bool debugPrint_schedule() {
@@ -199,6 +204,29 @@ void schedule_addActiveSlot(slotOffset_t    slotOffset,
       schedule_dbg.numActiveSlotsMax        = schedule_dbg.numActiveSlotsCur;
    }
    ENABLE_INTERRUPTS();
+}
+
+
+void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink){
+  //set schedule according links
+  open_addr_t temp_neighbor;
+  for(uint8_t i = 0;i<numOfLink;i++)
+  {
+    if(schedule_checkExistSchedule(links[i].slotOffset))
+    {
+         memset(&temp_neighbor,0,sizeof(temp_neighbor));
+         if(links[i].linktype == CELLTYPE_TXRX)
+         {
+            temp_neighbor.type             = ADDR_ANYCAST;
+         }
+         schedule_addActiveSlot(links[i].slotOffset,
+         links[i].linktype,
+         FALSE,
+         links[i].channelOffset,
+         &temp_neighbor);
+    }
+  }
+    
 }
 
 //=== from IEEE802154E: reading the schedule and updating statistics
@@ -385,6 +413,53 @@ void schedule_getNetDebugInfo(netDebugScheduleEntry_t *schlist, uint8_t maxbytes
   }    
 
 }
+
+ // from processIE
+uint8_t         schedule_getNumSlotframe(){
+  return 1;
+}
+
+frameLength_t   schedule_getSlotframeSize(uint8_t numOfSlotframe){
+   frameLength_t res;
+   INTERRUPT_DECLARATION();
+   
+   DISABLE_INTERRUPTS();
+   res= schedule_vars.frameLength;
+   ENABLE_INTERRUPTS();
+   
+   return res;
+}
+
+uint8_t         schedule_getLinksNumber(uint8_t slotframeID){
+    uint8_t i;
+    for (i=0;i<MAXACTIVESLOTS;i++){
+      if(links[i].linktype == CELLTYPE_OFF)
+        break;
+   }
+   return i;
+
+}
+
+Link_t*         schedule_getLinksList(uint8_t slotframeID){
+    //return link list
+    return links;
+}
+
+void schedule_generateLinkList(uint8_t slotframeID){
+    uint8_t j = 0;
+    // for test
+     for (uint8_t i=0;i<MAXACTIVESLOTS;i++){
+       if(schedule_vars.scheduleBuf[i].type != CELLTYPE_OFF)
+       {
+        links[j].channelOffset = schedule_vars.scheduleBuf[i].channelOffset;
+        links[j].slotOffset = schedule_vars.scheduleBuf[i].slotOffset;
+        links[j].linktype = schedule_vars.scheduleBuf[i].type;
+        j++;
+       }
+   }
+}
+
+
 //=========================== private =========================================
 
 void schedule_resetEntry(scheduleEntry_t* pScheduleEntry) {
@@ -407,4 +482,16 @@ void schedule_resetEntry(scheduleEntry_t* pScheduleEntry) {
    pScheduleEntry->lastUsedAsn.bytes0and1   = 0;
    pScheduleEntry->lastUsedAsn.bytes2and3   = 0;
    pScheduleEntry->lastUsedAsn.byte4        = 0;
+}
+
+bool schedule_checkExistSchedule(uint16_t slotOffset){
+  bool checkClear = TRUE;
+   for (uint8_t i=0;i<MAXACTIVESLOTS;i++){
+      if(schedule_vars.scheduleBuf[i].slotOffset == slotOffset)
+      {
+        checkClear = FALSE;
+        break;
+      }
+   }
+  return checkClear;
 }

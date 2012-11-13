@@ -8,45 +8,46 @@
 #include "neighbors.h"
 #include "IEEE802154E.h"
 #include "schedule.h"
+#include "scheduler.h"
 #include "packetfunctions.h"
 
 //=========================== variables =======================================
-IEHeader                IEHeader_vars;
-subIE                   syncIE_vars;
-subIE                   frameAndLinkIE_vars;
-subIE                   timeslotIE_vars;
-subIE                   channelHoppingIE_vars;
-syncIEcontent           syncIEcontent_vars;
-FrameandLinkIEcontent   FrameandLinkIEcontent_vars;
-slotframeIEcontent      slotframeIEcontent_vars;
-channelHoppingIEcontent channelHoppingIEcontent_vars;
-uResLinkTypeIEcontent   uResLinkTypeIEcontent_vars;
-uResCommandIEcontent    uResCommandIEcontent_vars;
-uResBandwidthIEcontent  uResBandwidthIEcontent_vars;
-uResScheduleIEcontent   uResScheduleIEcontent_vars;
-//==========================
+IEHeader_t                IEHeader_vars;
+subIE_t                   syncIE_vars;
+subIE_t                   frameAndLinkIE_vars;
+subIE_t                   timeslotIE_vars;
+subIE_t                   channelHoppingIE_vars;
+syncIEcontent_t           syncIEcontent_vars;
+frameAndLinkIEcontent_t   frameAndLinkIEcontent_vars;
+slotframeIEcontent_t      slotframeIEcontent_vars;
+channelHoppingIEcontent_t channelHoppingIEcontent_vars;
+uResLinkTypeIEcontent_t   uResLinkTypeIEcontent_vars;
+uResCommandIEcontent_t    uResCommandIEcontent_vars;
+uResBandwidthIEcontent_t  uResBandwidthIEcontent_vars;
+uResScheduleIEcontent_t   uResScheduleIEcontent_vars;
+//========================== private ==========================================
 
 //=========================== public ==========================================
 //admin
 void processIE_init() {
      // initialize variables
-    memset(&IEHeader_vars,0,sizeof(IEHeader));
-    memset(&syncIE_vars,0,sizeof(subIE));
-    memset(&frameAndLinkIE_vars,0,sizeof(subIE));
-    memset(&timeslotIE_vars,0,sizeof(subIE));
-    memset(&channelHoppingIE_vars,0,sizeof(subIE));
-    memset(&syncIEcontent_vars,0,sizeof(syncIEcontent));
-    memset(&FrameandLinkIEcontent_vars,0,sizeof(FrameandLinkIEcontent));
-    memset(&slotframeIEcontent_vars,0,sizeof(slotframeIEcontent));
-    memset(&channelHoppingIEcontent_vars,0,sizeof(channelHoppingIEcontent));
-    memset(&uResLinkTypeIEcontent_vars,0,sizeof(uResLinkTypeIEcontent));
-    memset(&uResCommandIEcontent_vars,0,sizeof(uResCommandIEcontent));
-    memset(&uResBandwidthIEcontent_vars,0,sizeof(uResBandwidthIEcontent));
-    memset(&uResScheduleIEcontent_vars,0,sizeof(uResScheduleIEcontent));
+    memset(&IEHeader_vars,0,sizeof(IEHeader_t));
+    memset(&syncIE_vars,0,sizeof(subIE_t));
+    memset(&frameAndLinkIE_vars,0,sizeof(subIE_t));
+    memset(&timeslotIE_vars,0,sizeof(subIE_t));
+    memset(&channelHoppingIE_vars,0,sizeof(subIE_t));
+    memset(&syncIEcontent_vars,0,sizeof(syncIEcontent_t));
+    memset(&frameAndLinkIEcontent_vars,0,sizeof(frameAndLinkIEcontent_t));
+    memset(&slotframeIEcontent_vars,0,sizeof(slotframeIEcontent_t));
+    memset(&channelHoppingIEcontent_vars,0,sizeof(channelHoppingIEcontent_t));
+    memset(&uResLinkTypeIEcontent_vars,0,sizeof(uResLinkTypeIEcontent_t));
+    memset(&uResCommandIEcontent_vars,0,sizeof(uResCommandIEcontent_t));
+    memset(&uResBandwidthIEcontent_vars,0,sizeof(uResBandwidthIEcontent_t));
+    memset(&uResScheduleIEcontent_vars,0,sizeof(uResScheduleIEcontent_t));
 }
 
 //==================set========================
-void setMLME_IE (){
+void processIE_setMLME_IE (){
   //set IE length,groupID and type fields
   IEHeader_vars.Length  = 0;
   IEHeader_vars.GroupID = IE_MLME;
@@ -54,123 +55,127 @@ void setMLME_IE (){
   IEHeader_vars.Length  += 2;
   IEHeader_vars.Length  += syncIE_vars.length;
   IEHeader_vars.Length  += frameAndLinkIE_vars.length;
-  IEHeader_vars.Length  += frameAndLinkIE_vars.length;
-  IEHeader_vars.Length  += frameAndLinkIE_vars.length;
+  //IEHeader_vars.Length  += timeslotIE_vars.length;
+  //IEHeader_vars.Length  += channelHoppingIE_vars.length;
 }
 
-void setSubSyncIE(){
+void processIE_setSubSyncIE(){
   //set subIE length,subID and type fields
   uint8_t length = 0;
   syncIE_vars.SubID = 26;
   syncIE_vars.type = 0;
-  length = length + 2;
-  syncIEcontent_vars.asn = getADVasn();
-  length = length + 5;
-  syncIEcontent_vars.joinPriority = getJoinPriority();
-  length = length + 1;
+  length += 2;
+  //set asn(asn will be added in IEEE802154e, res_getADVasn() return 0)
+  syncIEcontent_vars.asn = res_getADVasn();
+  length += 5;
+  syncIEcontent_vars.joinPriority = res_getJoinPriority();
+  length += 1;
   syncIE_vars.length = length;
 }	
 
-void setSubFrameandLinkIE(){
-  /*
+void processIE_setSubFrameAndLinkIE(){
+  //set subIE length,subID and type fields
+  uint8_t length = 0;
   frameAndLinkIE_vars.SubID                             = 0x1b;
   frameAndLinkIE_vars.type                              = 0;
-  FrameandLinkIEcontent_vars.numSlotframes     = getNumSlotframe();
-  slotframeInfo*        tempSlotframeInfo       = NULL;
-  FrameandLinkIEcontent_vars.nextslotframeInfo = tempSlotframeInfo;
+  length += 2;
+  frameAndLinkIEcontent_vars.numOfSlotframes            = schedule_getNumSlotframe();
+  length += 1;
 
-  Link*                 tempLink;
-  for(uint8_t i=0;i<FrameandLinkIEcontent_vars.numSlotframes;i++)
+  for(uint8_t i=0;i<frameAndLinkIEcontent_vars.numOfSlotframes;i++)
   {
-    //add a SlotframeInfo
-    tempSlotframeInfo.slotframeID      = i;
-    tempSlotframeInfo.numOfLink        = getFrameLength(tempSlotframeInfo.slotframeID);
-    //add a Link to SlotframeInfo
-    tempSlotframeInfo.links            = getActiveLinks(tempSlotframeInfo.slotframeID);
-    tempLink                            = tempSlotframeInfo.links;
-    uint8_t j=0;
-    do
-    {
-      tempLink.nextLinks               = getActiveLinks(tempSlotframeInfo.slotframeID);
-      tempLink                          = tempLink.nextLinks;
-    }while(tempLink.nextLinks)
-    tempSlotframeInfo                   = tempSlotframeInfo.nextSlotframeInfo;
+    //set SlotframeInfo
+    frameAndLinkIEcontent_vars.slotframeInfo[i].slotframeID               = i;
+    length += 1;
+    frameAndLinkIEcontent_vars.slotframeInfo[i].slotframeSize             = schedule_getSlotframeSize(i);
+    length += 2;
+    schedule_generateLinkList(i);
+    frameAndLinkIEcontent_vars.slotframeInfo[i].numOfLink                 = schedule_getLinksNumber(i);
+    length += 1;
+    frameAndLinkIEcontent_vars.slotframeInfo[i].links                     = schedule_getLinksList(i);
+    length += 5 * frameAndLinkIEcontent_vars.slotframeInfo[i].numOfLink;
   }
-  tempSlotframeInfo                     = NULL;
-
-  frameAndLinkIE_vars.nextSubIE = NULL;
-  */
+  frameAndLinkIE_vars.length = length;
 }
 
-void setSubTimeslotIE(){
+void processIE_setSubTimeslotIE(){
   timeslotIE_vars.SubID     = 0x1c;
   timeslotIE_vars.type      = 0;
 }
 
-void setSubChannelHoppingIE(){
+void processIE_setSubChannelHoppingIE(){
   channelHoppingIE_vars.SubID     = 0x9;
   channelHoppingIE_vars.type      = 1;
 }
 
-void setSubuResLinkTypeIE(){
+void processIE_setSubuResLinkTypeIE(){
 }
 
-void setSubuResCommandIE(){
+void processIE_setSubuResCommandIE(){
 }
 
-void setSubuResBandWidthIE(){
+void processIE_setSubuResBandWidthIE(){
 }
 
-void setSubuResGeneralSheduleIE(){
+void processIE_setSubuResGeneralSheduleIE(){
 }
 
 //=====================get============================= 
-void getMLME_IE(){
+void processIE_getMLME_IE(){
 }
 
-subIE* getSubSyncIE(){
-  
+subIE_t* processIE_getSubSyncIE(){
+    return      &syncIE_vars;
 }	
 
-subIE* getSubFrameandLinkIE(){
+subIE_t* processIE_getSubFrameAndLinkIE(){
+    return      &frameAndLinkIE_vars;
+} 
+
+subIE_t* processIE_getSubChannelHoppingIE(){
+    return      &channelHoppingIE_vars;
+} 
+
+subIE_t* processIE_getSubTimeslotIE(){
+    return      &timeslotIE_vars;
+} 
+
+subIE_t* processIE_getSubLinkTypeIE(){
   
 } 
 
-subIE* getSubChannelHoppingIE(){
+subIE_t* processIE_getSubuResCommandIE(){
   
 } 
 
-subIE* getSubTimeslotIE(){
+subIE_t* processIE_getSubuResBandWidthIE(){
   
 } 
 
-subIE* getSubLinkTypeIE(){
-  
-} 
-
-subIE* getSubuResCommandIE(){
-  
-} 
-
-subIE* getSubuResBandWidthIE(){
-  
-} 
-
-subIE* getSubuResGeneralSheduleIE(){
+subIE_t* processIE_getSubuResGeneralSheduleIE(){
   
 }
 
-subIE*          getSyncIE(){
-  return        &syncIE_vars;
-}
-
-syncIEcontent*          getSyncIEcontent(){
+syncIEcontent_t*  processIE_getSyncIEcontent(){
   return        &syncIEcontent_vars;
 }
 
-IEHeader*       getIEHeader(){
-  return        &IEHeader_vars;
+frameAndLinkIEcontent_t*        processIE_getFrameAndLinkIEcontent(){
+  return        &frameAndLinkIEcontent_vars;
 }
 
-void Notify_Reservation(){
+slotframeIEcontent_t*     processIE_getSlotframeIEcontent(){
+  return        &slotframeIEcontent_vars;
+}
+
+channelHoppingIEcontent_t*  processIE_getChannelHoppingIEcontent(){
+  return        &channelHoppingIEcontent_vars;
+}
+
+uResCommandIEcontent_t*         processIE_getuResCommandIEcontent(){
+  return        &uResCommandIEcontent_vars;
+}
+
+IEHeader_t*       processIE_getIEHeader(){
+  return        &IEHeader_vars;
 }

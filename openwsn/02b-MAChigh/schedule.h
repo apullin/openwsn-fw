@@ -16,6 +16,8 @@
 #define MINBE           2    // min backoff exponent, used in shared TX slots
 #define MAXBE           4    // max backoff exponent, used in shared TX slots
 
+#define MAXSOLTFRAMENUM 5    // the maximum number of slotframe
+
  
 //=========================== typedef =========================================
 
@@ -50,6 +52,14 @@ typedef struct {
 } scheduleEntry_t;
 PRAGMA(pack());
 
+PRAGMA(pack(1));
+typedef	struct{
+	uint16_t	slotOffset;
+	uint16_t	channelOffset;
+        uint8_t         linktype;
+}Link_t;
+PRAGMA(pack());
+
 //used to debug through ipv6 pkt. 
 
 PRAGMA(pack(1));
@@ -80,6 +90,7 @@ PRAGMA(pack());
                                                  bool            shared,
                                                  uint8_t         channelOffset,
                                                  open_addr_t*    neighbor);
+          void            schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink);
 // from IEEE802154E
  void            schedule_syncSlotOffset(slotOffset_t targetSlotOffset);
  void            schedule_advanceSlot();
@@ -94,6 +105,12 @@ PRAGMA(pack());
                                               bool     succesfullTx);
  void            schedule_getNetDebugInfo(netDebugScheduleEntry_t *schlist,uint8_t maxbytes);
 
+ // from processIE
+uint8_t         schedule_getNumSlotframe();
+frameLength_t   schedule_getSlotframeSize(uint8_t numOfSlotframe);
+uint8_t         schedule_getLinksNumber(uint8_t numOfSlotframe);
+void            schedule_generateLinkList(uint8_t slotframeID);
+Link_t*         schedule_getLinksList(uint8_t slotframeID);
 /**
 \}
 \}

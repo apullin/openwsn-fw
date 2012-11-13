@@ -45,8 +45,8 @@ enum SUBIE_type_enums {
 
 //=========================== prototypes ======================================
 
-void uRes_prependIE  (OpenQueueEntry_t*      msg);
-void uRes_retrieveIE (OpenQueueEntry_t*      msg);
+void IEFiled_prependIE  (OpenQueueEntry_t*      msg);
+void IEFiled_retrieveIE (OpenQueueEntry_t*      msg);
 
 /**
 \}

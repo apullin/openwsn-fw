@@ -1520,11 +1520,11 @@ port_INLINE void asnStoreFromAdv(OpenQueueEntry_t* advFrame) {
 }
 
 port_INLINE void uResAsnWriteToAdv(OpenQueueEntry_t* advFrame) {
-   advFrame->l2_ASN[0]        = (ieee154e_vars.asn.bytes0and1     & 0xff);
-   advFrame->l2_ASN[1]        = (ieee154e_vars.asn.bytes0and1/256 & 0xff);
-   advFrame->l2_ASN[2]        = (ieee154e_vars.asn.bytes2and3     & 0xff);
-   advFrame->l2_ASN[3]        = (ieee154e_vars.asn.bytes2and3/256 & 0xff);
-   advFrame->l2_ASN[4]        =  ieee154e_vars.asn.byte4;
+   advFrame->l2_ASN_payload[0]        = (ieee154e_vars.asn.bytes0and1     & 0xff);
+   advFrame->l2_ASN_payload[1]        = (ieee154e_vars.asn.bytes0and1/256 & 0xff);
+   advFrame->l2_ASN_payload[2]        = (ieee154e_vars.asn.bytes2and3     & 0xff);
+   advFrame->l2_ASN_payload[3]        = (ieee154e_vars.asn.bytes2and3/256 & 0xff);
+   advFrame->l2_ASN_payload[4]        =  ieee154e_vars.asn.byte4;
 }
 
 port_INLINE void uResAsnStoreFromAdv(OpenQueueEntry_t* advFrame) {

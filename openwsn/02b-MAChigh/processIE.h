@@ -3,6 +3,7 @@
 
 #define         MAXLINKNEIGHBORS    10
 
+#include "schedule.h"
 #include "openwsn.h"                                // needed for uin8_t, uint16_t
 
 //=========================== typedef =========================================
@@ -27,77 +28,68 @@ enum IE_type_enums {
    IE_TYPE_PAYLOA               = 1,
 };
 
-typedef	struct{
-	uint16_t	channelOffset;
-	uint16_t	slotOffset;
-	uint8_t	        linktype;
-        struct Link*    nextLinks;
-}Link;
-
-
 typedef struct{
         uint8_t         slotframeID;
-        uint16_t        size;
+        uint16_t        slotframeSize;
         uint8_t         numOfLink;
-        Link*           links;
-        struct slotframeInfo*  nextSlotframeInfo;
-}slotframeInfo;
+        Link_t*         links;
+}slotframeInfo_t;
 
 typedef	struct{
 	uint16_t	length;
 	uint8_t	        SubID;
 	uint8_t	        type;
-}subIE;
+}subIE_t;
 
 typedef	struct{
 	uint16_t	Length;
 	uint8_t	        GroupID;
 	uint8_t	        Type;
-}IEHeader;
+}IEHeader_t;
 
 typedef struct{
   asn_t asn;
   uint8_t joinPriority;
-}syncIEcontent;
+}syncIEcontent_t;
 
 typedef struct{
-	uint8_t	        numSlotframes;
-        slotframeInfo*  nextSlotframeInfo;
-}FrameandLinkIEcontent;
+	uint8_t	        numOfSlotframes;
+        slotframeInfo_t   slotframeInfo[MAXSOLTFRAMENUM];
+}frameAndLinkIEcontent_t;
 
 typedef	struct{
 	uint8_t	        slotfameTemplt;
 	void*	        otherField;
-}slotframeIEcontent;
+}slotframeIEcontent_t;
 
 typedef struct{
   union {
 	uint8_t	hoppingSequence_1Byte;
         uint8_t hoppingSequence_8Byte;
   };
-}channelHoppingIEcontent;
+}channelHoppingIEcontent_t;
 
 typedef	struct{
 	uint8_t		numSlotframes;
 	uint8_t		slotframeID;
 	uint8_t		size;
 	uint8_t		numLinks;
-	Link*	links;
-}uResLinkTypeIEcontent;
+	Link_t*	links;
+}uResLinkTypeIEcontent_t;
 
 typedef	struct{
 	uint8_t	uResCommandID;
-}uResCommandIEcontent;
+}uResCommandIEcontent_t;
 
 typedef	struct{
 	uint8_t	slotframeID;
 	uint8_t	numLinks;
-}uResBandwidthIEcontent;
+}uResBandwidthIEcontent_t;
 
 typedef	struct{
 	uint8_t	compressType;
 	uint8_t	otherFields;
-}uResScheduleIEcontent;
+}uResScheduleIEcontent_t;
 
 //=========================== variables =======================================
 
@@ -105,31 +97,33 @@ typedef	struct{
 //admin
 void processIE_init();
 
-void setMLME_IE ();
-void setSubSyncIE();	
-void setSubFrameandLinkIE();
-void setSubTimeslotIE();
-void setSubChannelHoppingIE();
-void setSubuResLinkTypeIE();
-void setSubuResCommandIE();
-void setSubuResBandWidthIE();
-void setSubuResGeneralSheduleIE();
+void processIE_setMLME_IE ();
+void processIE_setSubSyncIE();	
+void processIE_setSubFrameAndLinkIE();
+void processIE_setSubTimeslotIE();
+void processIE_setSubChannelHoppingIE();
+void processIE_setSubuResLinkTypeIE();
+void processIE_setSubuResCommandIE();
+void processIE_setSubuResBandWidthIE();
+void processIE_setSubuResGeneralSheduleIE();
         
-void getMLME_IE();
-subIE* getSubSyncIE();	 
-subIE* getSubFrameandLinkIE(); 
-subIE* getSubChannelHoppingIE(); 
-subIE* getSubTimeslotIE(); 
-subIE* getSubLinkTypeIE(); 
-subIE* getSubuResCommandIE(); 
-subIE* getSubuResBandWidthIE(); 
-subIE* getSubuResGeneralSheduleIE();
+void processIE_getMLME_IE();
+subIE_t* processIE_getSubSyncIE();	 
+subIE_t* processIE_getSubFrameAndLinkIE(); 
+subIE_t* processIE_getSubChannelHoppingIE(); 
+subIE_t* processIE_getSubTimeslotIE(); 
+subIE_t* processIE_getSubLinkTypeIE(); 
+subIE_t* processIE_getSubuResCommandIE(); 
+subIE_t* processIE_getSubuResBandWidthIE(); 
+subIE_t* processIE_getSubuResGeneralSheduleIE();
 
-subIE*                  getSyncIE();
-syncIEcontent*          getSyncIEcontent();
-IEHeader*               getIEHeader();
+syncIEcontent_t*                processIE_getSyncIEcontent();
+frameAndLinkIEcontent_t*        processIE_getFrameAndLinkIEcontent();
+slotframeIEcontent_t*           processIE_getSlotframeIEcontent();
+channelHoppingIEcontent_t*      processIE_getChannelHoppingIEcontent();
 
-void Notify_Reservation();
+uResCommandIEcontent_t*         processIE_getuResCommandIEcontent();
+IEHeader_t*                     processIE_getIEHeader();
 
 
 

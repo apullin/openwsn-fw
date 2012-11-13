@@ -108,7 +108,7 @@ typedef struct {
    PORT_SIGNED_INT_WIDTH timeCorrection;
 } IEEE802154E_ACK_ht;
 
-#define ADV_PAYLOAD_LENGTH 10
+#define ADV_PAYLOAD_LENGTH 42// adv header+IE(syncIE , frameAndLinkIE)
 
 //=========================== variables =======================================
 

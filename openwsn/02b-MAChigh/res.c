@@ -41,7 +41,7 @@ void    res_timer_cb();
 
 void    incrementADVasn();
 
-void    recordADV(OpenQueueEntry_t* msg);
+void    res_recordADV();
 
 //=========================== public ==========================================
 
@@ -144,10 +144,10 @@ void task_resNotifReceive() {
    // send the packet up the stack, if it qualifies
    switch (msg->l2_frameType) {
       case IEEE154_TYPE_BEACON:
-        if (msg->l2_IEListPresent)
-            uRes_retrieveIE(msg);
       case IEEE154_TYPE_DATA:
       case IEEE154_TYPE_CMD:
+         if (msg->l2_IEListPresent)
+            IEFiled_retrieveIE(msg);
          if (msg->length>0) {
             // send to upper layer
             iphc_receive(msg);
@@ -269,13 +269,15 @@ port_INLINE void sendAdv() {
       //packetfunctions_reserveHeaderSize(adv, ADV_PAYLOAD_LENGTH);
       // the actual value of the current ASN will be written by the
       // IEEE802.15.4e when transmitting
-      //set subIE
-      setSubSyncIE();
+      //set SubFrameAndLinkIE
+      processIE_setSubFrameAndLinkIE();
+      //set subSyncIE
+      processIE_setSubSyncIE();
       //set IE after set all required subIE
-      setMLME_IE();
+      processIE_setMLME_IE();
       
       //add an IE to adv's payload
-      uRes_prependIE(adv);
+      IEFiled_prependIE(adv);
       
       //I has an IE in my payload
       adv->l2_IEListPresent = 1;
@@ -347,15 +349,56 @@ port_INLINE void incrementADVasn() {
       }
    }
 }
-
-asn_t      getADVasn(){
+// from processIE
+asn_t      res_getADVasn(){
     return res_vars.ADVasn;
 }
 
-uint8_t    getJoinPriority(){
+uint8_t    res_getJoinPriority(){
     return res_vars.joinPriority;
 }
 
-void recordADV(OpenQueueEntry_t* msg) {
+void    task_resNotifRetrieveIEDone(){
+  
+    subIE_t*    tempSubIE = processIE_getSubSyncIE();
+    if(tempSubIE->length != 0)
+      res_recordADV();
+    else
+    {
+      //this part should be executed in reservation module
+      uResCommandIEcontent_t* tempuResCommandIEcontent = processIE_getuResCommandIEcontent();
+      switch(tempuResCommandIEcontent->uResCommandID)
+      {
+      case 0:break;
+      case 1:break;
+      case 2:break;
+      case 3:break;
+      case 4:break;
+      default:
+         // log the error
+         openserial_printError(COMPONENT_RES,ERR_MSG_UNKNOWN_TYPE,
+                               (errorparameter_t)IEEE154_TYPE_DATA,
+                               (errorparameter_t)0);
+        
+        break;
+      }
+      //end of this part
+    }
+}
+
+void res_recordADV() {
+    syncIEcontent_t*    tempSyncIEcontent = processIE_getSyncIEcontent();
+    // node who joining network earlier have a higher priority 
+    res_vars.joinPriority = tempSyncIEcontent->joinPriority + 1;
     
+    frameAndLinkIEcontent_t* tempFrameAndLinkIEcontent = processIE_getFrameAndLinkIEcontent();
+    for(uint8_t i = 0; i<tempFrameAndLinkIEcontent->numOfSlotframes;i++)
+    {
+      uint8_t slotframeID    = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeID;
+      uint16_t slotframeSize = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeSize;
+      uint8_t numOfLink      = tempFrameAndLinkIEcontent->slotframeInfo[i].numOfLink;
+      //set my schedule according links
+      schedule_setMySchedule(slotframeID,slotframeSize,numOfLink);
+    }
+
 }
