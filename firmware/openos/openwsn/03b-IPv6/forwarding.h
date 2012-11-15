@@ -12,7 +12,7 @@
 
 //=========================== define ==========================================
 
-#define SourceFWNxtHdr            43
+#define SourceFWNxtHdr            43 //RFC2460 page 11
 
 enum {
    PCKTFORWARD                           = 1,          
