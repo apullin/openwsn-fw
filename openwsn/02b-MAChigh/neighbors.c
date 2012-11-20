@@ -178,6 +178,17 @@ open_addr_t* neighbors_KaNeighbor() {
    }
 }
 
+open_addr_t*  neighbors_reservationNeighbor(){
+  // should get from neighbor.c. We return a pre-define neighbor for test
+  open_addr_t tempAddr;
+  tempAddr.type = ADDR_16B;
+  tempAddr.addr_16b[0] = 0xff;
+  tempAddr.addr_16b[1] = 0xff;
+
+  return &tempAddr;
+}
+
+
 open_addr_t*  neighbors_getAddr(uint8_t neighboIdx) {
    return &neighbors_vars.neighbors[neighboIdx].addr_64b;
 }

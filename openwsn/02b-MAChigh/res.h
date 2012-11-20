@@ -28,7 +28,7 @@ void    res_receive(OpenQueueEntry_t* msg);
 // from processIE
 asn_t      res_getADVasn();
 uint8_t    res_getJoinPriority();
-void    task_resNotifRetrieveIEDone();
+void    res_notifRetrieveIEDone();
 
 /**
 \}

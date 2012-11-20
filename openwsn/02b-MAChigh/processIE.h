@@ -60,7 +60,7 @@ typedef struct{
 typedef	struct{
 	uint8_t	        slotfameTemplt;
 	void*	        otherField;
-}slotframeIEcontent_t;
+}timeslotIEcontent_t;
 
 typedef struct{
   union {
@@ -70,11 +70,8 @@ typedef struct{
 }channelHoppingIEcontent_t;
 
 typedef	struct{
-	uint8_t		numSlotframes;
-	uint8_t		slotframeID;
-	uint8_t		size;
-	uint8_t		numLinks;
-	Link_t*	links;
+	uint8_t		  numOfSlotframes;
+        slotframeInfo_t   slotframeInfo[MAXSOLTFRAMENUM];
 }uResLinkTypeIEcontent_t;
 
 typedef	struct{
@@ -83,13 +80,13 @@ typedef	struct{
 
 typedef	struct{
 	uint8_t	slotframeID;
-	uint8_t	numLinks;
+	uint8_t	numOfLinks;
 }uResBandwidthIEcontent_t;
 
 typedef	struct{
 	uint8_t	compressType;
 	uint8_t	otherFields;
-}uResScheduleIEcontent_t;
+}uResGeneralScheduleIEcontent_t;
 
 //=========================== variables =======================================
 
@@ -104,7 +101,7 @@ void processIE_setSubTimeslotIE();
 void processIE_setSubChannelHoppingIE();
 void processIE_setSubuResLinkTypeIE();
 void processIE_setSubuResCommandIE();
-void processIE_setSubuResBandWidthIE();
+void processIE_setSubuResBandwidthIE();
 void processIE_setSubuResGeneralSheduleIE();
         
 void processIE_getMLME_IE();
@@ -112,18 +109,23 @@ subIE_t* processIE_getSubSyncIE();
 subIE_t* processIE_getSubFrameAndLinkIE(); 
 subIE_t* processIE_getSubChannelHoppingIE(); 
 subIE_t* processIE_getSubTimeslotIE(); 
-subIE_t* processIE_getSubLinkTypeIE(); 
+subIE_t* processIE_getSubuResLinkTypeIE(); 
 subIE_t* processIE_getSubuResCommandIE(); 
-subIE_t* processIE_getSubuResBandWidthIE(); 
+subIE_t* processIE_getSubuResBandwidthIE(); 
 subIE_t* processIE_getSubuResGeneralSheduleIE();
 
 syncIEcontent_t*                processIE_getSyncIEcontent();
 frameAndLinkIEcontent_t*        processIE_getFrameAndLinkIEcontent();
-slotframeIEcontent_t*           processIE_getSlotframeIEcontent();
+timeslotIEcontent_t*            processIE_getTimeslotIEcontent();
 channelHoppingIEcontent_t*      processIE_getChannelHoppingIEcontent();
 
+uResLinkTypeIEcontent_t*        processIE_getuResLinkTypeIEcontent();
+uResBandwidthIEcontent_t*       processIE_getuResBandwidthIEcontent();
 uResCommandIEcontent_t*         processIE_getuResCommandIEcontent();
 IEHeader_t*                     processIE_getIEHeader();
+
+//reset
+void resetSubIE();
 
 
 

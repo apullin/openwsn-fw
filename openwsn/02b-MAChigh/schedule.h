@@ -12,7 +12,7 @@
 
 //=========================== define ==========================================
 
-#define MAXACTIVESLOTS  5    // the maximum number of active slots
+#define MAXACTIVESLOTS  9    // the maximum number of active slots
 #define MINBE           2    // min backoff exponent, used in shared TX slots
 #define MAXBE           4    // max backoff exponent, used in shared TX slots
 
@@ -111,6 +111,10 @@ frameLength_t   schedule_getSlotframeSize(uint8_t numOfSlotframe);
 uint8_t         schedule_getLinksNumber(uint8_t numOfSlotframe);
 void            schedule_generateLinkList(uint8_t slotframeID);
 Link_t*         schedule_getLinksList(uint8_t slotframeID);
+
+uint8_t         schedule_uResGetLinksNumber(uint8_t numOfSlotframe);
+void            schedule_uResGenerateLinkList(uint8_t slotframeID);
+Link_t*         schedule_uResGetLinksList(uint8_t slotframeID);
 /**
 \}
 \}

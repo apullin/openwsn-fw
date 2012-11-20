@@ -32,6 +32,11 @@ Link_t links[MAXACTIVESLOTS];
 void schedule_resetEntry(scheduleEntry_t* pScheduleEntry);
 bool schedule_checkExistSchedule(uint16_t slotOffset);
 
+// check link
+bool isOneAvailableLink(Link_t tempLink);
+bool isOneRequestedLink(Link_t tempLink);
+
+
 //=========================== public ==========================================
 
 //=== admin
@@ -70,6 +75,7 @@ void schedule_init() {
          TRUE,
          0,
          &temp_neighbor);
+   }
 
    // slot 2 is SERIALRX
    i = 2;
@@ -97,7 +103,6 @@ void schedule_init() {
          FALSE,
          0,
          &temp_neighbor);
-  }
 }
 
 bool debugPrint_schedule() {
@@ -226,7 +231,7 @@ void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_
          &temp_neighbor);
     }
   }
-    
+  memset(links,0,MAXACTIVESLOTS*sizeof(Link_t));
 }
 
 //=== from IEEE802154E: reading the schedule and updating statistics
@@ -449,7 +454,7 @@ void schedule_generateLinkList(uint8_t slotframeID){
     uint8_t j = 0;
     // for test
      for (uint8_t i=0;i<MAXACTIVESLOTS;i++){
-       if(schedule_vars.scheduleBuf[i].type != CELLTYPE_OFF)
+       if(schedule_vars.scheduleBuf[i].type == CELLTYPE_TXRX)
        {
         links[j].channelOffset = schedule_vars.scheduleBuf[i].channelOffset;
         links[j].slotOffset = schedule_vars.scheduleBuf[i].slotOffset;
@@ -458,6 +463,49 @@ void schedule_generateLinkList(uint8_t slotframeID){
        }
    }
 }
+
+bool isOneAvailableLink(Link_t tempLink){
+  scheduleEntry_t* tempScheduleEntry = schedule_vars.currentScheduleEntry;
+  
+  do
+  {
+    if(tempLink.slotOffset == tempScheduleEntry->slotOffset)
+      return FALSE;
+    
+    tempScheduleEntry = tempScheduleEntry->next;
+    
+  }while(tempScheduleEntry != schedule_vars.currentScheduleEntry);
+  return TRUE;
+}
+
+bool isOneRequestedLink(Link_t tempLink){
+  for(uint8_t i=0;i<MAXACTIVESLOTS;i++)
+  {
+    if(tempLink.slotOffset == links[i].slotOffset)
+      return FALSE;
+  }
+  return TRUE;
+}
+
+void    schedule_uResGenerateLinkList(uint8_t slotframeID){
+    uint8_t j = 0;
+    Link_t tempLink;
+    // for test
+     for (uint8_t i=0;i<MAXACTIVESLOTS;i++)
+     {
+        tempLink.channelOffset = 0;
+        tempLink.slotOffset = i;
+        tempLink.linktype = CELLTYPE_TX;
+        if(isOneAvailableLink(tempLink) && isOneRequestedLink(tempLink))
+        {
+          links[j].channelOffset        = tempLink.channelOffset;
+          links[j].slotOffset           = tempLink.slotOffset;
+          links[j].linktype             = tempLink.linktype;
+          j++;
+        }
+      }
+}
+
 
 
 //=========================== private =========================================
@@ -485,13 +533,9 @@ void schedule_resetEntry(scheduleEntry_t* pScheduleEntry) {
 }
 
 bool schedule_checkExistSchedule(uint16_t slotOffset){
-  bool checkClear = TRUE;
    for (uint8_t i=0;i<MAXACTIVESLOTS;i++){
       if(schedule_vars.scheduleBuf[i].slotOffset == slotOffset)
-      {
-        checkClear = FALSE;
-        break;
-      }
+        return FALSE;
    }
-  return checkClear;
+  return TRUE;
 }

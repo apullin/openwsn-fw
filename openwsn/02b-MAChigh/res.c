@@ -17,6 +17,7 @@
 #include "opentimers.h"
 #include "processIE.h"
 #include "IEfield.h"
+#include "reservation.h"
 
 //=========================== variables =======================================
 
@@ -180,7 +181,7 @@ The body of this function executes one of the MAC management task.
 */
 void timers_res_fired() {
    res_vars.MacMgtTaskCounter = (res_vars.MacMgtTaskCounter+1)%2;
-  // if (idmanager_getIsDAGroot()==TRUE) {
+   if (idmanager_getIsDAGroot()==TRUE) {
       if (res_vars.MacMgtTaskCounter==0) {
          sendAdv();
       } else {
@@ -192,7 +193,7 @@ void timers_res_fired() {
 //      } else {
 //         sendKa();
 //      }
-//    }
+    }
 }
 
 //=========================== private =========================================
@@ -358,32 +359,15 @@ uint8_t    res_getJoinPriority(){
     return res_vars.joinPriority;
 }
 
-void    task_resNotifRetrieveIEDone(){
+void    res_notifRetrieveIEDone(){
   
     subIE_t*    tempSubIE = processIE_getSubSyncIE();
     if(tempSubIE->length != 0)
       res_recordADV();
     else
-    {
-      //this part should be executed in reservation module
-      uResCommandIEcontent_t* tempuResCommandIEcontent = processIE_getuResCommandIEcontent();
-      switch(tempuResCommandIEcontent->uResCommandID)
-      {
-      case 0:break;
-      case 1:break;
-      case 2:break;
-      case 3:break;
-      case 4:break;
-      default:
-         // log the error
-         openserial_printError(COMPONENT_RES,ERR_MSG_UNKNOWN_TYPE,
-                               (errorparameter_t)IEEE154_TYPE_DATA,
-                               (errorparameter_t)0);
-        
-        break;
-      }
-      //end of this part
-    }
+      reservation_notifyReceiveuResCommand();
+    
+    resetSubIE();
 }
 
 void res_recordADV() {

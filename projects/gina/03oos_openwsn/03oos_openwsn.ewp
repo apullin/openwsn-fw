@@ -2184,6 +2184,12 @@
         <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\res.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\reservation.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\reservation.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\openwsn\02b-MAChigh\schedule.c</name>
       </file>
       <file>
