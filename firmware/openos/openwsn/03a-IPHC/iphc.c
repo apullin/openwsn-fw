@@ -37,7 +37,7 @@ void iphc_init() {
 }
 
 //send from upper layer: I need to add 6LoWPAN header
-error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg, uint8_t fw_SendOrfw_Rcv) {
+error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg, ipv6_header_iht ipv6_header, uint8_t fw_SendOrfw_Rcv) {
    open_addr_t  temp_dest_prefix;
    open_addr_t  temp_dest_mac64b;
    open_addr_t* p_dest;
@@ -46,6 +46,8 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg, uint8_t fw_SendOrfw_Rcv) 
    open_addr_t  temp_src_mac64b;  //>>>>>> diodio
    uint8_t sam;
    uint8_t dam;
+   uint8_t nh=IPHC_NH_INLINE; //default value;
+   
    msg->owner = COMPONENT_IPHC;
    // error checking
    if (idmanager_getIsBridge()==TRUE &&
@@ -64,14 +66,14 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg, uint8_t fw_SendOrfw_Rcv) 
          sam = IPHC_SAM_64B;     //>>>>>> diodio
          dam = IPHC_DAM_ELIDED;
          p_dest = NULL;
-         packetfunctions_ip128bToMac64b(&(msg->l3_SourceAdd),&temp_src_prefix,&temp_src_mac64b);  //>>>>>> diodio
+         packetfunctions_ip128bToMac64b(&(msg->l3_sourceAdd),&temp_src_prefix,&temp_src_mac64b);  //>>>>>> diodio
          p_src = &temp_src_mac64b;  //>>>>>> diodio
       } else {
          //else, use 64B address
          sam = IPHC_SAM_64B;
          dam = IPHC_DAM_64B;
          p_dest = &temp_dest_mac64b;
-         packetfunctions_ip128bToMac64b(&(msg->l3_SourceAdd),&temp_src_prefix,&temp_src_mac64b);  //>>>>>> diodio
+         packetfunctions_ip128bToMac64b(&(msg->l3_sourceAdd),&temp_src_prefix,&temp_src_mac64b);  //>>>>>> diodio
          p_src = &temp_src_mac64b;  //>>>>>> diodio
         
       }
@@ -79,12 +81,16 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg, uint8_t fw_SendOrfw_Rcv) 
       sam = IPHC_SAM_128B;
       dam = IPHC_DAM_128B;
       p_dest = &(msg->l3_destinationORsource);
-      p_src = &(msg->l3_SourceAdd);  //>>>>>> diodio
+      p_src = &(msg->l3_sourceAdd);  //>>>>>> diodio
    }
+   //check if we are forwarding a packet and it comes with the next header compressed. We want to preserve that state in the following hop.
+   
+   if ((fw_SendOrfw_Rcv==PCKTFORWARD) && ipv6_header.next_header_compressed) nh=IPHC_NH_COMPRESSED;
+   
    if (prependIPv6Header(msg,
             IPHC_TF_ELIDED,
             0, // value_flowlabel is not copied
-            IPHC_NH_INLINE,
+            nh,
             msg->l4_protocol,
             IPHC_HLIM_INLINE,
             64,
@@ -158,6 +164,8 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
       open_addr_t* value_src,
       uint8_t fw_SendOrfw_Rcv) {  //>>>>>> diodio
    uint8_t temp_8b;
+   
+   bool nextHeaderCompressed=FALSE;
    //destination address
    switch (dam) {
       case IPHC_DAM_ELIDED:
@@ -278,6 +286,7 @@ error_t prependIPv6Header(OpenQueueEntry_t* msg,
          break;
       case IPHC_NH_COMPRESSED:
          //unsupported
+        nextHeaderCompressed=TRUE;
       default:
          openserial_printError(COMPONENT_IPHC,ERR_6LOWPAN_UNSUPPORTED,
                                (errorparameter_t)3,

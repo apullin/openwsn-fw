@@ -528,7 +528,7 @@ void neighbors_updateMyDAGrankAndNeighborPreference() {
             
            //  below to enforce the routing as follow: 0x9B ==> //0x92 ==> 0xC9 ==> 0xD8
                switch ((idmanager_getMyID(ADDR_64B))->addr_64b[7]) {
-               case 0x92:
+               case 0xDC:
                if (neighbors_vars.neighbors[i].addr_64b.addr_64b[7]==0xD8) {
                neighbors_vars.myDAGrank=neighbors_vars.neighbors[i].DAGrank+temp_linkCost;
                temp_preferredParentExists=TRUE;

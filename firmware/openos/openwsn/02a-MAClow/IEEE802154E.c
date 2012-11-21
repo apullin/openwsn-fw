@@ -1417,7 +1417,7 @@ port_INLINE bool isValidAdv(ieee802154_header_iht* ieee802514_header) {
    case 0xC9:
      res=res&(ieee802514_header->src.addr_64b[7]==0xED);//only ADV from ED
      break;
-   case 0x92:
+   case 0xDC:
      res=res&(ieee802514_header->src.addr_64b[7]==0xD8);//only ADV from E8
      break;
    case 0xD8:
@@ -1468,9 +1468,9 @@ port_INLINE bool isValidRxFrame(ieee802154_header_iht* ieee802514_header) {
      res=res&(ieee802514_header->src.addr_64b[7]==0xED ||ieee802514_header->src.addr_64b[7]==0xD8);//only PKT from ED or E8
      break;
    case 0xD8:
-     res=res&(ieee802514_header->src.addr_64b[7]==0xC9||ieee802514_header->src.addr_64b[7]==0x92);//only PKT from E8 or F5
+     res=res&(ieee802514_header->src.addr_64b[7]==0xC9||ieee802514_header->src.addr_64b[7]==0xDC);//only PKT from E8 or F5
      break;
-   case 0x92:
+   case 0xDC:
      res=res&(ieee802514_header->src.addr_64b[7]==0xD8);//only PKT from F5
      break;
    }

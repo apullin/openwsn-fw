@@ -270,6 +270,7 @@ typedef struct {
    uint8_t       l4_length;                      // length of the payload of l4 (used for retransmits)
    //l3
    open_addr_t   l3_destinationORsource;         // 128b IPv6 destination (down stack) or source address (up)
+   open_addr_t   l3_sourceAdd;                   //source address 
    //l2
    error_t       l2_sendDoneError;               // outcome of trying to send this packet
    open_addr_t   l2_nextORpreviousHop;           // 64b IEEE802.15.4 next (down stack) or previous (up) hop address
@@ -287,7 +288,7 @@ typedef struct {
    //the packet
    uint8_t       packet[1+1+125+2+1];            // 1B spi address, 1B length, 125B data, 2B CRC, 1B LQI
    // below has been added to be used for the multi-hop network  diodio
-  open_addr_t   l3_SourceAdd;
+  
 } OpenQueueEntry_t;
 
 //=========================== variables =======================================

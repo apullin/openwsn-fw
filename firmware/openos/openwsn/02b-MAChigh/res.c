@@ -171,6 +171,7 @@ void timers_res_fired() {
          sendAdv();
       } else {
          // don't send KAs if you're the master
+         sendKa();
       }
  /*  } else {
       if (res_vars.MacMgtTaskCounter==0) {
