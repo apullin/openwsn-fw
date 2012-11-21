@@ -20,7 +20,7 @@ static const uint8_t infoStackName[] = "OpenWSN ";
 #define OPENWSN_VERSION_PATCH 1
 
 // enter the last byte of your mote's address if you want it to be an LBR
-#define DEBUG_MOTEID_MASTER 0xED
+#define DEBUG_MOTEID_MASTER 0x6A
 
 
 #ifndef TRUE
@@ -222,6 +222,8 @@ enum {
    ERR_BRIDGE_MISMATCH                 = 0x28, // isBridge mismatch (code location {0})
    ERR_HEADER_TOO_LONG                 = 0x29, // header too long, length {1} (code location {0})
    ERR_INPUTBUFFER_LENGTH              = 0x2a, // input length problem, length={0}
+   ERR_INPUTBUFFER_BAD_CRC             = 0x2b, // input buffer bad crc, length={0}
+   
 };
 
 //=========================== typedef =========================================

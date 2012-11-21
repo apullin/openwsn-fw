@@ -7,24 +7,11 @@
 //defines
 #define HDLC_HEADER_FLAG 0x7e
 #define HDLC_HEADER_LEN 1
-#define HDLC_MAX_LEN 300
-typedef enum HDLC_STATE_T {
-  HDLC_STATE_RECEIVING,
-  HDLC_STATE_DONE_RECEIVING} hdlc_state_t;
-typedef void (*hdlc_rx_cbt)();
+#define HDLC_MAX_LEN 256
 
 //prototypes
-void hdlcserial_init();
-void hdlcserial_setcb(hdlc_rx_cbt rxCb);
-void hdlcserial_send(uint8_t* str, uint16_t len);
-//no need for an hdlcserial_receive function; it's not like we can say 
-//"receive now"; the bytes arrive and when the packet is formed, the callback
-//is pushed to the scheduler
-
-//interrupt handler prototypes
-void    isr_hdlcserial_rx();
-void    isr_hdlcserial_tx();
-
+uint8_t hdlcify(uint8_t *,uint8_t);
+uint8_t dehdlcify(uint8_t *,uint8_t);//return the new length after the operation
 
 //this table is used to expedite execution (at the expense of memory usage)
 static const uint16_t fcstab[256] = {
