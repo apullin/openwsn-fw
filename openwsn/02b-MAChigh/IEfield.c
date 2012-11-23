@@ -367,5 +367,5 @@ void IEFiled_retrieveIE (OpenQueueEntry_t*      msg){
 
      packetfunctions_tossHeader(msg, tempIE->Length);
 
-     res_notifRetrieveIEDone();
+     res_notifRetrieveIEDone(msg);
 }

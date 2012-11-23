@@ -90,7 +90,7 @@ PRAGMA(pack());
                                                  bool            shared,
                                                  uint8_t         channelOffset,
                                                  open_addr_t*    neighbor);
-          void            schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink);
+          void            schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop);
 // from IEEE802154E
  void            schedule_syncSlotOffset(slotOffset_t targetSlotOffset);
  void            schedule_advanceSlot();

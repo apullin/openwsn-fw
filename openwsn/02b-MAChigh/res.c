@@ -42,7 +42,7 @@ void    res_timer_cb();
 
 void    incrementADVasn();
 
-void    res_recordADV();
+void    res_recordADV(OpenQueueEntry_t* msg);
 
 //=========================== public ==========================================
 
@@ -359,30 +359,32 @@ uint8_t    res_getJoinPriority(){
     return res_vars.joinPriority;
 }
 
-void    res_notifRetrieveIEDone(){
+void    res_notifRetrieveIEDone(OpenQueueEntry_t* msg){
   
     subIE_t*    tempSubIE = processIE_getSubSyncIE();
     if(tempSubIE->length != 0)
-      res_recordADV();
+      res_recordADV(msg);
     else
       reservation_notifyReceiveuResCommand();
     
     resetSubIE();
 }
 
-void res_recordADV() {
+void res_recordADV(OpenQueueEntry_t* msg) {
+  
     syncIEcontent_t*    tempSyncIEcontent = processIE_getSyncIEcontent();
     // node who joining network earlier have a higher priority 
     res_vars.joinPriority = tempSyncIEcontent->joinPriority + 1;
     
     frameAndLinkIEcontent_t* tempFrameAndLinkIEcontent = processIE_getFrameAndLinkIEcontent();
+    
     for(uint8_t i = 0; i<tempFrameAndLinkIEcontent->numOfSlotframes;i++)
     {
       uint8_t slotframeID    = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeID;
       uint16_t slotframeSize = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeSize;
       uint8_t numOfLink      = tempFrameAndLinkIEcontent->slotframeInfo[i].numOfLink;
       //set my schedule according links
-      schedule_setMySchedule(slotframeID,slotframeSize,numOfLink);
+      schedule_setMySchedule(slotframeID,slotframeSize,numOfLink,&(msg->l2_nextORpreviousHop));
     }
 
 }

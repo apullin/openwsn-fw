@@ -212,23 +212,23 @@ void schedule_addActiveSlot(slotOffset_t    slotOffset,
 }
 
 
-void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink){
+void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop){
   //set schedule according links
   open_addr_t temp_neighbor;
   for(uint8_t i = 0;i<numOfLink;i++)
   {
     if(schedule_checkExistSchedule(links[i].slotOffset))
     {
-         memset(&temp_neighbor,0,sizeof(temp_neighbor));
-         if(links[i].linktype == CELLTYPE_TXRX)
-         {
-            temp_neighbor.type             = ADDR_ANYCAST;
-         }
+      if(links[i].linktype == CELLTYPE_TXRX)
+      {
+         memcpy(&temp_neighbor,previousHop,sizeof(open_addr_t));
+
          schedule_addActiveSlot(links[i].slotOffset,
-         links[i].linktype,
-         FALSE,
-         links[i].channelOffset,
-         &temp_neighbor);
+            links[i].linktype,
+            FALSE,
+            links[i].channelOffset,
+            &temp_neighbor);
+      }
     }
   }
   memset(links,0,MAXACTIVESLOTS*sizeof(Link_t));
