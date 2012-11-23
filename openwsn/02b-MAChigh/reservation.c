@@ -87,29 +87,29 @@ void reservation_linkRequest() {
                             (errorparameter_t)0);
       return;
     }
-  }
-  // declare ownership over that packet
-  reservationPkt->creator = COMPONENT_RESERVATION;
-  reservationPkt->owner   = COMPONENT_RESERVATION;
+    // declare ownership over that packet
+    reservationPkt->creator = COMPONENT_RESERVATION;
+    reservationPkt->owner   = COMPONENT_RESERVATION;
          
-  memcpy(&(reservationPkt->l2_nextORpreviousHop),reservationNeighAddr,sizeof(open_addr_t));
+    memcpy(&(reservationPkt->l2_nextORpreviousHop),reservationNeighAddr,sizeof(open_addr_t));
   
-  //set uRes command ID
-  reservation_setuResCommandID(RESERCATIONLINKREQ);
-  //set slotframeID and bandwidth
-  reservation_setuResBandwidth(1,0);
-  //set LinkTypeIE
-  processIE_setSubuResLinkTypeIE();
-  //set uResCommandIE
-  processIE_setSubuResCommandIE();
-  //set uResBandwidthIE
-  processIE_setSubuResBandwidthIE();
-  //set IE after set all required subIE
-  processIE_setMLME_IE();
-  //add an IE to adv's payload
-  IEFiled_prependIE(reservationPkt);
+    //set uRes command ID
+    reservation_setuResCommandID(RESERCATIONLINKREQ);
+    //set slotframeID and bandwidth
+    reservation_setuResBandwidth(1,0);
+    //set LinkTypeIE
+    processIE_setSubuResLinkTypeIE();
+    //set uResCommandIE
+    processIE_setSubuResCommandIE();
+    //set uResBandwidthIE
+    processIE_setSubuResBandwidthIE();
+    //set IE after set all required subIE
+    processIE_setMLME_IE();
+    //add an IE to adv's payload
+    IEFiled_prependIE(reservationPkt);
   
-  res_send(reservationPkt);
+    res_send(reservationPkt);
+  }
 }
 
 //event
