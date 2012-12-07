@@ -15,15 +15,19 @@
 #include "processIE.h"
 #include "IEfield.h"
 #include "reservation.h"
+#include "processIE.h"
 
 
 //=========================== typedef =========================================
+#define NO_UPPER_LAYER_CALLING_RESERVATION
 
 //=========================== variables =======================================
-
 typedef struct {
-  uint8_t commandID;
-  bandwidth_vars_t bandwidth_vars;
+  bool                 busySending;     // TRUE when busy sending an reservation command
+  open_addr_t          ResNeighborAddr;
+  reservation_state_t  State;
+  uint8_t              commandID;
+  bandwidth_vars_t     bandwidth_vars;
 } reservation_vars_t;
 
 reservation_vars_t reservation_vars;
@@ -50,17 +54,137 @@ void    reservation_setuResBandwidth(uint8_t numOfLinks, uint8_t slotframeID){
   reservation_vars.bandwidth_vars.numOfLinks    = numOfLinks;
   reservation_vars.bandwidth_vars.slotframeID   = slotframeID;
 }
+
+void    reservation_notifyReceiveuResLinkRequest(OpenQueueEntry_t* msg){
+  
+  uResBandwidthIEcontent_t* tempBandwidthIE = processIE_getuResBandwidthIEcontent();
+  //record bandwidth information
+  reservation_vars.bandwidth_vars.numOfLinks  = tempBandwidthIE->numOfLinks;
+  reservation_vars.bandwidth_vars.slotframeID = tempBandwidthIE->slotframeID;
+  
+  frameAndLinkIEcontent_t* tempFrameAndLinkIEcontent = processIE_getFrameAndLinkIEcontent();
+    
+  for(uint8_t i = 0; i<tempFrameAndLinkIEcontent->numOfSlotframes;i++)
+  {
+    uint8_t slotframeID    = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeID;
+    uint16_t slotframeSize = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeSize;
+    uint8_t numOfLink      = tempFrameAndLinkIEcontent->slotframeInfo[i].numOfLink;
+    if(reservation_vars.bandwidth_vars.slotframeID == slotframeID)
+      //allocate links for neighbor
+      schedule_allocateLinks(slotframeID,numOfLink,reservation_vars.bandwidth_vars.numOfLinks);
+  }
+  
+  schedule_addLinksToSchedule(reservation_vars.bandwidth_vars.slotframeID,&(msg->l2_nextORpreviousHop),reservation_vars.bandwidth_vars.numOfLinks,reservation_vars.State);
+  
+  //call link response command
+  reservation_linkResponse(&(msg->l2_nextORpreviousHop));
+  
+  reservation_vars.State = S_IDLE;
+}
+
+void    reservation_notifyReceiveuResLinkResponse(OpenQueueEntry_t* msg){
+
+    frameAndLinkIEcontent_t* tempFrameAndLinkIEcontent = processIE_getFrameAndLinkIEcontent();
+    
+    for(uint8_t i = 0; i<tempFrameAndLinkIEcontent->numOfSlotframes;i++)
+    {
+      uint8_t slotframeID    = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeID;
+      uint16_t slotframeSize = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeSize;
+      uint8_t numOfLink      = tempFrameAndLinkIEcontent->slotframeInfo[i].numOfLink;
+      
+      schedule_addLinksToSchedule(slotframeID,&(msg->l2_nextORpreviousHop),numOfLink,reservation_vars.State);
+
+    }
+    
+    reservation_vars.State = S_IDLE;
+}
+
+void    reservation_notifyReceiveRemoveLinkRequest(OpenQueueEntry_t* msg){
+  
+  frameAndLinkIEcontent_t* tempFrameAndLinkIEcontent = processIE_getFrameAndLinkIEcontent();
+    
+  for(uint8_t i = 0; i<tempFrameAndLinkIEcontent->numOfSlotframes;i++)
+  {
+    uint8_t slotframeID    = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeID;
+    uint16_t slotframeSize = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeSize;
+    uint8_t numOfLink      = tempFrameAndLinkIEcontent->slotframeInfo[i].numOfLink;
+
+    schedule_removeLinksFromSchedule(slotframeID,slotframeSize,numOfLink,&(msg->l2_nextORpreviousHop),reservation_vars.State);
+  }
+  
+  reservation_vars.State = S_IDLE;
+}
+
+void    reservation_notifyReceiveScheduleRequest(OpenQueueEntry_t* msg){
+}
+
+void    reservation_notifyReceiveScheduleResponse(OpenQueueEntry_t* msg){
+}
+
+
 //call res layer
-void    reservation_notifyReceiveuResCommand(){
+void    reservation_sendDone(OpenQueueEntry_t* msg, error_t error){
+      msg->owner = COMPONENT_RESERVATION;
+
+      switch (reservation_vars.State)
+      {
+      case S_WAIT_RESCELLREQUEST_SENDDONE:
+        reservation_vars.State = S_WAIT_FORRESPONSE;
+        break;
+      case S_WAIT_RESLINKRESPONSE_SENDDONE:
+        reservation_vars.State = S_IDLE;
+        break;
+      case S_WAIT_REMOVELINKREQUEST_SENDDONE:
+        reservation_vars.State = S_IDLE;
+        break;
+      default:
+        //log error
+      }
+      // discard reservation packets this component has created
+      openqueue_freePacketBuffer(msg);
+}
+
+
+void    reservation_notifyReceiveuResCommand(OpenQueueEntry_t* msg){
+  
+      //reset sub IE
+      resetSubIE();
   
       uResCommandIEcontent_t* tempuResCommandIEcontent = processIE_getuResCommandIEcontent();
       switch(tempuResCommandIEcontent->uResCommandID)
       {
-      case 0:break;
-      case 1:break;
-      case 2:break;
-      case 3:break;
-      case 4:break;
+      case 0:
+        if(reservation_vars.State == S_IDLE)
+        {
+          reservation_vars.State = S_RESLINKREQUEST_RECEIVE;
+          //received uResCommand is reserve link request
+          reservation_notifyReceiveuResLinkRequest(msg);
+        }
+        break;
+      case 1:
+        if(reservation_vars.State == S_WAIT_FORRESPONSE)
+        {
+          reservation_vars.State = S_RESLINKRESPONSE_RECEIVE;
+          //received uResCommand is reserve link response
+          reservation_notifyReceiveuResLinkResponse(msg);
+        }
+        break;
+      case 2:
+        if(reservation_vars.State == S_IDLE)
+        {
+          reservation_vars.State = S_REMOVELINKREQUEST_RECEIVE;
+          //received uResComand is remove link request
+          reservation_notifyReceiveRemoveLinkRequest(msg);
+        }
+        break;
+      case 3:
+        //received uResCommand is schedule request
+        reservation_notifyReceiveScheduleRequest(msg);
+        break;
+      case 4:
+        //received uResCommand is schedule response
+        reservation_notifyReceiveScheduleResponse(msg);
+        break;
       default:
          // log the error
         break;
@@ -69,10 +193,11 @@ void    reservation_notifyReceiveuResCommand(){
 //call by up layer
 void reservation_linkRequest() {
   
+  if(reservation_vars.State != S_IDLE)
+    return;
+  
   leds_debug_toggle();
   
-  //this should added to openwsn
-  uint8_t COMPONENT_RESERVATION = 0xff;
   OpenQueueEntry_t* reservationPkt;
   open_addr_t*      reservationNeighAddr;
   
@@ -87,6 +212,10 @@ void reservation_linkRequest() {
                             (errorparameter_t)0);
       return;
     }
+    
+    //change state to resLinkRequest command
+    reservation_vars.State = S_RESLINKREQUEST_SEND;
+    
     // declare ownership over that packet
     reservationPkt->creator = COMPONENT_RESERVATION;
     reservationPkt->owner   = COMPONENT_RESERVATION;
@@ -95,24 +224,167 @@ void reservation_linkRequest() {
   
     //set uRes command ID
     reservation_setuResCommandID(RESERCATIONLINKREQ);
-    //set slotframeID and bandwidth
-    reservation_setuResBandwidth(1,0);
-    //set LinkTypeIE
-    processIE_setSubuResLinkTypeIE();
+    
+    uint8_t numOfSlotframes = schedule_getNumSlotframe();
+    
+#ifdef NO_UPPER_LAYER_CALLING_RESERVATION
+    //generate candidata links
+    for(uint8_t i=0;i<numOfSlotframes;i++)
+      schedule_uResGenerateCandidataLinkList(i);
+#endif
+    //set SubFrameAndLinkIE
+    processIE_setSubFrameAndLinkIE();
     //set uResCommandIE
     processIE_setSubuResCommandIE();
+
     //set uResBandwidthIE
     processIE_setSubuResBandwidthIE();
+    
+    //reset bandwidth to 0
+    memset(&(reservation_vars.bandwidth_vars),0,sizeof(bandwidth_vars_t));
     //set IE after set all required subIE
     processIE_setMLME_IE();
     //add an IE to adv's payload
     IEFiled_prependIE(reservationPkt);
+    
+    //I has an IE in my payload
+    reservationPkt->l2_IEListPresent = 1;
   
     res_send(reservationPkt);
+    
+    reservation_vars.State = S_WAIT_RESCELLREQUEST_SENDDONE;
+  }
+}
+
+void  reservation_linkResponse(open_addr_t* tempNeighbor){
+  
+  if(reservation_vars.State != S_IDLE)
+    return;
+  
+  leds_debug_toggle();
+  
+  OpenQueueEntry_t* reservationPkt;
+  
+    // get a free packet buffer
+    reservationPkt = openqueue_getFreePacketBuffer(COMPONENT_RESERVATION);
+  
+    if (reservationPkt==NULL) {
+      openserial_printError(COMPONENT_RESERVATION,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
+      return;
+    }
+    
+    //changing state to resLinkRespone command
+    reservation_vars.State = S_RESLINKRESPONSE_SEND;
+    
+    // declare ownership over that packet
+    reservationPkt->creator = COMPONENT_RESERVATION;
+    reservationPkt->owner   = COMPONENT_RESERVATION;
+    
+    memcpy(&(reservationPkt->l2_nextORpreviousHop),tempNeighbor,sizeof(open_addr_t));
+    
+    //set uRes command ID
+    reservation_setuResCommandID(RESERCATIONLINKRESPONSE);
+
+    //set SubFrameAndLinkIE
+    processIE_setSubFrameAndLinkIE();
+    //set uResCommandIE
+    processIE_setSubuResCommandIE();
+
+    //set IE after set all required subIE
+    processIE_setMLME_IE();
+    //add an IE to adv's payload
+    IEFiled_prependIE(reservationPkt);
+    
+    //I has an IE in my payload
+    reservationPkt->l2_IEListPresent = 1;
+  
+    res_send(reservationPkt);
+  
+    reservation_vars.State = S_WAIT_RESLINKRESPONSE_SENDDONE;
+}
+
+//remove link command
+void reservation_removeLinkRequest(){
+  
+  if(reservation_vars.State != S_IDLE)
+    return;
+  
+  leds_debug_toggle();
+  
+  OpenQueueEntry_t* reservationPkt;
+  open_addr_t*      reservationNeighAddr;
+  
+  reservationNeighAddr = neighbors_reservationNeighbor();
+  if(reservationNeighAddr!=NULL){
+    // get a free packet buffer
+    reservationPkt = openqueue_getFreePacketBuffer(COMPONENT_RESERVATION);
+  
+    if (reservationPkt==NULL) {
+      openserial_printError(COMPONENT_RESERVATION,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
+      return;
+    }
+    // change state to sending removeLinkRequest Command
+    reservation_vars.State = S_REMOVELINKREQUEST_SEND;
+    // declare ownership over that packet
+    reservationPkt->creator = COMPONENT_RESERVATION;
+    reservationPkt->owner   = COMPONENT_RESERVATION;
+         
+    memcpy(&(reservationPkt->l2_nextORpreviousHop),reservationNeighAddr,sizeof(open_addr_t));
+  
+    //set uRes command ID
+    reservation_setuResCommandID(RESERVATIONREMOVELINKREQUEST);
+    
+    uint8_t numOfSlotframes = schedule_getNumSlotframe();
+#ifdef NO_UPPER_LAYER_CALLING_RESERVATION
+    Link_t tempLink;
+    tempLink.channelOffset      = 0;
+    tempLink.slotOffset         = 7;
+    tempLink.linktype           = CELLTYPE_RX;
+    //generate links to be removed
+    for(uint8_t i=0;i<numOfSlotframes;i++)
+      schedule_uResGenerateRemoveLinkList(i,tempLink);
+#endif
+    //set SubFrameAndLinkIE
+    processIE_setSubFrameAndLinkIE();
+    
+    //remove links in local
+    frameAndLinkIEcontent_t* tempFrameAndLinkIEcontent = processIE_getFrameAndLinkIEcontent();
+    
+    for(uint8_t i = 0; i<tempFrameAndLinkIEcontent->numOfSlotframes;i++)
+    {
+      uint8_t slotframeID    = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeID;
+      uint16_t slotframeSize = tempFrameAndLinkIEcontent->slotframeInfo[i].slotframeSize;
+      uint8_t numOfLink      = tempFrameAndLinkIEcontent->slotframeInfo[i].numOfLink;
+
+      schedule_removeLinksFromSchedule(slotframeID,slotframeSize,numOfLink,&(reservationPkt->l2_nextORpreviousHop),reservation_vars.State);
+    }
+    
+    //set uResCommandIE
+    processIE_setSubuResCommandIE();
+
+    //set IE after set all required subIE
+    processIE_setMLME_IE();
+    //add an IE to adv's payload
+    IEFiled_prependIE(reservationPkt);
+    
+    //I has an IE in my payload
+    reservationPkt->l2_IEListPresent = 1;
+  
+    res_send(reservationPkt);
+    
+    reservation_vars.State = S_WAIT_REMOVELINKREQUEST_SENDDONE;
   }
 }
 
 //event
 void isr_reservation_button() {
+  
+  //set slotframeID and bandwidth
+  reservation_setuResBandwidth(1,0);
+  
   reservation_linkRequest();
 }

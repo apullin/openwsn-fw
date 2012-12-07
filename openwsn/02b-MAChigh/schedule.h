@@ -90,6 +90,10 @@ PRAGMA(pack());
                                                  bool            shared,
                                                  uint8_t         channelOffset,
                                                  open_addr_t*    neighbor);
+          void            schedule_removeActiveSlot(slotOffset_t    slotOffset,
+                                                    cellType_t      type,
+                                                    uint8_t         channelOffset,
+                                                    open_addr_t*    neighbor);
           void            schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop);
 // from IEEE802154E
  void            schedule_syncSlotOffset(slotOffset_t targetSlotOffset);
@@ -113,8 +117,16 @@ void            schedule_generateLinkList(uint8_t slotframeID);
 Link_t*         schedule_getLinksList(uint8_t slotframeID);
 
 uint8_t         schedule_uResGetLinksNumber(uint8_t numOfSlotframe);
-void            schedule_uResGenerateLinkList(uint8_t slotframeID);
+void            schedule_uResGenerateCandidataLinkList(uint8_t slotframeID);
+void            schedule_uResGenerateRemoveLinkList(uint8_t slotframeID,Link_t tempLink);
 Link_t*         schedule_uResGetLinksList(uint8_t slotframeID);
+
+// from reservation
+void            schedule_addLinksToSchedule(uint8_t slotframeID,open_addr_t* previousHop,uint8_t numOfLinks,uint8_t state);
+void            schedule_allocateLinks(uint8_t slotframeID,uint8_t numOfLink,uint8_t bandwidth);
+void            schedule_removeLinksFromSchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop,uint8_t state);
+
+scheduleEntry_t* schedule_getScheduleEntry(uint16_t slotOffset);
 /**
 \}
 \}

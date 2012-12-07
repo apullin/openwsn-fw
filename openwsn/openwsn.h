@@ -126,6 +126,7 @@ enum {
    COMPONENT_RES                       = 0x0b,
    COMPONENT_NEIGHBORS                 = 0x0c,
    COMPONENT_SCHEDULE                  = 0x0d,
+   COMPONENT_RESERVATION               = 0xff,
    //IPHC
    COMPONENT_OPENBRIDGE                = 0x0e,
    COMPONENT_IPHC                      = 0x0f,

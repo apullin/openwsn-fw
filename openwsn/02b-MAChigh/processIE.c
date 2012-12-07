@@ -109,7 +109,6 @@ void processIE_setSubFrameAndLinkIE(){
     length += 1;
     frameAndLinkIEcontent_vars.slotframeInfo[i].slotframeSize             = schedule_getSlotframeSize(i);
     length += 2;
-    schedule_generateLinkList(i);
     frameAndLinkIEcontent_vars.slotframeInfo[i].numOfLink                 = schedule_getLinksNumber(i);
     length += 1;
     frameAndLinkIEcontent_vars.slotframeInfo[i].links                     = schedule_getLinksList(i);
@@ -150,7 +149,6 @@ void processIE_setSubuResLinkTypeIE(){
     length += 1;
     uResLinkTypeIEcontent_vars.slotframeInfo[i].slotframeSize             = schedule_getSlotframeSize(i);
     length += 2;
-    schedule_uResGenerateLinkList(i);
     uResLinkTypeIEcontent_vars.slotframeInfo[i].numOfLink                 = schedule_getLinksNumber(i);
     length += 1;
     uResLinkTypeIEcontent_vars.slotframeInfo[i].links                     = schedule_getLinksList(i);

@@ -115,6 +115,10 @@ void task_resNotifSendDone() {
                            TIME_MS,
                            res_vars.periodMaintenance);
    } else {
+     if(msg->creator == COMPONENT_RESERVATION) {
+       reservation_sendDone(msg,msg->l2_sendDoneError);
+     }
+     else
       // send the rest up the stack
       iphc_sendDone(msg,msg->l2_sendDoneError);
    }
@@ -270,6 +274,11 @@ port_INLINE void sendAdv() {
       //packetfunctions_reserveHeaderSize(adv, ADV_PAYLOAD_LENGTH);
       // the actual value of the current ASN will be written by the
       // IEEE802.15.4e when transmitting
+      
+      uint8_t numOfSlotframes = schedule_getNumSlotframe();
+     
+      for(uint8_t i=0;i<numOfSlotframes;i++)
+        schedule_generateLinkList(i);
       //set SubFrameAndLinkIE
       processIE_setSubFrameAndLinkIE();
       //set subSyncIE
@@ -365,9 +374,7 @@ void    res_notifRetrieveIEDone(OpenQueueEntry_t* msg){
     if(tempSubIE->length != 0)
       res_recordADV(msg);
     else
-      reservation_notifyReceiveuResCommand();
-    
-    resetSubIE();
+      reservation_notifyReceiveuResCommand(msg);
 }
 
 void res_recordADV(OpenQueueEntry_t* msg) {
@@ -386,5 +393,6 @@ void res_recordADV(OpenQueueEntry_t* msg) {
       //set my schedule according links
       schedule_setMySchedule(slotframeID,slotframeSize,numOfLink,&(msg->l2_nextORpreviousHop));
     }
-
+     //reest sub IE
+     resetSubIE();
 }

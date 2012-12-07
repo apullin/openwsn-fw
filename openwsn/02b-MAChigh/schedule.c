@@ -5,6 +5,8 @@
 #include "openrandom.h"
 #include "board_info.h"
 #include "processIE.h"
+#include "reservation.h"
+#include "packetfunctions.h"
 
 //=========================== variables =======================================
 
@@ -211,6 +213,17 @@ void schedule_addActiveSlot(slotOffset_t    slotOffset,
    ENABLE_INTERRUPTS();
 }
 
+void    schedule_removeActiveSlot(slotOffset_t    slotOffset,
+                                  cellType_t      type,
+                                  uint8_t         channelOffset,
+                                  open_addr_t*    neighbor){
+   INTERRUPT_DECLARATION();
+   DISABLE_INTERRUPTS();
+   
+   
+   ENABLE_INTERRUPTS();
+   
+}
 
 void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop){
   //set schedule according links
@@ -222,9 +235,9 @@ void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_
       if(links[i].linktype == CELLTYPE_TXRX)
       {
          memcpy(&temp_neighbor,previousHop,sizeof(open_addr_t));
-
+         temp_neighbor.type             = ADDR_ANYCAST;
          schedule_addActiveSlot(links[i].slotOffset,
-            links[i].linktype,
+            CELLTYPE_TXRX,
             FALSE,
             links[i].channelOffset,
             &temp_neighbor);
@@ -420,7 +433,7 @@ void schedule_getNetDebugInfo(netDebugScheduleEntry_t *schlist, uint8_t maxbytes
 }
 
  // from processIE
-uint8_t         schedule_getNumSlotframe(){
+uint8_t schedule_getNumSlotframe(){
   return 1;
 }
 
@@ -435,7 +448,7 @@ frameLength_t   schedule_getSlotframeSize(uint8_t numOfSlotframe){
    return res;
 }
 
-uint8_t         schedule_getLinksNumber(uint8_t slotframeID){
+uint8_t schedule_getLinksNumber(uint8_t slotframeID){
     uint8_t i;
     for (i=0;i<MAXACTIVESLOTS;i++){
       if(links[i].linktype == CELLTYPE_OFF)
@@ -445,7 +458,7 @@ uint8_t         schedule_getLinksNumber(uint8_t slotframeID){
 
 }
 
-Link_t*         schedule_getLinksList(uint8_t slotframeID){
+Link_t* schedule_getLinksList(uint8_t slotframeID){
     //return link list
     return links;
 }
@@ -462,6 +475,20 @@ void schedule_generateLinkList(uint8_t slotframeID){
         j++;
        }
    }
+}
+
+scheduleEntry_t* schedule_getScheduleEntry(uint16_t slotOffset){
+    scheduleEntry_t* tempScheduleEntry = schedule_vars.currentScheduleEntry;
+  
+  do
+  {
+    if(slotOffset == tempScheduleEntry->slotOffset)
+      return tempScheduleEntry;
+    
+    tempScheduleEntry = tempScheduleEntry->next;
+    
+  }while(tempScheduleEntry != schedule_vars.currentScheduleEntry);
+  return NULL;
 }
 
 bool isOneAvailableLink(Link_t tempLink){
@@ -487,7 +514,7 @@ bool isOneRequestedLink(Link_t tempLink){
   return TRUE;
 }
 
-void    schedule_uResGenerateLinkList(uint8_t slotframeID){
+void    schedule_uResGenerateCandidataLinkList(uint8_t slotframeID){
     uint8_t j = 0;
     Link_t tempLink;
     // for test
@@ -506,7 +533,116 @@ void    schedule_uResGenerateLinkList(uint8_t slotframeID){
       }
 }
 
+void    schedule_uResGenerateRemoveLinkList(uint8_t slotframeID,Link_t tempLink){
+    // this function should  be called by upper layers to generate links to be remove
+    // if you want to use reservation to remove links, you should add them to array links[MAXACTIVESLOTS]
+        links[0] = tempLink;
+}
 
+// from reservation
+void    schedule_addLinksToSchedule(uint8_t slotframeID,open_addr_t* previousHop,uint8_t numOfLinks,uint8_t state){
+    //set schedule according links
+  open_addr_t temp_neighbor;
+  for(uint8_t i = 0;i<numOfLinks;i++)
+  {
+    if(schedule_checkExistSchedule(links[i].slotOffset))
+    {
+      if(links[i].linktype == CELLTYPE_TX)
+      {
+        switch(state) {
+          case S_RESLINKREQUEST_RECEIVE:
+            memcpy(&temp_neighbor,previousHop,sizeof(open_addr_t));
+            //add a RX link
+            schedule_addActiveSlot(links[i].slotOffset,
+              CELLTYPE_RX,
+              FALSE,
+              links[i].channelOffset,
+              &temp_neighbor);
+            break;
+          case S_RESLINKRESPONSE_RECEIVE:
+            memcpy(&temp_neighbor,previousHop,sizeof(open_addr_t));
+            //add a TX link
+            schedule_addActiveSlot(links[i].slotOffset,
+              CELLTYPE_TX,
+              FALSE,
+              links[i].channelOffset,
+              &temp_neighbor);
+            break;
+          default:
+          //log error
+        }
+
+      }
+    }
+  }
+  memset(&(links[0]),0,MAXACTIVESLOTS*sizeof(Link_t));
+}
+
+void    schedule_allocateLinks(uint8_t slotframeID,uint8_t numOfLink,uint8_t bandwidth){
+  
+  uint8_t j = 0;
+  
+  for(uint8_t i=0;i<numOfLink;i++)
+  {
+    if(isOneAvailableLink(links[i]))
+    {
+      if(i>j)
+        memcpy(&(links[j]),&(links[i]),sizeof(Link_t));
+      j++;
+      if(j == bandwidth)
+      {
+        memset(&(links[j]),0,(MAXACTIVESLOTS-j)*sizeof(Link_t));
+        return;
+      }
+    }
+  }
+  memset(&(links[0]),0,MAXACTIVESLOTS*sizeof(Link_t));
+}
+
+void    schedule_removeLinksFromSchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop,uint8_t state){
+  //set schedule according links
+  open_addr_t* temp_neighbor;
+  scheduleEntry_t* tempScheduleEntry;
+  for(uint8_t i = 0;i<numOfLink;i++)
+  {
+    if(schedule_checkExistSchedule(links[i].slotOffset))
+    {
+      tempScheduleEntry = schedule_getScheduleEntry(links[i].slotOffset);
+      
+      if(tempScheduleEntry == NULL)
+      {
+        //log error
+        return;
+      }
+      //get reference neighbor of Slot
+      memcpy(temp_neighbor,&(tempScheduleEntry->neighbor),sizeof(open_addr_t));
+      
+      if(links[i].linktype == CELLTYPE_RX && packetfunctions_sameAddress(temp_neighbor,previousHop))
+      {
+        switch (state){
+          case S_REMOVELINKREQUEST_SEND:    
+              // remove CELLTYPE_TX link from shedule
+            schedule_removeActiveSlot(links[i].slotOffset,
+              CELLTYPE_TX,
+              links[i].channelOffset,
+              temp_neighbor);
+            break;
+          case S_REMOVELINKREQUEST_RECEIVE:
+            //remove CELLTYPE_RX link from shedule
+            schedule_removeActiveSlot(links[i].slotOffset,
+              CELLTYPE_RX,
+              links[i].channelOffset,
+              temp_neighbor);
+            break;
+        default:
+          //log error
+        }
+
+      }
+    }
+  }
+  memset(links,0,MAXACTIVESLOTS*sizeof(Link_t));
+}
 
 //=========================== private =========================================
 
