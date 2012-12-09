@@ -217,9 +217,30 @@ void    schedule_removeActiveSlot(slotOffset_t    slotOffset,
                                   cellType_t      type,
                                   uint8_t         channelOffset,
                                   open_addr_t*    neighbor){
+        scheduleEntry_t* slotContainer;
+
    INTERRUPT_DECLARATION();
    DISABLE_INTERRUPTS();
    
+   	// find if SlotOffset has been used
+	slotContainer = &schedule_vars.scheduleBuf[0];
+	while (slotContainer<=&schedule_vars.scheduleBuf[MAXACTIVESLOTS-1]) {
+          if ((packetfunctions_sameAddress(&slotContainer->neighbor, neighbor))&&
+             (slotContainer->type ==type) && 
+             (slotContainer->slotOffset == slotOffset)&&
+             (slotContainer->channelOffset == channelOffset)  
+               )
+                break;
+           else 
+		slotContainer++;
+	}
+        //copy nextSlotContainer to slotContainer, then delete nextSlotContainer
+        scheduleEntry_t* nextSlotContainer = slotContainer->next;
+        memcpy(slotContainer,slotContainer->next,sizeof(scheduleEntry_t));
+        memset(nextSlotContainer, 0, sizeof(scheduleEntry_t));
+        
+        // maintain debug stats
+        schedule_dbg.numActiveSlotsCur--;
    
    ENABLE_INTERRUPTS();
    
@@ -230,7 +251,7 @@ void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_
   open_addr_t temp_neighbor;
   for(uint8_t i = 0;i<numOfLink;i++)
   {
-    if(schedule_checkExistSchedule(links[i].slotOffset))
+    if(schedule_checkExistSchedule(links[i].slotOffset) == FALSE)
     {
       if(links[i].linktype == CELLTYPE_TXRX)
       {
@@ -545,7 +566,7 @@ void    schedule_addLinksToSchedule(uint8_t slotframeID,open_addr_t* previousHop
   open_addr_t temp_neighbor;
   for(uint8_t i = 0;i<numOfLinks;i++)
   {
-    if(schedule_checkExistSchedule(links[i].slotOffset))
+    if(schedule_checkExistSchedule(links[i].slotOffset) == FALSE)
     {
       if(links[i].linktype == CELLTYPE_TX)
       {
@@ -567,6 +588,7 @@ void    schedule_addLinksToSchedule(uint8_t slotframeID,open_addr_t* previousHop
               FALSE,
               links[i].channelOffset,
               &temp_neighbor);
+            memset(&(links[0]),0,MAXACTIVESLOTS*sizeof(Link_t));
             break;
           default:
           //log error
@@ -575,7 +597,6 @@ void    schedule_addLinksToSchedule(uint8_t slotframeID,open_addr_t* previousHop
       }
     }
   }
-  memset(&(links[0]),0,MAXACTIVESLOTS*sizeof(Link_t));
 }
 
 void    schedule_allocateLinks(uint8_t slotframeID,uint8_t numOfLink,uint8_t bandwidth){
@@ -601,7 +622,7 @@ void    schedule_allocateLinks(uint8_t slotframeID,uint8_t numOfLink,uint8_t ban
 
 void    schedule_removeLinksFromSchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop,uint8_t state){
   //set schedule according links
-  open_addr_t* temp_neighbor;
+  open_addr_t temp_neighbor;
   scheduleEntry_t* tempScheduleEntry;
   for(uint8_t i = 0;i<numOfLink;i++)
   {
@@ -615,9 +636,9 @@ void    schedule_removeLinksFromSchedule(uint8_t slotframeID,uint16_t slotframeS
         return;
       }
       //get reference neighbor of Slot
-      memcpy(temp_neighbor,&(tempScheduleEntry->neighbor),sizeof(open_addr_t));
+      memcpy(&(temp_neighbor),&(tempScheduleEntry->neighbor),sizeof(open_addr_t));
       
-      if(links[i].linktype == CELLTYPE_RX && packetfunctions_sameAddress(temp_neighbor,previousHop))
+      if(links[i].linktype == CELLTYPE_RX && packetfunctions_sameAddress(&(temp_neighbor),previousHop))
       {
         switch (state){
           case S_REMOVELINKREQUEST_SEND:    
@@ -625,14 +646,15 @@ void    schedule_removeLinksFromSchedule(uint8_t slotframeID,uint16_t slotframeS
             schedule_removeActiveSlot(links[i].slotOffset,
               CELLTYPE_TX,
               links[i].channelOffset,
-              temp_neighbor);
+              &(temp_neighbor));
             break;
           case S_REMOVELINKREQUEST_RECEIVE:
             //remove CELLTYPE_RX link from shedule
             schedule_removeActiveSlot(links[i].slotOffset,
               CELLTYPE_RX,
               links[i].channelOffset,
-              temp_neighbor);
+              &(temp_neighbor));
+              memset(links,0,MAXACTIVESLOTS*sizeof(Link_t));
             break;
         default:
           //log error
@@ -641,7 +663,6 @@ void    schedule_removeLinksFromSchedule(uint8_t slotframeID,uint16_t slotframeS
       }
     }
   }
-  memset(links,0,MAXACTIVESLOTS*sizeof(Link_t));
 }
 
 //=========================== private =========================================
@@ -671,7 +692,7 @@ void schedule_resetEntry(scheduleEntry_t* pScheduleEntry) {
 bool schedule_checkExistSchedule(uint16_t slotOffset){
    for (uint8_t i=0;i<MAXACTIVESLOTS;i++){
       if(schedule_vars.scheduleBuf[i].slotOffset == slotOffset)
-        return FALSE;
+        return TRUE;
    }
-  return TRUE;
+  return FALSE;
 }

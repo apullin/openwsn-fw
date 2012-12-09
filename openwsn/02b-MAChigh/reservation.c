@@ -28,6 +28,7 @@ typedef struct {
   reservation_state_t  State;
   uint8_t              commandID;
   bandwidth_vars_t     bandwidth_vars;
+  uint8_t              requestOrRemoveLink; //when requestOrRemoveLink%3 is 0 or 1, call uResLinkRequest; when the value is 2, call uResRemoveLink.
 } reservation_vars_t;
 
 reservation_vars_t reservation_vars;
@@ -76,10 +77,11 @@ void    reservation_notifyReceiveuResLinkRequest(OpenQueueEntry_t* msg){
   
   schedule_addLinksToSchedule(reservation_vars.bandwidth_vars.slotframeID,&(msg->l2_nextORpreviousHop),reservation_vars.bandwidth_vars.numOfLinks,reservation_vars.State);
   
+  reservation_vars.State = S_IDLE;
+  
   //call link response command
   reservation_linkResponse(&(msg->l2_nextORpreviousHop));
   
-  reservation_vars.State = S_IDLE;
 }
 
 void    reservation_notifyReceiveuResLinkResponse(OpenQueueEntry_t* msg){
@@ -383,8 +385,14 @@ void reservation_removeLinkRequest(){
 //event
 void isr_reservation_button() {
   
-  //set slotframeID and bandwidth
-  reservation_setuResBandwidth(1,0);
+  if(reservation_vars.requestOrRemoveLink%3 != 2){
+      //set slotframeID and bandwidth
+    reservation_setuResBandwidth(1,0);
   
-  reservation_linkRequest();
+    reservation_linkRequest();
+  }
+  else
+    reservation_removeLinkRequest();
+  
+  reservation_vars.requestOrRemoveLink += 1;
 }
