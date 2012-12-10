@@ -677,6 +677,8 @@ port_INLINE void activity_ti1ORri1() {
             ieee154e_vars.dataToSend = NULL;
          }
          if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
+            // this packet wantes to send at current slot
+           if(ieee154e_vars.dataToSend->l2_slotToSendPacket == ieee154e_vars.slotOffset){
             // change state
             changeState(S_TXDATAOFFSET);
             // change owner
@@ -685,6 +687,9 @@ port_INLINE void activity_ti1ORri1() {
             ieee154e_vars.dataToSend->l2_numTxAttempts++;
             // arm tt1
             radiotimer_schedule(DURATION_tt1);
+           }
+           else
+             endSlot();
          } else if (cellType==CELLTYPE_TX){
             // abort
             endSlot();

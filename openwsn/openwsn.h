@@ -127,6 +127,7 @@ enum {
    COMPONENT_NEIGHBORS                 = 0x0c,
    COMPONENT_SCHEDULE                  = 0x0d,
    COMPONENT_RESERVATION               = 0xff,
+   COMPONENT_UPPLAYER                  = 0xfe,
    //IPHC
    COMPONENT_OPENBRIDGE                = 0x0e,
    COMPONENT_IPHC                      = 0x0f,
@@ -279,6 +280,7 @@ typedef struct {
    uint8_t*      l2_payload;                     // pointer to the start of the payload of l2 (used for MAC to fill in ASN in ADV)
    bool          l2_IEListPresent;               //did have IE field?
    uint8_t*      l2_ASN_payload;
+   uint16_t      l2_slotToSendPacket;            //send packet at this slot
    //l1 (drivers)
    uint8_t       l1_txPower;                     // power for packet to Tx at
    int8_t        l1_rssi;                        // RSSI of received packet

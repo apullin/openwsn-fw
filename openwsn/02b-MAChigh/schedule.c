@@ -256,7 +256,6 @@ void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_
       if(links[i].linktype == CELLTYPE_TXRX)
       {
          memcpy(&temp_neighbor,previousHop,sizeof(open_addr_t));
-         temp_neighbor.type             = ADDR_ANYCAST;
          schedule_addActiveSlot(links[i].slotOffset,
             CELLTYPE_TXRX,
             FALSE,
@@ -266,6 +265,26 @@ void    schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_
     }
   }
   memset(links,0,MAXACTIVESLOTS*sizeof(Link_t));
+}
+
+slotOffset_t    schedule_getSlotToSendPacket(OpenQueueEntry_t* msg,open_addr_t*     neighbor){
+   scheduleEntry_t* slotContainer = &schedule_vars.scheduleBuf[0];
+   while (slotContainer<=&schedule_vars.scheduleBuf[MAXACTIVESLOTS-1]){
+     if(msg->creator == COMPONENT_RESERVATION && slotContainer->type == CELLTYPE_TXRX){
+        if(idmanager_getIsDAGroot())
+          return slotContainer->slotOffset;
+        else if(packetfunctions_sameAddress(&slotContainer->neighbor, neighbor))
+          return slotContainer->slotOffset;
+     }
+     if((msg->creator != COMPONENT_RESERVATION) && 
+        (slotContainer->type == CELLTYPE_TX) &&
+        (packetfunctions_sameAddress(&slotContainer->neighbor, neighbor)))
+       return slotContainer->slotOffset;
+     
+    slotContainer++;
+   }
+   //return 0 if no slot to send msg
+   return 0;
 }
 
 //=== from IEEE802154E: reading the schedule and updating statistics

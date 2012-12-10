@@ -95,6 +95,7 @@ PRAGMA(pack());
                                                     uint8_t         channelOffset,
                                                     open_addr_t*    neighbor);
           void            schedule_setMySchedule(uint8_t slotframeID,uint16_t slotframeSize,uint8_t numOfLink,open_addr_t* previousHop);
+          slotOffset_t    schedule_getSlotToSendPacket(OpenQueueEntry_t *msg,open_addr_t*     neighbor);
 // from IEEE802154E
  void            schedule_syncSlotOffset(slotOffset_t targetSlotOffset);
  void            schedule_advanceSlot();

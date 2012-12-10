@@ -72,6 +72,17 @@ bool debugPrint_myDAGrank() {
 error_t res_send(OpenQueueEntry_t *msg) {
    msg->owner        = COMPONENT_RES;
    msg->l2_frameType = IEEE154_TYPE_DATA;
+   
+   //packet send at this slot
+   msg->l2_slotToSendPacket = schedule_getSlotToSendPacket(msg,&(msg->l2_nextORpreviousHop));
+   
+   if(msg->l2_slotToSendPacket == 0)
+   {
+    openqueue_freePacketBuffer(msg);
+    return 0;
+   }
+
+   
    return res_send_internal(msg);
 }
 
@@ -154,6 +165,9 @@ void task_resNotifReceive() {
          if (msg->l2_IEListPresent)
             IEFiled_retrieveIE(msg);
          if (msg->length>0) {
+           if(msg->payload[0]==0xff)
+             reservation_pretendReceiveData(msg);
+             else
             // send to upper layer
             iphc_receive(msg);
          } else {

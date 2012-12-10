@@ -382,17 +382,82 @@ void reservation_removeLinkRequest(){
   }
 }
 
+void reservation_pretendSendData(){
+  //pretend sending an data from upper layer
+  OpenQueueEntry_t* reservationPkt;
+  open_addr_t*      reservationNeighAddr;
+  
+  reservationNeighAddr = neighbors_reservationNeighbor();
+  if(reservationNeighAddr!=NULL){
+    // get a free packet buffer
+    reservationPkt = openqueue_getFreePacketBuffer(COMPONENT_RESERVATION);
+  
+    if (reservationPkt==NULL) {
+      openserial_printError(COMPONENT_RESERVATION,ERR_NO_FREE_PACKET_BUFFER,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
+      return;
+    }
+    
+    // pretend that I am COMPONENT_UPPLAYER
+    reservationPkt->creator = COMPONENT_UPPLAYER;
+    reservationPkt->owner   = COMPONENT_RESERVATION;
+         
+    memcpy(&(reservationPkt->l2_nextORpreviousHop),reservationNeighAddr,sizeof(open_addr_t));
+    
+    uint8_t  Halloween[13];
+    Halloween[0]  = 0xff;
+    Halloween[1]  = (uint8_t)'T';
+    Halloween[2]  = (uint8_t)'r';
+    Halloween[3]  = (uint8_t)'i';
+    Halloween[4]  = (uint8_t)'c';
+    Halloween[5]  = (uint8_t)'k';
+    Halloween[6]  = (uint8_t)'O';
+    Halloween[7]  = (uint8_t)'r';
+    Halloween[8]  = (uint8_t)'T';
+    Halloween[9]  = (uint8_t)'r';
+    Halloween[10]  = (uint8_t)'e';
+    Halloween[11] = (uint8_t)'a';
+    Halloween[12] = (uint8_t)'t';
+    packetfunctions_reserveHeaderSize(reservationPkt,sizeof(Halloween));
+    
+    memcpy(reservationPkt->payload,Halloween,sizeof(Halloween));
+    
+    res_send(reservationPkt);
+  }
+}
+
+void reservation_pretendReceiveData(OpenQueueEntry_t* msg){
+    uint8_t  Halloween[6];
+    Halloween[0]  = msg->payload[0];
+    Halloween[1]  = msg->payload[1];
+    Halloween[2]  = msg->payload[2];
+    Halloween[3]  = msg->payload[3];
+    Halloween[4]  = msg->payload[4];
+    Halloween[5]  = msg->payload[5];
+    
+    openserial_printData(Halloween, sizeof(Halloween));
+    
+    openqueue_freePacketBuffer(msg);
+}           
+           
 //event
 void isr_reservation_button() {
   
-  if(reservation_vars.requestOrRemoveLink%3 != 2){
-      //set slotframeID and bandwidth
+  switch (reservation_vars.requestOrRemoveLink){
+  case 0:
+  case 1:
+    //set slotframeID and bandwidth
     reservation_setuResBandwidth(1,0);
   
     reservation_linkRequest();
-  }
-  else
+    break;
+  case 2:
     reservation_removeLinkRequest();
+    break;
+  default:
+    reservation_pretendSendData();
+  }
   
   reservation_vars.requestOrRemoveLink += 1;
 }

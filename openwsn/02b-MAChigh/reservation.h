@@ -60,6 +60,9 @@ void             reservation_notifyReceiveuResCommand(OpenQueueEntry_t* msg);
 // call by up layer
 void             reservation_linkRequest();
 void             reservation_removeLinkRequest();
+//"reservation" pretends it is upplayer and sending a data
+void             reservation_pretendSendData();
+void             reservation_pretendReceiveData(OpenQueueEntry_t* msg);
 // events
 void             isr_reservation_button();
 #endif
