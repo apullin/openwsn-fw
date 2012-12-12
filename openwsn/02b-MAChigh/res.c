@@ -76,13 +76,6 @@ error_t res_send(OpenQueueEntry_t *msg) {
    //packet send at this slot
    msg->l2_slotToSendPacket = schedule_getSlotToSendPacket(msg,&(msg->l2_nextORpreviousHop));
    
-   if(msg->l2_slotToSendPacket == 0)
-   {
-    openqueue_freePacketBuffer(msg);
-    return 0;
-   }
-
-   
    return res_send_internal(msg);
 }
 

@@ -22,7 +22,7 @@ typedef enum {
     S_IDLE                              = 0x00,   // ready for next event
     // send,receive and sendDone state of resLinkRequest
     S_RESLINKREQUEST_SEND               = 0x01,   // generating resLinkRequest command packet
-    S_WAIT_RESCELLREQUEST_SENDDONE      = 0x02,   // waiting for SendDone confirmation
+    S_WAIT_RESLINKREQUEST_SENDDONE      = 0x02,   // waiting for SendDone confirmation
     S_RESLINKREQUEST_RECEIVE            = 0x03,   // 
     // wait respone command
     S_WAIT_FORRESPONSE                  = 0x04,   // waiting for response from the neighbor

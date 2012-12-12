@@ -90,7 +90,7 @@ void openwsn_init() {
    neighbors_init();
    processIE_init();
    reservation_init();
-   /*
+   
    //-- 03a-IPHC
    openbridge_init();
    iphc_init();
@@ -132,5 +132,5 @@ void openwsn_init() {
    //-- misc
    //heli_init();
    //imu_init();
-   */
+   
 }

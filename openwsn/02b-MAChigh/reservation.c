@@ -28,7 +28,7 @@ typedef struct {
   reservation_state_t  State;
   uint8_t              commandID;
   bandwidth_vars_t     bandwidth_vars;
-  uint8_t              requestOrRemoveLink; //when requestOrRemoveLink%3 is 0 or 1, call uResLinkRequest; when the value is 2, call uResRemoveLink.
+  uint8_t              button_event; //when requestOrRemoveLink%3 is 0 or 1, call uResLinkRequest; when the value is 2, call uResRemoveLink.
 } reservation_vars_t;
 
 reservation_vars_t reservation_vars;
@@ -77,7 +77,7 @@ void    reservation_notifyReceiveuResLinkRequest(OpenQueueEntry_t* msg){
   
   schedule_addLinksToSchedule(reservation_vars.bandwidth_vars.slotframeID,&(msg->l2_nextORpreviousHop),reservation_vars.bandwidth_vars.numOfLinks,reservation_vars.State);
   
-  reservation_vars.State = S_IDLE;
+  //reservation_vars.State = S_IDLE;
   
   //call link response command
   reservation_linkResponse(&(msg->l2_nextORpreviousHop));
@@ -130,7 +130,7 @@ void    reservation_sendDone(OpenQueueEntry_t* msg, error_t error){
 
       switch (reservation_vars.State)
       {
-      case S_WAIT_RESCELLREQUEST_SENDDONE:
+      case S_WAIT_RESLINKREQUEST_SENDDONE:
         reservation_vars.State = S_WAIT_FORRESPONSE;
         break;
       case S_WAIT_RESLINKRESPONSE_SENDDONE:
@@ -254,13 +254,13 @@ void reservation_linkRequest() {
   
     res_send(reservationPkt);
     
-    reservation_vars.State = S_WAIT_RESCELLREQUEST_SENDDONE;
+    reservation_vars.State = S_WAIT_RESLINKREQUEST_SENDDONE;
   }
 }
 
 void  reservation_linkResponse(open_addr_t* tempNeighbor){
   
-  if(reservation_vars.State != S_IDLE)
+  if(reservation_vars.State != S_RESLINKREQUEST_RECEIVE)
     return;
   
   leds_debug_toggle();
@@ -444,7 +444,7 @@ void reservation_pretendReceiveData(OpenQueueEntry_t* msg){
 //event
 void isr_reservation_button() {
   
-  switch (reservation_vars.requestOrRemoveLink){
+  switch (reservation_vars.button_event){
   case 0:
   case 1:
     //set slotframeID and bandwidth
@@ -456,8 +456,9 @@ void isr_reservation_button() {
     reservation_removeLinkRequest();
     break;
   default:
+    //pretend that uppler is sending a data
     reservation_pretendSendData();
   }
   
-  reservation_vars.requestOrRemoveLink += 1;
+  reservation_vars.button_event += 1;
 }

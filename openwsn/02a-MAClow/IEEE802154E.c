@@ -678,7 +678,8 @@ port_INLINE void activity_ti1ORri1() {
          }
          if (ieee154e_vars.dataToSend!=NULL) {   // I have a packet to send
             // this packet wantes to send at current slot
-           if(ieee154e_vars.dataToSend->l2_slotToSendPacket == ieee154e_vars.slotOffset){
+           if(ieee154e_vars.dataToSend->l2_slotToSendPacket == ieee154e_vars.slotOffset ||
+              ieee154e_vars.dataToSend->l2_slotToSendPacket == 0){//if l2_slotTosendPacket is 0, there is no Tx slot. Send this msg at TXRX slot
             // change state
             changeState(S_TXDATAOFFSET);
             // change owner
