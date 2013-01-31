@@ -25,6 +25,7 @@ dummyFunc = Builder(
     suffix = '.ihex',
 )
 
+# msp430-gcc 
 if   env['toolchain']=='mspgcc':
     
     # compiler
@@ -60,6 +61,43 @@ if   env['toolchain']=='mspgcc':
     )
     env.Append(BUILDERS = {'PrintSize' : printSizeFunc})
 
+#xc16-gcc
+if   env['toolchain']=='xc16':
+    
+    # compiler
+    env.Replace(CC           = 'xc16-gcc')
+    env.Append(CCFLAGS       = '')
+    # archiver
+    env.Replace(AR           = 'xc16-ar')
+    env.Append(ARFLAGS       = '')
+    env.Replace(RANLIB       = 'xc16-ranlib')
+    env.Append(RANLIBFLAGS   = '')
+    # linker
+    env.Replace(LINK         = 'xc16-gcc')
+    env.Append(LINKFLAGS     = '')
+    
+    # convert ELF to iHex
+    elf2iHexFunc = Builder(
+       action = 'xc16-objcopy --output-target=ihex $SOURCE $TARGET',
+       suffix = '.ihex',
+    )
+    env.Append(BUILDERS = {'Elf2iHex' : elf2iHexFunc})
+    
+    # convert ELF to bin
+    elf2BinFunc = Builder(
+       action = 'xc16-objcopy --output-target=binary $SOURCE $TARGET',
+       suffix = '.ihex',
+    )
+    env.Append(BUILDERS = {'Elf2iBin' : elf2BinFunc})
+    
+    # print sizes
+    printSizeFunc = Builder(
+        action = 'xc16-size $SOURCE',
+        suffix = '.phonysize',
+    )
+    env.Append(BUILDERS = {'PrintSize' : printSizeFunc})
+
+	
 elif env['toolchain']=='iar':
     
     try:
