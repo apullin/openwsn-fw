@@ -20,8 +20,8 @@ print banner
 #===== options
 
 command_line_options = {
-    'board':       ['telosb','gina','pc'],
-    'toolchain':   ['mspgcc','iar','iar-proj','gcc','visualstudio'],
+    'board':       ['telosb','gina','pc', 'imageproc'],
+    'toolchain':   ['mspgcc','iar','iar-proj','gcc','visualstudio','xc16'],
     'fet_version': ['2','3'],
 }
 
@@ -70,7 +70,7 @@ command_line_vars.AddVariables(
     ),
 )
 
-env = Environment(variables = command_line_vars)
+env = Environment(variables = command_line_vars, tools = ['mingw'])
 
 #===== help text
 
@@ -110,4 +110,4 @@ for k,v in env['targets'].items():
    Alias(k,v)
 
 # print final environment
-# print env.Dump()
+#print env.Dump()
