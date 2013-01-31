@@ -526,7 +526,7 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
    do { // this "loop" is only executed once
       
       // retrieve the received data frame from the radio's Rx buffer
-      ieee154e_vars.dataReceived->payload = &(ieee154e_vars.dataReceived->packet[0]);
+      ieee154e_vars.dataReceived->payload = &(ieee154e_vars.dataReceived->packet[FIRST_FRAME_BYTE]);
       radio_getReceivedFrame(       ieee154e_vars.dataReceived->payload,
                                    &ieee154e_vars.dataReceived->length,
                              sizeof(ieee154e_vars.dataReceived->packet),
@@ -621,6 +621,7 @@ port_INLINE void activity_synchronize_endOfFrame(PORT_TIMER_WIDTH capturedTime) 
 port_INLINE void activity_ti1ORri1() {
    cellType_t  cellType;
    open_addr_t neighbor;
+   uint8_t  i;
    
    // increment ASN (do this first so debug pins are in sync)
    incrementAsnOffset();
@@ -751,6 +752,13 @@ port_INLINE void activity_ti1ORri1() {
          endSlot();
          //start inputting serial data
          openserial_startInput();
+         //this is to emulate a set of serial input slots without having the slotted structure.
+         radio_setTimerPeriod(TsSlotDuration*(NUMSERIALRX));
+         
+         //increase ASN by NUMSERIALRX-1 slots as at this slot is already incremented by 1
+         for (i=0;i<NUMSERIALRX-1;i++){
+            incrementAsnOffset();
+         }
          break;
       case CELLTYPE_MORESERIALRX:
          // do nothing (not even endSlot())
@@ -1014,7 +1022,7 @@ port_INLINE void activity_ti9(PORT_TIMER_WIDTH capturedTime) {
    do { // this "loop" is only executed once
       
       // retrieve the received ack frame from the radio's Rx buffer
-      ieee154e_vars.ackReceived->payload = &(ieee154e_vars.ackReceived->packet[0]);
+      ieee154e_vars.ackReceived->payload = &(ieee154e_vars.ackReceived->packet[FIRST_FRAME_BYTE]);
       radio_getReceivedFrame(       ieee154e_vars.ackReceived->payload,
                                    &ieee154e_vars.ackReceived->length,
                              sizeof(ieee154e_vars.ackReceived->packet),
@@ -1208,7 +1216,7 @@ port_INLINE void activity_ri5(PORT_TIMER_WIDTH capturedTime) {
    do { // this "loop" is only executed once
       
       // retrieve the received data frame from the radio's Rx buffer
-      ieee154e_vars.dataReceived->payload = &(ieee154e_vars.dataReceived->packet[0]);
+      ieee154e_vars.dataReceived->payload = &(ieee154e_vars.dataReceived->packet[FIRST_FRAME_BYTE]);
       radio_getReceivedFrame(       ieee154e_vars.dataReceived->payload,
                                    &ieee154e_vars.dataReceived->length,
                              sizeof(ieee154e_vars.dataReceived->packet),
