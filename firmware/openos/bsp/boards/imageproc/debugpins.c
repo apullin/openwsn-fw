@@ -1,8 +1,8 @@
 /**
-\brief ImageProc2.4-specific definition of the "debugpins" bsp module.
+\brief ImageProc2.4 specific definition of the "debugpins" bsp module.
 
 \author Andrew Pullin <pullin@berkeley.edu>, January 2013.
-*/
+ */
 
 #include "p33fj128mc706a.h"
 
@@ -17,79 +17,91 @@
 //=========================== public ==========================================
 
 void debugpins_init() {
-    //TODO: find usable GPIO for this on ImageProc2.4
-   //P6DIR |=  0x40;      // frame [P6.6]
-   //P6DIR |=  0x80;      // slot  [P6.7]
-   //P2DIR |=  0x08;      // fsm   [P2.3]
-   //P2DIR |=  0x40;      // task  [P2.6]
-   //P6DIR |=  0x01;      // isr   [P6.0]
-   //P6DIR |=  0x02;      // radio [P6.1]
+    //Debug pins on camera connector
+    TRISDbits.TRISD0 = 0;
+    TRISDbits.TRISD1 = 0;
+    TRISDbits.TRISD2 = 0;
+    TRISDbits.TRISD3 = 0;
+    TRISDbits.TRISD4 = 0;
+    TRISDbits.TRISD5 = 0;
 }
 
-// P6.6
+// RD2
 void debugpins_frame_toggle() {
-   //P6OUT ^=  0x40;
+    _RD2 ^= 0x1;
 }
+
 void debugpins_frame_clr() {
-   //P6OUT &= ~0x40;
+    _RD2 = 0x0;
 }
+
 void debugpins_frame_set() {
-   //P6OUT |=  0x40;
+    _RD2 = 0x1;
 }
 
-// P6.7
+// RD3
 void debugpins_slot_toggle() {
-   //P6OUT ^=  0x80;
+    _RD3 ^= 0x1;
 }
+
 void debugpins_slot_clr() {
-   //P6OUT &= ~0x80;
+    _RD3 = 0x0;
 }
+
 void debugpins_slot_set() {
-   //P6OUT |=  0x80;
+    _RD3 = 0x1;
 }
 
-// P2.3
+// RD4
 void debugpins_fsm_toggle() {
-   //P2OUT ^=  0x08;
+    _RD4 ^= 0x1;
 }
+
 void debugpins_fsm_clr() {
-   //P2OUT &= ~0x08;
+    _RD4 = 0x0;
 }
+
 void debugpins_fsm_set() {
-   //P2OUT |=  0x08;
+    _RD4 = 0x1;
 }
 
-// P2.6
+// RD5
 void debugpins_task_toggle() {
-   //P2OUT ^=  0x40;
+    _RD5 ^= 0x1;
 }
+
 void debugpins_task_clr() {
-   //P2OUT &= ~0x40;
+    _RD5 = 0x0;
 }
+
 void debugpins_task_set() {
-   //P2OUT |=  0x40;
+    _RD5 = 0x1;
 }
 
-// P6.0
+// RD0
 void debugpins_isr_toggle() {
-   //P6OUT ^=  0x01;
-}
-void debugpins_isr_clr() {
-   //P6OUT &= ~0x01;
-}
-void debugpins_isr_set() {
-   //P6OUT |=  0x01;
+    _RD0 ^= 0x1;
 }
 
-// P6.1
+void debugpins_isr_clr() {
+    _RD0 = 0x0;
+}
+
+void debugpins_isr_set() {
+    _RD0 = 0x1;
+}
+
+// RD1
 void debugpins_radio_toggle() {
-   //P6OUT ^=  0x02;
+    _RD1 ^= 0x1;
 }
+
 void debugpins_radio_clr() {
-   //P6OUT &= ~0x02;
+    _RD1 = 0x0;
 }
+
 void debugpins_radio_set() {
-   //P6OUT |=  0x02;
+    _RD1 = 0x1;
 }
 
 //=========================== private =========================================
