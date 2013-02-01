@@ -246,6 +246,7 @@ typedef uint16_t  dagrank_t;
 typedef uint8_t   error_t;
 #define bool uint8_t
 
+
 PRAGMA(pack(1));
 typedef struct {
    uint8_t  byte4;
@@ -266,6 +267,26 @@ typedef struct {                                 // always written big endian, i
    };
 } open_addr_t;
 PRAGMA(pack());
+
+
+/*  //AP's implementation to work with XC16 compiler
+__pack typedef struct {
+   uint8_t  byte4;
+   uint16_t bytes2and3;
+   uint16_t bytes0and1;
+} asn_t;
+
+__pack typedef struct {                                 // always written big endian, i.e. MSB in addr[0]
+   uint8_t type;
+   union {
+      uint8_t addr_16b[2];
+      uint8_t addr_64b[8];
+      uint8_t addr_128b[16];
+      uint8_t panid[2];
+      uint8_t prefix[8];
+   };
+} open_addr_t;
+*/
 
 typedef struct {
    //admin

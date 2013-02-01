@@ -4,7 +4,7 @@
 This module simply defines some strings describing the board, which CoAP uses
 to return the board's description.
 
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, February 2012.
+\author Andrew Pullin <pullin@berkeley.edu>, Jannuary 2013.
 */
 
 #ifndef __BOARD_INFO_H
@@ -20,14 +20,18 @@ to return the board's description.
 
 #define port_INLINE                         inline
 
-#define PRAGMA(x)  _Pragma(#x)
-#define PACK(x)     pack(x)
+#define PRAGMA(x)  
+#define PACK(x)    __pack
 
 
-#define INTERRUPT_DECLARATION() __istate_t s;
-#define DISABLE_INTERRUPTS()    s = __get_interrupt_state(); \
-                                __disable_interrupt();
-#define ENABLE_INTERRUPTS()     __set_interrupt_state(s);
+#define INTERRUPT_DECLARATION() char saved_ipl;
+#define DISABLE_INTERRUPTS()    SET_AND_SAVE_CPU_IPL(saved_ipl, 7);
+#define ENABLE_INTERRUPTS()     RESTORE_CPU_IPL(saved_ipl);
+
+// MSP430 implementaiton retained here for reference: 
+//#define INTERRUPT_DECLARATION() __istate_t s;
+//#define DISABLE_INTERRUPTS()    s = __get_interrupt_state(); __disable_interrupt();
+//#define ENABLE_INTERRUPTS()     __set_interrupt_state(s);
 
 //===== timer
 

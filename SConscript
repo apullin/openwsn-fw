@@ -27,7 +27,7 @@ dummyFunc = Builder(
 
 # msp430-gcc 
 if   env['toolchain']=='mspgcc':
-    
+
     # compiler
     env.Replace(CC           = 'msp430-gcc')
     env.Append(CCFLAGS       = '')
@@ -62,7 +62,7 @@ if   env['toolchain']=='mspgcc':
     env.Append(BUILDERS = {'PrintSize' : printSizeFunc})
 
 #xc16-gcc
-if   env['toolchain']=='xc16':
+elif   env['toolchain']=='xc16':
     
     # compiler
     env.Replace(CC           = 'xc16-gcc')
@@ -194,7 +194,8 @@ elif env['toolchain']=='iar-proj':
     env.Append(BUILDERS = {'PrintSize' : dummyFunc})
     
 else:
-    raise SystemError('toolchain={0} unsupported.'.format(toolchain))
+	raise SystemError('toolchain={0} unsupported.'.format(env['toolchain']))
+	#raise SystemError('toolchain={0} unsupported.'.format(toolchain))
 
 # upload over JTAG
 def jtagUploadFunc(location):
