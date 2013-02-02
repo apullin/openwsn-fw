@@ -64,6 +64,14 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg, ipv6_header_iht ipv6_head
       return E_FAIL;
    }
    
+   //discard the packet.. hop limit reached.
+   if (ipv6_header.hop_limit==0) {
+      openserial_printError(COMPONENT_IPHC,ERR_HOP_LIMIT_REACHED,
+                            (errorparameter_t)0,
+                            (errorparameter_t)0);
+     return E_FAIL;
+   }
+   
    packetfunctions_ip128bToMac64b(&(msg->l3_destinationAdd),&temp_dest_prefix,&temp_dest_mac64b);
    //xv poipoi -- get the src prefix as well
    packetfunctions_ip128bToMac64b(&(msg->l3_sourceAdd),&temp_src_prefix,&temp_src_mac64b);
@@ -114,13 +122,16 @@ error_t iphc_sendFromForwarding(OpenQueueEntry_t *msg, ipv6_header_iht ipv6_head
    
    if ((fw_SendOrfw_Rcv==PCKTFORWARD) && ipv6_header.next_header_compressed) nh=IPHC_NH_COMPRESSED;
    
+   // decrement the packet's hop limit
+   ipv6_header.hop_limit--;
+   
    if (prependIPv6Header(msg,
             IPHC_TF_ELIDED,
             0, // value_flowlabel is not copied
             nh,
             msg->l4_protocol,
             IPHC_HLIM_INLINE,
-            64,
+            ipv6_header.hop_limit,
             IPHC_CID_NO,
             IPHC_SAC_STATELESS,
             sam,
