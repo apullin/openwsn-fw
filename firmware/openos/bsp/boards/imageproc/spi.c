@@ -5,7 +5,8 @@
 */
 
 #include "p33fj128mc706a.h"
-#include "spi.h"
+#include ".\spi.h" //local SPI
+#include "spi.h"   //dsPIC SPI
 #include "leds.h"
 #include "ipspi1.h"
 #include "utils.h"

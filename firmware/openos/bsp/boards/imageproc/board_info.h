@@ -37,33 +37,35 @@ to return the board's description.
 
 #define PORT_TIMER_WIDTH                    uint16_t
 #define PORT_SIGNED_INT_WIDTH               int16_t
-#define PORT_TICS_PER_MS                    33
+#define PORT_TICS_PER_MS                    625 //40Mhz/64 = 1.6 us per tick, 1.6us*625=1ms , AP
 
-// on TelosB, we use the comparatorA interrupt for the OS
-#define SCHEDULER_WAKEUP()                  CACTL1 |= CAIFG
-#define SCHEDULER_ENABLE_INTERRUPT()        CACTL1  = CAIE
+// on IP2.4, we use the CAN1 interrupt for the OS
+#define SCHEDULER_WAKEUP()                  C1INTFbits.RBIF = 1; //Initiate ECAN1 RX interrupt, as a fake
+#define SCHEDULER_ENABLE_INTERRUPT()        C1INTEbits.RBIE = 1; //Enable ECAN1 RC interrupt, as a fake
+
+
 
 //===== pinout
 
 // [P4.5] radio VREG
-#define PORT_PIN_RADIO_VREG_HIGH()          P4OUT |=  0x20;
-#define PORT_PIN_RADIO_VREG_LOW()           P4OUT &= ~0x20;
+#define PORT_PIN_RADIO_VREG_HIGH()          _LATB15 = 1;
+#define PORT_PIN_RADIO_VREG_LOW()           _LATB15 = 0;
 // [P4.6] radio RESET
-#define PORT_PIN_RADIO_RESET_HIGH()         P4OUT |=  0x40;
-#define PORT_PIN_RADIO_RESET_LOW()          P4OUT &= ~0x40;  
+#define PORT_PIN_RADIO_RESET_HIGH()         //nothing, not connected on IP2.4
+#define PORT_PIN_RADIO_RESET_LOW()          //nothing, not connected on IP2.4
 
 //===== IEEE802154E timing
 
 // time-slot related
-#define PORT_TsSlotDuration                 491   // counter counts one extra count, see datasheet
+#define PORT_TsSlotDuration                 9299   // AP
 // execution speed related
-#define PORT_maxTxDataPrepare               100    //  2899us (measured 2420us)
-#define PORT_maxRxAckPrepare                20    //   610us (measured  474us)
-#define PORT_maxRxDataPrepare               33    //  1000us (measured  477us)
-#define PORT_maxTxAckPrepare                40    //   792us (measured  746us)- cannot be bigger than 28.. is the limit for telosb as actvitiy_rt5 is executed almost there.
+#define PORT_maxTxDataPrepare               359    //AP   // 2014us (measured 746us)
+#define PORT_maxRxAckPrepare                190    //AP   //  305us (measured  83us)
+#define PORT_maxRxDataPrepare               625    //AP   // 1007us (measured  84us)
+#define PORT_maxTxAckPrepare                417    //AP   //  305us (measured 219us)
 // radio speed related
-#define PORT_delayTx                        12    //   366us (measured  352us)
-#define PORT_delayRx                        0     //     0us (can not measure)
+#define PORT_delayTx                        21     //AP   //  214us (measured 219us)
+#define PORT_delayRx                        0     //AP   //    0us (can not measure)
 // radio watchdog
 
 //=========================== variables =======================================
