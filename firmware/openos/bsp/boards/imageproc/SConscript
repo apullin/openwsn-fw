@@ -26,6 +26,8 @@ source = [
     'radiotimer.c',
     'spi.c',
     'uart.c',
+    'ipspi1.c',
+    'init_default.c',
     rf231,
 ]
 

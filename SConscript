@@ -78,22 +78,26 @@ elif   env['toolchain']=='xc16':
     
     # convert ELF to iHex
     elf2iHexFunc = Builder(
-       action = 'xc16-objcopy --output-target=ihex $SOURCE $TARGET',
-       suffix = '.ihex',
+       action = 'xc16-bin2hex $SOURCE -a -omf=elf $TARGET',
+       suffix = '.hex',
     )
     env.Append(BUILDERS = {'Elf2iHex' : elf2iHexFunc})
     
     # convert ELF to bin
     elf2BinFunc = Builder(
-       action = 'xc16-objcopy --output-target=binary $SOURCE $TARGET',
-       suffix = '.ihex',
+       #Do nothing, since Microchip does not supply xc16-objcopy
+       #action = 'xc16-objcopy --output-target=binary $SOURCE $TARGET',
+       #suffix = '.ihex',
+       action = ''
     )
     env.Append(BUILDERS = {'Elf2iBin' : elf2BinFunc})
     
     # print sizes
     printSizeFunc = Builder(
-        action = 'xc16-size $SOURCE',
-        suffix = '.phonysize',
+        #Do nothing, since Microchip does not supply xc16-size
+        #action = 'xc16-size $SOURCE',
+        #suffix = '.phonysize',
+        action = ''
     )
     env.Append(BUILDERS = {'PrintSize' : printSizeFunc})
 

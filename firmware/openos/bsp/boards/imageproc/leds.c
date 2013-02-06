@@ -1,7 +1,7 @@
 /**
-\brief TelosB-specific definition of the "leds" bsp module.
+\brief ImageProc2.4-specific definition of the "leds" bsp module.
 
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, February 2012.
+\author Andrew Pullin <pullin@berkeley.edu>, January 2013.
 */
 
 #include "p33fj128mc706a.h"
@@ -37,6 +37,18 @@ void    leds_error_toggle() {
 }
 uint8_t leds_error_isOn() {
    return (uint8_t)(LED_RED);
+}
+
+void leds_error_blink() {
+   uint8_t i;
+   volatile uint16_t delay;
+   leds_all_on();
+   
+   // blink error LED for ~10s
+   for (i=0;i<80;i++) {
+      leds_all_off();
+      for (delay=0xffff;delay>0;delay--);
+   }
 }
 
 // green = LED2 = P5.5

@@ -1,12 +1,14 @@
 /**
-\brief TelosB-specific definition of the "uart" bsp module.
+\brief GINA-specific definition of the "uart" bsp module.
 
 \author Thomas Watteyne <watteyne@eecs.berkeley.edu>, February 2012.
 */
 
-#include "msp430f1611.h"
+#include "p33fj128mc706a.h"
+#include "stdint.h"
+#include "stdio.h"
+#include "string.h"
 #include "uart.h"
-#include "board.h"
 
 //=========================== defines =========================================
 
@@ -24,28 +26,18 @@ uart_vars_t uart_vars;
 //=========================== public ==========================================
 
 void uart_init() {
-   P3SEL                    |=  0xc0;            // P3.6,7 = UART1TX/RX
+   // reset local variables
+   memset(&uart_vars,0,sizeof(uart_vars_t));
    
-   UCTL1                     =  SWRST;           // hold UART1 module in reset
-   UCTL1                    |=  CHAR;            // 8-bit character
-   
-   /*
-   //   9600 baud, clocked from 32kHz ACLK
-   UTCTL1                   |=  SSEL0;           // clocking from ACLK
-   UBR01                     =  0x03;            // 32768/9600 = 3.41
-   UBR11                     =  0x00;            //
-   UMCTL1                    =  0x4A;            // modulation
-   */
-   
-   // 115200 baud, clocked from 4.8MHz SMCLK
-   UTCTL1                   |=  SSEL1;           // clocking from SMCLK
-   UBR01                     =  41;              // 4.8MHz/115200 - 41.66
-   UBR11                     =  0x00;            //
-   UMCTL1                    =  0x4A;            // modulation
-   
-   
-   ME2                      |=  UTXE1 + URXE1;   // enable UART1 TX/RX
-   UCTL1                    &= ~SWRST;           // clear UART1 reset bit
+   //initialize UART openserial_vars.mode
+   //P3SEL    |=  0xC0;                             // P3.6,7 = USCI_A1 TXD/RXD
+   //UCA1CTL1 |=  UCSSEL_2;                         // CLK = SMCL
+   //UCA1BR0   =  0x8a;                             // 115200 baud if SMCLK@16MHz
+   //UCA1BR1   =  0x00;
+   //UCA1MCTL  =  UCBRS_7;                          // Modulation UCBRSx = 7
+   //UCA1CTL1 &= ~UCSWRST;                          // Initialize USCI state machine
+   //UC1IFG   &= ~(UCA1TXIFG | UCA1RXIFG);          // clear possible pending interrupts
+   //UC1IE    |=  (UCA1RXIE  | UCA1TXIE);           // Enable USCI_A1 TX & RX interrupt  
 }
 
 void uart_setCallbacks(uart_tx_cbt txCb, uart_rx_cbt rxCb) {
@@ -54,30 +46,28 @@ void uart_setCallbacks(uart_tx_cbt txCb, uart_rx_cbt rxCb) {
 }
 
 void    uart_enableInterrupts(){
-  IE2 |=  (URXIE1 | UTXIE1);  
+  //UC1IE    |=  (UCA1RXIE  | UCA1TXIE);  
 }
 
 void    uart_disableInterrupts(){
-  IE2 &= ~(URXIE1 | UTXIE1);
+  //UC1IE &= ~(UCA1RXIE | UCA1TXIE);
 }
 
 void    uart_clearRxInterrupts(){
-  IFG2   &= ~URXIFG1;
+  //UC1IFG   &= ~(UCA1RXIFG);
 }
 
 void    uart_clearTxInterrupts(){
-  IFG2   &= ~UTXIFG1;
+  //UC1IFG   &= ~(UCA1TXIFG);
 }
 
 void    uart_writeByte(uint8_t byteToWrite){
-  U1TXBUF = byteToWrite;
+  //UCA1TXBUF = byteToWrite;
 }
 
 uint8_t uart_readByte(){
-  return U1RXBUF;
+  //return UCA1RXBUF;
 }
-
-//=========================== private =========================================
 
 //=========================== interrupt handlers ==============================
 

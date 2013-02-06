@@ -8,7 +8,7 @@
 #include "board.h"
 #include "radio.h"
 #include "at86rf231.h"
-#include "spi.h"
+#include "bsp-spi.h"
 #include "radiotimer.h"
 #include "debugpins.h"
 #include "leds.h"

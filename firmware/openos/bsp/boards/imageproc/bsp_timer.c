@@ -1,9 +1,12 @@
 /**
-\brief TelosB-specific definition of the "bsp_timer" bsp module.
+\brief ImageProc2.4-specific definition of the "bsp_timer" bsp module.
 
-On TelosB, we use timerA0 for the bsp_timer module.
+On IP2.4, we use Timer3 for the bsp_timer module.
+ This is potentially an unresolved problem; Timer1 does not have output compare,
+ but Timer1 is the only timer which can be run from a 32Khz crystal.
+ TODO (apullin) : Can bsp_timer be rewritten to use a timer module without OC interrupts?
 
-\author Thomas Watteyne <watteyne@eecs.berkeley.edu>, March 2012.
+\author Andrew Pullin <pullin@berkeley.edu>, January 2013.
 */
 
 #include "p33fj128mc706a.h"
@@ -11,6 +14,7 @@ On TelosB, we use timerA0 for the bsp_timer module.
 #include "bsp_timer.h"
 #include "board.h"
 #include "board_info.h"
+#include "timer.h"
 
 //=========================== defines =========================================
 
@@ -38,12 +42,23 @@ void bsp_timer_init() {
    // clear local variables
    memset(&bsp_timer_vars,0,sizeof(bsp_timer_vars_t));
    
-   // set CCRA0 registers
-   TACCR0               =  0;
-   TACCTL0              =  0;
-   
-   //start TimerA
-   TACTL                =  MC_2+TASSEL_1;        // continuous mode, from ACLK
+   DisableIntT3;
+    T3CON = T3_OFF          //Start timer off
+            & T3_IDLE_CON   //Timer 2 continues in Idle() mode
+            & T3_GATE_OFF   //Gated timer mode off
+            & T3_PS_1_64    //1:64 prescaler, so max period = 104.856 ms
+            & T3_SOURCE_INT; //Internal, Fosc / 2
+
+   //set CCRB0 registers
+   //TBCCTL0              =  0;
+   OC3R = 0;
+   OC3CON = 0; //TODO : how to configure this?
+   //TBCCR0               =  0;
+
+   // start Timer3
+   EnableIntT3;    // Enable T2 interrupt, when counter resets
+   T3CONbits.TON = 1; // Start T2 running
+   //TODO : set interrupt priority ?
 }
 
 /**
@@ -63,10 +78,12 @@ counter, and cancels a possible pending compare event.
 */
 void bsp_timer_reset() {
    // reset compare
-   TACCR0               =  0;
-   TACCTL0              =  0;
+   //TBCCR0               =  0;
+   OC3R = 0;
+   //TBCCTL0              =  0;
+   OC3CON = 0; //TODO : configure properly
    // reset timer
-   TAR                  = 0;
+   TMR3                  = 0;
    // record last timer compare value
    bsp_timer_vars.last_compare_value =  0;
 }
@@ -94,18 +111,18 @@ void bsp_timer_scheduleIn(PORT_TIMER_WIDTH delayTicks) {
    
    temp_last_compare_value = bsp_timer_vars.last_compare_value;
    
-   newCompareValue      =  bsp_timer_vars.last_compare_value+delayTicks;
+   newCompareValue      =  bsp_timer_vars.last_compare_value+delayTicks+1;
    bsp_timer_vars.last_compare_value   =  newCompareValue;
    
-   if (delayTicks<TAR-temp_last_compare_value) {
+   if (delayTicks < TMR3 - temp_last_compare_value) {
       // we're already too late, schedule the ISR right now manually
       
       // setting the interrupt flag triggers an interrupt
-      TACCTL0          |=  CCIFG;
+      _T3IF         =  1;
    } else {
       // this is the normal case, have timer expire at newCompareValue
-      TACCR0            =  newCompareValue;
-      TACCTL0          |=  CCIE;
+      OC3R            =  newCompareValue;
+      _OC3IE         = 1;
    }
 }
 
@@ -113,8 +130,10 @@ void bsp_timer_scheduleIn(PORT_TIMER_WIDTH delayTicks) {
 \brief Cancel a running compare.
 */
 void bsp_timer_cancel_schedule() {
-   TACCR0               =  0;
-   TACCTL0             &= ~CCIE;
+   //TBCCR0               =  0;
+   OC3R = 0;
+   //TBCCTL0             &= ~CCIE;
+   _OC3IE = 0;
 }
 
 /**
@@ -123,17 +142,16 @@ void bsp_timer_cancel_schedule() {
 \returns The current value of the timer's counter.
 */
 PORT_TIMER_WIDTH bsp_timer_get_currentValue() {
-   return TBR;
+   return TMR3;
 }
-
 
 //=========================== private =========================================
 
-//=========================== interrup handlers ===============================
+//=========================== interrupt handlers ==============================
 
-uint8_t bsp_timer_isr() {
+kick_scheduler_t bsp_timer_isr() {
    // call the callback
    bsp_timer_vars.cb();
    // kick the OS
-   return 1;
+   return KICK_SCHEDULER;
 }

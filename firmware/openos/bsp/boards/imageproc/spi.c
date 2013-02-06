@@ -5,8 +5,8 @@
 */
 
 #include "p33fj128mc706a.h"
-#include ".\spi.h" //local SPI
-#include "spi.h"   //dsPIC SPI
+#include "bsp-spi.h" //OpenOS local SPI header
+#include "spi.h"   //MicroChip SPI periphal header
 #include "leds.h"
 #include "ipspi1.h"
 #include "utils.h"

@@ -1,5 +1,5 @@
 /**
-\brief TelosB-specific definition of the "board" bsp module.
+\brief Imageproc2.4-specific definition of the "board" bsp module.
 
 \author Andrew Pullin <pullin@berkeley.edu>, January 2013.
  */
@@ -10,10 +10,9 @@
 // bsp modules
 #include "leds.h"
 #include "uart.h"
-//#include "bsp-spi.h"
-//@todo SPI name collision ?
+#include "bsp-spi.h"
 #include "bsp_timer.h"
-#include "radio.h"
+#include "../radio.h"
 #include "radiotimer.h"
 #include "debugpins.h"
 //From imageproc-lib
@@ -22,6 +21,8 @@
 //=========================== variables =======================================
 
 //=========================== prototypes ======================================
+extern kick_scheduler_t radiotimer_compare_isr(); //radiotimer.c
+extern kick_scheduler_t radiotimer_overflow_isr();//radiotimer.c
 
 //=========================== main ============================================
 
@@ -60,6 +61,11 @@ void board_sleep() {
     //True sleep on dsPIC33 is hard
     //Instead, CPU core is idled
     Idle(); //all clocks and periphs continue, exit from idle on any interrupt
+}
+
+void board_reset(){
+    //dsPIC has an assembly instruction for CPU reset
+    __asm__ volatile ("reset");
 }
 
 //=========================== private =========================================
@@ -105,7 +111,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
 // ADC12_VECTOR
 
 // SPI1 VECTOR
-void __attribute__((__interrupt__)) _SPI1Interrupt(void)
+void __attribute__((__interrupt__, no_auto_psv)) _SPI1Interrupt(void)
 {
     debugpins_isr_set();
     if (spi_isr()==1) {                           // SPI
@@ -115,8 +121,12 @@ void __attribute__((__interrupt__)) _SPI1Interrupt(void)
     IFS0bits.SPI1IF = 0;
 }
 
-// WDT_VECTOR
-
+// CAN1 interrupt, repurposed for software interrupt
+void __attribute__((interrupt, no_auto_psv)) _C1Interrupt(void) {
+    debugpins_isr_set();
+    //TODO: CPU is awake on any interrupt for dsPIC
+    debugpins_isr_clr();
+}
 //#pragma vector = COMPARATORA_VECTOR
 //__interrupt void COMPARATORA_ISR (void) {
 //   debugpins_isr_set();
@@ -127,7 +137,7 @@ void __attribute__((__interrupt__)) _SPI1Interrupt(void)
 //TIMER2_VECTOR
 void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void) {
     debugpins_isr_set();
-    if (radiotimer_isr() == 1) { // radiotimer
+    if (radiotimer_overflow_isr() == 1) { // radiotimer
         //TODO: CPU is awake on any interrupt for dsPIC
     }
     debugpins_isr_clr();
@@ -137,3 +147,11 @@ void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void) {
 
 // NMI_VECTOR
 
+
+void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void) {
+    debugpins_isr_set();
+    if (radiotimer_compare_isr() == 1) { // radiotimer
+        //TODO: CPU is awake on any interrupt for dsPIC
+    }
+    debugpins_isr_clr();
+}

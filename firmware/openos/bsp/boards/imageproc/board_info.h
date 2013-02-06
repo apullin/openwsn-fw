@@ -41,16 +41,16 @@ to return the board's description.
 
 // on IP2.4, we use the CAN1 interrupt for the OS
 #define SCHEDULER_WAKEUP()                  C1INTFbits.RBIF = 1; //Initiate ECAN1 RX interrupt, as a fake
-#define SCHEDULER_ENABLE_INTERRUPT()        C1INTEbits.RBIE = 1; //Enable ECAN1 RC interrupt, as a fake
+#define SCHEDULER_ENABLE_INTERRUPT()        C1INTEbits.RBIE = 1; //Enable ECAN1 RX interrupt, as a fake
 
 
 
 //===== pinout
 
-// [P4.5] radio VREG
-#define PORT_PIN_RADIO_VREG_HIGH()          _LATB15 = 1;
-#define PORT_PIN_RADIO_VREG_LOW()           _LATB15 = 0;
-// [P4.6] radio RESET
+//radio VREG
+#define PORT_PIN_RADIO_SLP_TR_CNTL_HIGH()           _LATB15 = 1;
+#define PORT_PIN_RADIO_SLP_TR_CNTL_LOW()            _LATB15 = 0;
+//radio RESET
 #define PORT_PIN_RADIO_RESET_HIGH()         //nothing, not connected on IP2.4
 #define PORT_PIN_RADIO_RESET_LOW()          //nothing, not connected on IP2.4
 

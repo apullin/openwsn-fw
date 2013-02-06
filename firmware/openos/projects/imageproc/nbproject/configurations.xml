@@ -21,7 +21,7 @@
       </logicalFolder>
       <logicalFolder name="f4" displayName="chips" projectFiles="true">
         <itemPath>../../bsp/chips/i2c.h</itemPath>
-        <itemPath>../../bsp/chips/spi.h</itemPath>
+        <itemPath>../../bsp/chips/bsp-spi.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="imageproc-lib" projectFiles="true">
         <itemPath>../../../../../imageproc-lib/init_default.h</itemPath>

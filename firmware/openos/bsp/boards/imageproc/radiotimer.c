@@ -1,5 +1,10 @@
 /**
-\brief TelosB-specific definition of the "radiotimer" bsp module.
+\brief ImageProc2.4-specific definition of the "radiotimer" bsp module.
+
+On IP2.4, we use Timer2 for the radio_timer module.
+ This is potentially an unresolved problem; Timer1 does not have output compare,
+ but Timer1 is the only timer which can be run from a 32Khz crystal.
+ TODO (apullin) : Can bsp_timer be rewritten to use a timer module without OC interrupts?
 
 \author Andrew Pullin <pullin@berkeley.edu>, January 2013.
 */
@@ -8,19 +13,22 @@
 #include "stdio.h"
 #include "string.h"
 #include "radiotimer.h"
+#include "timer.h" //from Microchip library
+#include "outcompare.h"
+#include "incap.h"
 
 //=========================== variables =======================================
 
 typedef struct {
-   radiotimer_compare_cbt    overflowCb;
-   radiotimer_compare_cbt    compareCb;
-   radiotimer_capture_cbt    startFrameCb;
-   radiotimer_capture_cbt    endFrameCb;
+   radiotimer_compare_cbt    overflow_cb;
+   radiotimer_compare_cbt    compare_cb;
 } radiotimer_vars_t;
 
 radiotimer_vars_t radiotimer_vars;
 
 //=========================== prototypes ======================================
+kick_scheduler_t radiotimer_overflow_isr();
+kick_scheduler_t radiotimer_compare_isr();
 
 //=========================== public ==========================================
 
@@ -32,138 +40,113 @@ void radiotimer_init() {
 }
 
 void radiotimer_setOverflowCb(radiotimer_compare_cbt cb) {
-   radiotimer_vars.overflowCb     = cb;
+   radiotimer_vars.overflow_cb    = cb;
 }
 
 void radiotimer_setCompareCb(radiotimer_compare_cbt cb) {
-   radiotimer_vars.compareCb      = cb;
+   radiotimer_vars.compare_cb     = cb;
 }
 
 void radiotimer_setStartFrameCb(radiotimer_capture_cbt cb) {
-   radiotimer_vars.startFrameCb   = cb;
+   while(1);
 }
 
 void radiotimer_setEndFrameCb(radiotimer_capture_cbt cb) {
-   radiotimer_vars.endFrameCb     = cb;
+   while(1);
 }
 
 void radiotimer_start(uint16_t period) {
-   // radio's SFD pin connected to P4.1
-   P4DIR   &= ~0x02; // input
-   P4SEL   |=  0x02; // in CCI1a/B mode
+
+    DisableIntT2;
+    T2CON = T2_OFF          //Start timer off
+            & T2_IDLE_CON   //Timer 2 continues in Idle() mode
+            & T2_GATE_OFF   //Gated timer mode off
+            & T2_PS_1_64    //1:64 prescaler, so max period = 104.856 ms
+            & T2_32BIT_MODE_OFF //Timer runs in single 16 bit timer mode
+            & T2_SOURCE_INT; //Internal, Fosc / 2
    
-   // CCR0 contains period of counter
-   // do not interrupt when counter reaches TBCCR0, but when it resets
-   TBCCR0   =  period-1;
+   // OC1R contains max value of counter (slot length)
+   // do not interrupt when counter reaches TACCR0!
+   //OC1R   =  period;
+   PR2 = period;
    
-   // CCR1 in capture mode
-   TBCCTL1  =  CM_3+SCS+CAP+CCIE;
-   TBCCR1   =  0;
+   // OC2 in compare mode (disabled for now)
+   OC2CON  =  0;
+   OC2R   =  0;
    
-   // CCR2 in compare mode (disabled for now)
-   TBCCTL2  =  0;
-   TBCCR2   =  0;
+   // OC3 in capture mode
+   //TACCTL2  =  CAP+SCS+CCIS1+CM_1;
+   OC3R   =  0;
+   
+   // reset couter
+   TMR2 = 0;
    
    // start counting
-   TBCTL    =  TBIE+TBCLR;                       // interrupt when counter resets
-   TBCTL   |=  MC_1+TBSSEL_1;                    // up mode, clocked from ACLK
+   EnableIntT2;    // Enable T2 interrupt, when counter resets                       
+   T2CONbits.TON = 1; // Start T2 running
+   //TODO : set interrupt priority ?
 }
 
 //===== direct access
 
 uint16_t radiotimer_getValue() {
-   return TBR;
+   return TMR2;
 }
 
 void radiotimer_setPeriod(uint16_t period) {
-   TBCCR0   =  period;
+   PR2   =  period;
 }
 
 uint16_t radiotimer_getPeriod() {
-   return TBCCR0;
+   return PR2;
 }
 
 //===== compare
 
 void radiotimer_schedule(uint16_t offset) {
-   // offset when to fire
-   TBCCR2   =  offset;
    
-   // enable compare interrupt (this also cancels any pending interrupts)
-   TBCCTL2  =  CCIE;
+   OC1R   =  offset; // offset when to fire
+   _OC1IF = 0;      //Clear flag
+   EnableIntOC1; // enable OC1 interrupt
+   
 }
 
 void radiotimer_cancel() {
-   // reset compare value (also resets interrupt flag)
-   TBCCR2   =  0;
-   
-   // disable compare interrupt
-   TBCCTL2 &= ~CCIE;
+  OC2R = 0; // Reset OC2 value, and clear interrupt flag
+  _OC2IF = 0;
+  DisableIntOC1; // disable OC2 interrupt
 }
 
 //===== capture
 
 inline uint16_t radiotimer_getCapturedTime() {
-   while(1);
+   return TMR2;
 }
 
 //=========================== private =========================================
 
 //=========================== interrupt handlers ==============================
 
-/**
-\brief TimerB CCR1-6 interrupt service routine
-*/
-uint8_t radiotimer_isr() {
-   uint16_t tbiv_local;
-   
-   // reading TBIV returns the value of the highest pending interrupt flag
-   // and automatically resets that flag. We therefore copy its value to the
-   // tbiv_local local variable exactly once. If there is more than one 
-   // interrupt pending, we will reenter this function after having just left
-   // it.
-   tbiv_local = TBIV;
-   
-   switch (tbiv_local) {
-      case 0x0002: // CCR1 fires
-         if (TBCCTL1 & CCI) {
-            // SFD pin is high: this was the start of a frame
-            if (radiotimer_vars.startFrameCb!=NULL) {
-               radiotimer_vars.startFrameCb(TBCCR1);
-               // kick the OS
-               return 1;
-            }
-         } else {
-            // SFD pin is low: this was the end of a frame
-            if (radiotimer_vars.endFrameCb!=NULL) {
-               radiotimer_vars.endFrameCb(TBCCR1);
-               // kick the OS
-               return 1;
-            }
-         }
-         break;
-      case 0x0004: // CCR2 fires
-         if (radiotimer_vars.compareCb!=NULL) {
-            radiotimer_vars.compareCb();
-            // kick the OS
-            return 1;
-         }
-         break;
-      case 0x0006: // CCR3 fires
-         break;
-      case 0x0008: // CCR4 fires
-         break;
-      case 0x000a: // CCR5 fires
-         break;
-      case 0x000c: // CCR6 fires
-         break;
-      case 0x000e: // timer overflow
-         if (radiotimer_vars.overflowCb!=NULL) {
-            radiotimer_vars.overflowCb();
-            // kick the OS
-            return 1;
-         }
-         break;
-   }
-   return 0;
+kick_scheduler_t radiotimer_overflow_isr() {
+
+    if (radiotimer_vars.overflow_cb != NULL) {
+        // call the callback
+        radiotimer_vars.overflow_cb();
+        // kick the OS
+        return KICK_SCHEDULER;
+
+        return DO_NOT_KICK_SCHEDULER;
+    }
+}
+
+kick_scheduler_t radiotimer_compare_isr() {
+    // capture/compare OC1
+    if (radiotimer_vars.compare_cb != NULL) {
+        // call the callback
+        radiotimer_vars.compare_cb();
+        // kick the OS
+        return KICK_SCHEDULER;
+    }
+
+    return DO_NOT_KICK_SCHEDULER;
 }
