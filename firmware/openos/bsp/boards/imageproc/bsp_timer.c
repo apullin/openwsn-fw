@@ -15,6 +15,7 @@ On IP2.4, we use Timer3 for the bsp_timer module.
 #include "board.h"
 #include "board_info.h"
 #include "timer.h"
+#include "outcompare.h"
 
 //=========================== defines =========================================
 
@@ -50,10 +51,9 @@ void bsp_timer_init() {
             & T3_SOURCE_INT; //Internal, Fosc / 2
 
    //set CCRB0 registers
-   //TBCCTL0              =  0;
    OC3R = 0;
-   OC3CON = 0; //TODO : how to configure this?
-   //TBCCR0               =  0;
+   OC3CON = OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER3_SRC &
+           OC_OFF;
 
    // start Timer3
    EnableIntT3;    // Enable T2 interrupt, when counter resets
@@ -134,6 +134,7 @@ void bsp_timer_cancel_schedule() {
    OC3R = 0;
    //TBCCTL0             &= ~CCIE;
    _OC3IE = 0;
+   //TODO: Clear OC3IF?
 }
 
 /**

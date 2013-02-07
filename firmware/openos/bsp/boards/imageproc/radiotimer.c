@@ -71,14 +71,19 @@ void radiotimer_start(uint16_t period) {
    PR2 = period;
    
    // OC2 in compare mode (disabled for now)
-   OC2CON  =  0;
+   OC2CON  =  OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER2_SRC &
+           OC_OFF;
    OC2R   =  0;
    
    // OC3 in capture mode
    //TACCTL2  =  CAP+SCS+CCIS1+CM_1;
+   OC3CON = OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER2_SRC &
+           OC_OFF;
    OC3R   =  0;
+   _OC3IF = 0; // Clear OC3 int flag
+   _OC3IE = 1; // Enable OC3 int
    
-   // reset couter
+   // reset Timer2 couter
    TMR2 = 0;
    
    // start counting
@@ -134,9 +139,9 @@ kick_scheduler_t radiotimer_overflow_isr() {
         radiotimer_vars.overflow_cb();
         // kick the OS
         return KICK_SCHEDULER;
-
-        return DO_NOT_KICK_SCHEDULER;
     }
+
+    return DO_NOT_KICK_SCHEDULER;
 }
 
 kick_scheduler_t radiotimer_compare_isr() {
