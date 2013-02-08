@@ -60,7 +60,9 @@ void board_init() {
 void board_sleep() {
     //True sleep on dsPIC33 is hard
     //Instead, CPU core is idled
+    #ifndef __DEBUG
     Idle(); //all clocks and periphs continue, exit from idle on any interrupt
+    #endif
 }
 
 void board_reset(){
@@ -100,58 +102,73 @@ void __attribute__((interrupt, no_auto_psv)) _U1RXInterrupt(void) {
 // PORT1_VECTOR
 
 // TIMER1_VECTOR
-void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
-   debugpins_isr_set();
-   if (bsp_timer_isr()==1) {                     // timer: 0
+//void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
+//   debugpins_isr_set();
+//   if (bsp_timer_isr()==1) {                     // timer: 0
 //      __bic_SR_register_on_exit(CPUOFF);
-   }
-   debugpins_isr_clr();
-}
-
-// ADC12_VECTOR
+//   }
+//   debugpins_isr_clr();
+//   _T1IF = 0;
+//}
 
 // SPI1 VECTOR
-void __attribute__((__interrupt__, no_auto_psv)) _SPI1Interrupt(void)
-{
-    debugpins_isr_set();
-    if (spi_isr()==1) {                           // SPI
+//void __attribute__((__interrupt__, no_auto_psv)) _SPI1Interrupt(void)
+//{
+//    debugpins_isr_set();
+//    if (spi_isr()==1) {                           // SPI
       //TODO: CPU is awake on any interrupt for dsPIC
-   }
-   debugpins_isr_clr();
-    IFS0bits.SPI1IF = 0;
-}
+//   }
+//   debugpins_isr_clr();
+//    _SPI1IF = 0;
+//}
 
 // CAN1 interrupt, repurposed for software interrupt
 void __attribute__((interrupt, no_auto_psv)) _C1Interrupt(void) {
     debugpins_isr_set();
     //TODO: CPU is awake on any interrupt for dsPIC
     debugpins_isr_clr();
+    _C1IF = 0;
 }
-//#pragma vector = COMPARATORA_VECTOR
-//__interrupt void COMPARATORA_ISR (void) {
-//   debugpins_isr_set();
-//   __bic_SR_register_on_exit(CPUOFF);            // restart CPU
-//   debugpins_isr_clr();
-//}
 
-//TIMER2_VECTOR
+////// Radiotimer ///////
+
+//TIMER2_VECTOR , radiotimer overflow
 void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void) {
     debugpins_isr_set();
-    if (radiotimer_overflow_isr() == 1) { // radiotimer
+    if (radiotimer_overflow_isr() == 1) { // radiotimer overflow
         //TODO: CPU is awake on any interrupt for dsPIC
     }
     debugpins_isr_clr();
+    _T2IF = 0;  //Clear T2IF
 }
 
-// TIMERB0_VECTOR
-
-// NMI_VECTOR
-
-
+//radiotimer, driven by Timer 2
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void) {
     debugpins_isr_set();
-    if (radiotimer_compare_isr() == 1) { // radiotimer
+     if (radiotimer_compare_isr() == 1) { // radiotimer overflow
         //TODO: CPU is awake on any interrupt for dsPIC
     }
     debugpins_isr_clr();
+    _OC1IF = 0;  //Clear OC1IF
+}
+
+////// bsp_timer ///////
+
+//TIMER3_VECTOR , bsp_timer overflow
+//void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void) {
+//    debugpins_isr_set();
+    //bsp_timer overflow
+    //Timer will wrap, and keep running
+//    debugpins_isr_clr();
+//    _T3IF = 0; //Clear T3IF
+//}
+
+//bsp_timer, driven by Timer 3
+void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void) {
+    debugpins_isr_set();
+    if (bsp_timer_isr() == 1) { // radiotimer
+        //TODO: CPU is awake on any interrupt for dsPIC
+    }
+    debugpins_isr_clr();
+    _OC2IF = 0;  //Clear OC2IF
 }

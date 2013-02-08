@@ -47,16 +47,20 @@ void bsp_timer_init() {
     T3CON = T3_OFF          //Start timer off
             & T3_IDLE_CON   //Timer 2 continues in Idle() mode
             & T3_GATE_OFF   //Gated timer mode off
-            & T3_PS_1_64    //1:64 prescaler, so max period = 104.856 ms
+            & T3_PS_1_256    //1:64 prescaler, so max period = 104.856 ms
             & T3_SOURCE_INT; //Internal, Fosc / 2
 
-   //set CCRB0 registers
-   OC3R = 0;
-   OC3CON = OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER3_SRC &
+    PR3 = 0xffff; //max
+
+   //set OC2 registers
+   OC2R = 0;
+   OC2CON = OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER3_SRC &
            OC_OFF;
+   OC2CONbits.OCM = 0b001;
+   _OC2IF = 0;
+   _OC2IE = 0;
 
    // start Timer3
-   EnableIntT3;    // Enable T2 interrupt, when counter resets
    T3CONbits.TON = 1; // Start T2 running
    //TODO : set interrupt priority ?
 }
@@ -77,13 +81,9 @@ This function does not stop the timer, it rather resets the value of the
 counter, and cancels a possible pending compare event.
 */
 void bsp_timer_reset() {
-   // reset compare
-   //TBCCR0               =  0;
-   OC3R = 0;
-   //TBCCTL0              =  0;
-   OC3CON = 0; //TODO : configure properly
-   // reset timer
-   TMR3                  = 0;
+    _OC2IE = 0;
+    _OC2IF = 0;
+    TMR3=0;
    // record last timer compare value
    bsp_timer_vars.last_compare_value =  0;
 }
@@ -116,13 +116,14 @@ void bsp_timer_scheduleIn(PORT_TIMER_WIDTH delayTicks) {
    
    if (delayTicks < TMR3 - temp_last_compare_value) {
       // we're already too late, schedule the ISR right now manually
-      
       // setting the interrupt flag triggers an interrupt
-      _T3IF         =  1;
+      _OC2IF         =  1;
    } else {
       // this is the normal case, have timer expire at newCompareValue
-      OC3R            =  newCompareValue;
-      _OC3IE         = 1;
+      OC2R   = newCompareValue;
+      OC2CONbits.OCM = 0b001; // Acitve-low one shot mode; pin output irrelevant
+      _OC2IF = 0;
+      _OC2IE = 1; //Enable interrupt
    }
 }
 
@@ -130,11 +131,9 @@ void bsp_timer_scheduleIn(PORT_TIMER_WIDTH delayTicks) {
 \brief Cancel a running compare.
 */
 void bsp_timer_cancel_schedule() {
-   //TBCCR0               =  0;
-   OC3R = 0;
-   //TBCCTL0             &= ~CCIE;
-   _OC3IE = 0;
-   //TODO: Clear OC3IF?
+   _OC2IF = 0;
+   _OC2IE=0;
+   OC2R=0;
 }
 
 /**
