@@ -29,6 +29,7 @@
             <itemPath>../../bsp/boards/imageproc/spi.c</itemPath>
             <itemPath>../../bsp/boards/imageproc/uart.c</itemPath>
             <itemPath>../../bsp/boards/imageproc/utils.h</itemPath>
+            <itemPath>../../bsp/boards/imageproc/board_info.h</itemPath>
           </logicalFolder>
           <itemPath>../../bsp/boards/uart.h</itemPath>
           <itemPath>../../bsp/boards/board.h</itemPath>
@@ -175,10 +176,8 @@
       </logicalFolder>
       <logicalFolder name="projects" displayName="projects" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
-          <logicalFolder name="01bsp_bothtimers"
-                         displayName="01bsp_bothtimers"
-                         projectFiles="true">
-            <itemPath>../common/01bsp_bothtimers/01bsp_bothtimers.c</itemPath>
+          <logicalFolder name="01bsp_spi" displayName="01bsp_spi" projectFiles="true">
+            <itemPath>../common/01bsp_spi/01bsp_spi.c</itemPath>
           </logicalFolder>
         </logicalFolder>
       </logicalFolder>
@@ -240,7 +239,7 @@
         <property key="enable-symbols" value="true"/>
         <property key="enable-unroll-loops" value="false"/>
         <property key="extra-include-directories"
-                  value="C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\02.5-MPLS;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\02a-MAClow;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\02b-MAChigh;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\03a-IPHC;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\03b-IPv6;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\04-TRAN;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\kernel\openos;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\drivers\common;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\boards;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\boards\imageproc;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\chips;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\chips\at86rf231;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\cross-layers;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\tcpinject;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpinject;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpecho;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\ohlone;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\tcpecho;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpprint;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\tcpprint;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udprand;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpstorm;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udplatency"/>
+                  value="..\..\openwsn;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\02.5-MPLS;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\02a-MAClow;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\02b-MAChigh;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\03a-IPHC;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\03b-IPv6;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\04-TRAN;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\kernel\openos;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\drivers\common;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\boards;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\boards\imageproc;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\chips;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\bsp\chips\at86rf231;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\cross-layers;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\tcpinject;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpinject;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpecho;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\ohlone;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\tcpecho;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpprint;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\tcpprint;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udprand;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udpstorm;C:\Users\pullin\Desktop\GIT code\openwsn-fw\firmware\openos\openwsn\07-App\udplatency"/>
         <property key="isolate-each-function" value="false"/>
         <property key="keep-inline" value="false"/>
         <property key="oXC16gcc-align-arr" value="false"/>

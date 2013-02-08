@@ -16,7 +16,7 @@ can use this project with any platform.
 
 //=========================== defines =========================================
 
-#define BSP_TIMER_PERIOD     0x7fff // @32kHz = 1s
+#define BSP_TIMER_PERIOD     0xffff // @32kHz = 1s
 
 //=========================== variables =======================================
 

@@ -24,6 +24,14 @@ void debugpins_init() {
     TRISDbits.TRISD3 = 0;
     TRISDbits.TRISD0 = 0;
     TRISDbits.TRISD4 = 0;
+
+    debugpins_frame_set();
+    debugpins_fsm_set();
+    Nop();
+    Nop();
+    debugpins_frame_clr();
+    debugpins_fsm_clr();
+
 }
 
 // RD2

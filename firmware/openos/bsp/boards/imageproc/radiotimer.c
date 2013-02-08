@@ -65,23 +65,15 @@ void radiotimer_start(uint16_t period) {
             & T2_32BIT_MODE_OFF //Timer runs in single 16 bit timer mode
             & T2_SOURCE_INT; //Internal, Fosc / 2
    
-   // OC1R contains max value of counter (slot length)
-   // do not interrupt when counter reaches TACCR0!
-   //OC1R   =  period;
-   PR2 = period;
+   //Overall period of the timer; _T2Interrupt is called when TMR2 == PR2
+    PR2 = period;
    
-   // OC2 in compare mode (disabled for now)
-   OC2CON  =  OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER2_SRC &
+   // OC1 in compare mode (disabled for now)
+   OC1CON  =  OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER2_SRC &
            OC_OFF;
-   OC2R   =  0;
-   
-   // OC3 in capture mode
-   //TACCTL2  =  CAP+SCS+CCIS1+CM_1;
-   OC3CON = OC_IDLE_CON & OC_PWM_FAULT_PIN_DISABLE & OC_TIMER2_SRC &
-           OC_OFF;
-   OC3R   =  0;
-   _OC3IF = 0; // Clear OC3 int flag
-   _OC3IE = 1; // Enable OC3 int
+   OC1R   =  0;
+   _OC1IF = 0; // Clear int flag
+   _OC1IE = 0; // Interrupt disabled at start
    
    // reset Timer2 couter
    TMR2 = 0;
@@ -99,11 +91,11 @@ uint16_t radiotimer_getValue() {
 }
 
 void radiotimer_setPeriod(uint16_t period) {
-   PR2   =  period;
+   PR2   =  period; //Overflow period for Timer2
 }
 
 uint16_t radiotimer_getPeriod() {
-   return PR2;
+   return PR2; //Overflow period for Timer2
 }
 
 //===== compare
@@ -113,12 +105,13 @@ void radiotimer_schedule(uint16_t offset) {
    OC1R   =  offset; // offset when to fire
    _OC1IF = 0;      //Clear flag
    EnableIntOC1; // enable OC1 interrupt
-   
+   OC1CONbits.OCM = 0b001; // Acitve-low one shot mode; pin output irrelevant
 }
 
 void radiotimer_cancel() {
-  OC2R = 0; // Reset OC2 value, and clear interrupt flag
-  _OC2IF = 0;
+    OC1CONbits.OCM = 0b000;  // OC1 module OFF
+  OC1R = 0; // Reset OC2 value, and clear interrupt flag
+  _OC1IF = 0;
   DisableIntOC1; // disable OC2 interrupt
 }
 

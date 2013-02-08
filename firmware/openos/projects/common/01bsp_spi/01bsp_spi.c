@@ -8,21 +8,21 @@ can use this project with any platform.
 */
 #include "stdint.h"
 #include "board.h"
-#include "spi.h"
+#include "bsp-spi.h"
 
 /**
 \brief The program starts executing here.
 */
 int mote_main(void) {
    uint8_t              spi_tx_buffer[3];
-   uint8_t              spi_rx_buffer[3];
+   uint8_t              spi_rx_buffer[3] = {0x01, 0x01, 0x01};
 
    // initialize
    board_init();
 
    // prepare buffer to send over SPI
-   spi_tx_buffer[0]     =  (0x40 | 0x1E);        // [b7]    RAM/Register : 0    (register)
-                                                 // [b6]    Read/Write:    1    (read)
+   spi_tx_buffer[0]     =  (0x80 | 0x1E);        // [b7]    RAM/Register : 1    (register)
+                                                 // [b6]    Read/Write:    0    (read)
                                                  // [b5-0]  address:       0x1E (Manufacturer ID, Lower 16 Bit)
    spi_tx_buffer[1]     =  0x00;                 // send a SNOP strobe just to get the reg value
    spi_tx_buffer[2]     =  0x00;                 // send a SNOP strobe just to get the reg value
@@ -35,7 +35,10 @@ int mote_main(void) {
          sizeof(spi_rx_buffer),
          SPI_FIRST,
          SPI_LAST);
-   
+
+   Nop();
+   Nop();
+
    // sleep
    while(1) {
     //  board_sleep();
@@ -46,5 +49,7 @@ int mote_main(void) {
               sizeof(spi_rx_buffer),
               SPI_FIRST,
               SPI_LAST);
+      Nop();
+        Nop();
    }
 }
