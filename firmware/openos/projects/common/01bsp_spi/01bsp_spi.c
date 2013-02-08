@@ -15,7 +15,7 @@ can use this project with any platform.
 */
 int mote_main(void) {
    uint8_t              spi_tx_buffer[3];
-   uint8_t              spi_rx_buffer[3] = {0x01, 0x01, 0x01};
+   uint8_t              spi_rx_buffer[3];
 
    // initialize
    board_init();
@@ -35,10 +35,7 @@ int mote_main(void) {
          sizeof(spi_rx_buffer),
          SPI_FIRST,
          SPI_LAST);
-
-   Nop();
-   Nop();
-
+   
    // sleep
    while(1) {
     //  board_sleep();
@@ -49,7 +46,5 @@ int mote_main(void) {
               sizeof(spi_rx_buffer),
               SPI_FIRST,
               SPI_LAST);
-      Nop();
-        Nop();
    }
 }
