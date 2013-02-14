@@ -11,7 +11,7 @@
 #define _BOARD_INFO_H
 
 #include "common.h"
-#include <stdint.h>
+//#include <stdint.h>
 
 //=========================== defines =========================================
 #define ID 0x45

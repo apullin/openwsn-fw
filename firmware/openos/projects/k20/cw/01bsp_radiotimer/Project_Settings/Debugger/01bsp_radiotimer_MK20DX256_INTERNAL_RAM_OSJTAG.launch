@@ -44,6 +44,7 @@
 <booleanAttribute key="com.freescale.cdt.debug.cw.DebuggerTab.StopAtUserSpecified" value="true"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.Embedded Download.ExecuteTasks" value="false"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.Embedded Download.StandardDownload" value="true"/>
+<listAttribute key="com.freescale.cdt.debug.cw.Embedded Download.TaskNames"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.PN_StopAtProgramEntryPoint" value="false"/>
 <stringAttribute key="com.freescale.cdt.debug.cw.RefreshPolicy.RefreshPeriod" value="2.0"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.Symbolics.CacheSymbolicsBetweenRuns" value="false"/>
@@ -109,10 +110,10 @@
 <booleanAttribute key="org.eclipse.cdt.launch.ENABLE_RESTORE_WATCHPOINTS" value="true"/>
 <booleanAttribute key="org.eclipse.cdt.launch.ENABLE_VARIABLE_BOOKKEEPING" value="false"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="MK20DX256_INTERNAL_RAM/01bsp_all.afx"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="openos"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="01bsp_radiotimer"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.freescale.arm.cdt.toolchain.config.arm.release.1323884273"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/openos"/>
+<listEntry value="/01bsp_radiotimer"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="4"/>

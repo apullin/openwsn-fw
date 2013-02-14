@@ -20,7 +20,7 @@
  * Include the generic CPU header file 
  */
 #include "arm_cm4.h"
-#include <stdint.h>
+//#include <stdint.h>
 
 /* 
  * Include the platform specific header file 

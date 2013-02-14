@@ -7,8 +7,8 @@ can use this project with any platform.
 \author Thomas Watteyne <watteyne@eecs.berkeley.edu>, May 2012.
 */
 
-#include "stdint.h"
-#include "string.h"
+//#include "stdint.h"
+//#include "string.h"
 #include "board.h"
 #include "debugpins.h"
 #include "leds.h"

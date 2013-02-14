@@ -1,6 +1,6 @@
 <Analysispoints>
 	<Name>AnalysispointsManager</Name>
-	<ProjectPath></ProjectPath>
+	<ProjectPath>C:/Users/pullin/Desktop/GIT code/openwsn-fw/firmware/openos/projects/k20/cw/01bsp_debugpins/SaAnalysispointsManager.apconfig</ProjectPath>
 	<MaxNumberOfCores>1</MaxNumberOfCores>
 	<Comments>Analysispoints Manager</Comments>
 	<IgnoreAll>false</IgnoreAll>
